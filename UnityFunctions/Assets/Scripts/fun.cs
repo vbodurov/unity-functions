@@ -294,6 +294,46 @@ namespace UnityFunctions
 
         internal static class intersection
         {
+            internal static bool BetweenLines(ref Vector3 ray1Origin, ref Vector3 ray1Dir, ref Vector3 ray2Origin, ref Vector3 ray2Dir, out Vector3 intersection)
+            {
+                var lineVec3 = ray2Origin - ray1Origin;
+		        var crossVec1and2 = cross.Product(ref ray1Dir, ref ray2Dir);
+		        var crossVec3and2 = cross.Product(ref lineVec3, ref ray2Dir);
+ 
+		        var planarFactor = dot.Product(ref lineVec3, ref crossVec1and2);
+ 
+		        //is coplanar, and not parrallel
+		        if(abs(planarFactor) < 0.0001f && crossVec1and2.sqrMagnitude > 0.0001f)
+		        {
+			        var s = dot.Product(ref crossVec3and2, ref crossVec1and2) / crossVec1and2.sqrMagnitude;
+			        intersection = ray1Origin + (ray1Dir * s);
+			        return true;
+		        }
+		        intersection = Vector3.zero;
+			    return false;
+            }
+
+            internal static bool BetweenTriangleAndLine(
+                ref Vector3 p1, ref Vector3 p2, ref Vector3 p3, 
+                ref Vector3 line1, ref Vector3 line2)
+            {
+                var diff = line1 - line2;
+                var rayForward = diff.normalized;
+                var rayOrigin = line2;
+                var rayCollides = BetweenTriangleAndRay(ref p1, ref p2, ref p3, ref rayForward, ref rayOrigin);
+                if (rayCollides)
+                {
+                    Vector3 planeNormal;
+                    point.GetNormal(ref p1, ref p2, ref p3, out planeNormal);
+                    Vector3 collision;
+                    if (BetweenPlaneAndRay(ref planeNormal, ref p1, ref rayForward, ref rayOrigin, out collision))
+                    {
+                        return (collision - rayOrigin).sqrMagnitude <= diff.sqrMagnitude;
+                    }
+                }
+                return false;
+            }
+
             internal static bool BetweenTriangleAndRay(ref Vector3 p1, ref Vector3 p2, ref Vector3 p3, ref Vector3 rayForward, ref Vector3 rayOrigin)
             {
                 //Find vectors for two edges sharing vertex/point p1
@@ -357,7 +397,8 @@ namespace UnityFunctions
 
             internal static bool BetweenPlaneAndRay(
                 ref Vector3 planeNormal, ref Vector3 planePoint,
-                ref Vector3 rayNormal, ref Vector3 rayOrigin, out Vector3 collisionPoint)
+                ref Vector3 rayNormal, ref Vector3 rayOrigin, 
+                out Vector3 collisionPoint)
             {
                 planeNormal = planeNormal.normalized;
                 var planeDistance = -dot.Product(ref planeNormal, ref planePoint);
@@ -2266,9 +2307,9 @@ namespace UnityFunctions
                 var du2 = dot.Product(ref n1, ref t2p3) + d1;
  
                 // coplanarity robustness check 
-                if (Mathf.Abs(du0) < Mathf.Epsilon) { du0 = 0.0f; }
-                if (Mathf.Abs(du1) < Mathf.Epsilon) { du1 = 0.0f; }
-                if (Mathf.Abs(du2) < Mathf.Epsilon) { du2 = 0.0f; }
+                if (abs(du0) < Mathf.Epsilon) { du0 = 0.0f; }
+                if (abs(du1) < Mathf.Epsilon) { du1 = 0.0f; }
+                if (abs(du2) < Mathf.Epsilon) { du2 = 0.0f; }
  
                 var du0du1 = du0 * du1;
                 var du0du2 = du0 * du2;
@@ -2292,9 +2333,9 @@ namespace UnityFunctions
                 var dv1 = dot.Product(ref n2, ref t1p2) + d2;
                 var dv2 = dot.Product(ref n2, ref t1p3) + d2;
  
-                if (Mathf.Abs(dv0) < Mathf.Epsilon) { dv0 = 0.0f; }
-                if (Mathf.Abs(dv1) < Mathf.Epsilon) { dv1 = 0.0f; }
-                if (Mathf.Abs(dv2) < Mathf.Epsilon) { dv2 = 0.0f; }
+                if (abs(dv0) < Mathf.Epsilon) { dv0 = 0.0f; }
+                if (abs(dv1) < Mathf.Epsilon) { dv1 = 0.0f; }
+                if (abs(dv2) < Mathf.Epsilon) { dv2 = 0.0f; }
  
  
                 var dv0dv1 = dv0 * dv1;
@@ -2311,10 +2352,10 @@ namespace UnityFunctions
                 var dd = Vector3.Cross(n1, n2);
  
                 // compute and index to the largest component of D 
-                var max = (float)Mathf.Abs(dd.x);
+                var max = abs(dd.x);
                 short index = 0;
-                var bb = (float)Mathf.Abs(dd.y);
-                var cc = (float)Mathf.Abs(dd.z);
+                var bb = abs(dd.y);
+                var cc = abs(dd.z);
                 if (bb > max) { max = bb; index = 1; }
                 if (cc > max) { max = cc; index = 2; }
  
@@ -2400,9 +2441,9 @@ namespace UnityFunctions
  
                 // first project onto an axis-aligned plane, that maximizes the area
                 // of the triangles, compute indices: i0,i1. 
-                A[0] = Mathf.Abs(N[0]);
-                A[1] = Mathf.Abs(N[1]);
-                A[2] = Mathf.Abs(N[2]);
+                A[0] = abs(N[0]);
+                A[1] = abs(N[1]);
+                A[2] = abs(N[2]);
                 if (A[0] > A[1])
                 {
                     if (A[0] > A[2])
