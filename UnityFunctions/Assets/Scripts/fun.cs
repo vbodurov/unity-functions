@@ -294,6 +294,53 @@ namespace UnityFunctions
 
         internal static class intersection
         {
+            internal static bool BetweenTriangleAndRay(ref Vector3 p1, ref Vector3 p2, ref Vector3 p3, ref Vector3 rayForward, ref Vector3 rayOrigin)
+            {
+                float det, invDet, u, v;
+ 
+ 
+                //Find vectors for two edges sharing vertex/point p1
+                var e1 = p2 - p1;
+                var e2 = p3 - p1;
+ 
+                // calculating determinant 
+                var p = cross.Product(ref rayForward, ref e2);
+ 
+                //Calculate determinat
+                det = dot.Product(ref e1, ref p);
+ 
+                //if determinant is near zero, ray lies in plane of triangle otherwise not
+                if (det > -0.000001 && det < 0.000001) { return false; }
+                invDet = 1.0f / det;
+ 
+                //calculate distance from p1 to ray origin
+                var t = rayOrigin - p1;
+ 
+                //Calculate u parameter
+                u = dot.Product(ref t, ref p) * invDet;
+ 
+                //Check for ray hit
+                if (u < 0 || u > 1) { return false; }
+ 
+                //Prepare to test v parameter
+                var q = cross.Product(ref t, ref e1);
+ 
+                //Calculate v parameter
+                v = dot.Product(ref rayForward, ref q) * invDet;
+ 
+                //Check for ray hit
+                if (v < 0 || u + v > 1) { return false; }
+ 
+                if ((dot.Product(ref e2, ref q) * invDet) > 0.000001)
+                { 
+                    //ray does intersect
+                    return true;
+                }
+ 
+                // No hit at all
+                return false;
+            }
+
             internal static bool BetweenPlaneAndRay(
                 ref Vector3 planeNormal, ref Vector3 planePoint,
                 ref Vector3 rayNormal, ref Vector3 rayOrigin, out float distanceToCollision)
@@ -315,6 +362,7 @@ namespace UnityFunctions
                 ref Vector3 planeNormal, ref Vector3 planePoint,
                 ref Vector3 rayNormal, ref Vector3 rayOrigin, out Vector3 collisionPoint)
             {
+                planeNormal = planeNormal.normalized;
                 var planeDistance = -dot.Product(ref planeNormal, ref planePoint);
                 var a = dot.Product(ref rayNormal, ref planeNormal);
                 var num = -dot.Product(ref rayOrigin, ref planeNormal) - planeDistance;
@@ -338,6 +386,7 @@ namespace UnityFunctions
                 ref Vector3 rayNormal, ref Vector3 rayOrigin, 
                 out float distanceToCollision, out Vector3 collisionPoint)
             {
+                planeNormal = planeNormal.normalized;
                 var planeDistance = -dot.Product(ref planeNormal, ref planePoint);
                 var a = dot.Product(ref rayNormal, ref planeNormal);
                 var num = -dot.Product(ref rayOrigin, ref planeNormal) - planeDistance;
@@ -554,7 +603,7 @@ namespace UnityFunctions
 			    return false;
             }
 
-            /*internal static float BetweenRayAndSphere(
+            internal static float BetweenRayAndSphere(
                 ref Vector3 rayOrigin, 
                 ref Vector3 rayDirection, 
                 ref Vector3 sphereCenter, 
@@ -580,7 +629,7 @@ namespace UnityFunctions
                     return Single.NaN;
                 }
                 return num - (float)Math.Sqrt(squareOfRadius - sqDiff);
-            }*/
+            }
         }
 
         internal static class meshes
@@ -1153,7 +1202,7 @@ namespace UnityFunctions
                 {
 	                float rad = (float)vert / nbSides * _2pi;
                     var isXtop = Mathf.Sin(rad) > 0.95f;
-                    var nose = isXtop ? 0.75f : 0;
+                    var nose = isXtop ? 0.75f*bottomRadius : 0;
                     var noseShift = isXtop ? 0 : 1;
 	                vertices[vert] = new Vector3(Mathf.Cos(rad) * bottomRadius * noseShift, 0f, Mathf.Sin(rad) * bottomRadius + nose);
 	                vert++;
@@ -1177,7 +1226,7 @@ namespace UnityFunctions
 	                float rad = (float)v / nbSides * _2pi;
                     
                     var isXtop = Mathf.Sin(rad) > 0.95f;
-                    var nose = isXtop ? 0.75f : 0;
+                    var nose = isXtop ? 0.75f*bottomRadius : 0;
                     var noseShift = isXtop ? 0 : 1;
 	                vertices[vert] = new Vector3(Mathf.Cos(rad) * topRadius, height, Mathf.Sin(rad) * topRadius);
 	                vertices[vert + 1] = new Vector3(Mathf.Cos(rad) * bottomRadius*noseShift, 0, Mathf.Sin(rad) * bottomRadius+nose);
