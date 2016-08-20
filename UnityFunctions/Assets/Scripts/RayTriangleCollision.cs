@@ -4,7 +4,8 @@ using UnityFunctions;
 
 public class RayTriangleCollision : BaseMovableTriangle
 {
-    private Transform _origin, _intersection;
+    private Transform _origin;
+    private Transform _intersection;
     private bool _isInsideTri;
 	void Start ()
 	{
@@ -12,7 +13,7 @@ public class RayTriangleCollision : BaseMovableTriangle
 	    CreateTriangle(pointSize);
 	    
         _origin = 
-            fun.meshes.CreatePointyCone(new DtCone {height = pointSize,bottomRadius = pointSize,topRadius = 0.001f})
+            fun.meshes.CreatePointyCone(new DtCone {height = pointSize*2,bottomRadius = pointSize*2,topRadius = 0.001f})
                 .SetStandardShaderTransparentColor(1,0,1,0.5).transform;
 	    _origin.position += Vector3.forward*-0.5f;
 
@@ -31,11 +32,11 @@ public class RayTriangleCollision : BaseMovableTriangle
 
         // test code STARTS here -----------------------------------------------
         Vector3 p;
-        var hasOnPlane = fun.intersection.BetweenPlaneAndRay(ref planeNormal, ref a, ref rayFw, ref rayOr, out p);
-        var isInsideTri = fun.intersection.BetweenTriangleAndRay(ref a, ref b, ref c, ref rayFw, ref rayOr);
+        var intersectsPlane = fun.intersection.BetweenPlaneAndRay(ref planeNormal, ref a, ref rayFw, ref rayOr, out p);
+        var isInsideTri = intersectsPlane && fun.intersection.BetweenTriangleAndRay(ref a, ref b, ref c, ref rayFw, ref rayOr);
         // test code ENDS here -------------------------------------------------
 
-        if (hasOnPlane)
+        if (intersectsPlane)
         {
             Debug.DrawLine(rayOr,p,Color.green,0,true);
         }

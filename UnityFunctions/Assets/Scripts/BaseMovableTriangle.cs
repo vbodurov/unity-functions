@@ -8,10 +8,10 @@ namespace UnityFunctions
         protected Transform _a, _b,_c;
         protected Mesh _mesh;
 
-        protected void CreateTriangle(double pointSize)
+        protected GameObject CreateTriangle(double pointSize)
         {
             var dt = new DtTrianglePlane();
-	        fun.meshes.CreateTwoSidedTrianglePlane(dt).SetStandardShaderTransparentColor(0,0,1,0.5);
+	        var tr = fun.meshes.CreateTwoSidedTrianglePlane(dt).SetStandardShaderTransparentColor(0,0,1,0.5);
 
 	        _a = fun.meshes.CreateSphere(new DtSphere {radius = pointSize}).SetStandardShaderTransparentColor(0,1,0,0.9).transform;
             _b = fun.meshes.CreateSphere(new DtSphere {radius = pointSize}).SetStandardShaderTransparentColor(0,1,0,0.9).transform;
@@ -21,6 +21,25 @@ namespace UnityFunctions
             _a.position = _mesh.vertices[0];
             _b.position = _mesh.vertices[1];
             _c.position = _mesh.vertices[2];
+
+            return tr;
+        }
+
+        protected GameObject CreateTriangle(double pointSize, out Transform a, out Transform b, out Transform c, out Mesh mesh)
+        {
+            var dt = new DtTrianglePlane();
+	        var tr = fun.meshes.CreateTwoSidedTrianglePlane(dt).SetStandardShaderTransparentColor(0,0,1,0.5);
+
+	        a = fun.meshes.CreateSphere(new DtSphere {radius = pointSize}).SetStandardShaderTransparentColor(0,1,0,0.9).transform;
+            b = fun.meshes.CreateSphere(new DtSphere {radius = pointSize}).SetStandardShaderTransparentColor(0,1,0,0.9).transform;
+            c = fun.meshes.CreateSphere(new DtSphere {radius = pointSize}).SetStandardShaderTransparentColor(0,1,0,0.9).transform;
+            mesh = dt.mesh;
+
+            a.position = mesh.vertices[0];
+            b.position = mesh.vertices[1];
+            c.position = mesh.vertices[2];
+
+            return tr;
         }
 
         protected void SetTriangle(out Vector3 a, out Vector3 b, out Vector3 c)
@@ -31,10 +50,23 @@ namespace UnityFunctions
 
 	        _mesh.vertices = new [] {a,b,c};
         }
-
         protected void SetTriangle(out Vector3 a, out Vector3 b, out Vector3 c, out Vector3 planeNormal)
         {
             SetTriangle(out a, out b, out c);
+            planeNormal = fun.point.GetNormal(a, b, c);
+        }
+
+        protected void SetTriangle(Transform t1, Transform t2, Transform t3, Mesh m, out Vector3 a, out Vector3 b, out Vector3 c)
+        {
+            a = t1.position;
+            b = t2.position;
+            c = t3.position;
+
+	        m.vertices = new [] {a,b,c};
+        }
+        protected void SetTriangle(Transform t1, Transform t2, Transform t3, Mesh m, out Vector3 a, out Vector3 b, out Vector3 c, out Vector3 planeNormal)
+        {
+            SetTriangle(t1, t2, t3, m,out a, out b, out c);
             planeNormal = fun.point.GetNormal(a, b, c);
         }
     }
