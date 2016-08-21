@@ -1,15 +1,13 @@
-﻿using System;
-using Extensions;
-using Unianio.Extensions;
+﻿using Main;
 using UnityEngine;
+using UnityFunctions;
 
-namespace UnityFunctions
+namespace Main
 {
     public class TriangleWheelCollision : BaseMovableTriangle
     {
         private Transform _wheel;
         private float _wheelRadius;
-//        private bool _prevHasCollision;
 
 
         void Start ()

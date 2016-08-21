@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using Extensions;
 using UnityEngine;
+using UnityFunctions;
 
-namespace UnityFunctions
+namespace Main
 {
     public abstract class BaseMovableTriangle : MonoBehaviour
     {

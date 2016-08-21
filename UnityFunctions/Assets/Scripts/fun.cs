@@ -726,6 +726,122 @@ namespace UnityFunctions
                 return (val > 0)? 1: 2; // clock or counterclock wise
             }
 
+            internal static bool BetweenTriangleAndSphere(ref Vector3 t1, ref Vector3 t2, ref Vector3 t3, ref Vector3 sphereCenter, float sphereRadius)
+            {
+                Vector3 triangleNormal;
+                point.GetNormal(ref t1, ref t2, ref t3, out triangleNormal);
+
+                Vector3 proj;
+                fun.point.ProjectOnPlane(ref sphereCenter, ref triangleNormal, ref t1, out proj);
+                var x2d = (t2 - t1).normalized;
+                Vector3 y2d;
+                fun.vector.GetNormal(ref x2d, ref triangleNormal, out y2d);
+
+                var dist = fun.distance.Between(ref sphereCenter, ref proj);
+                var ratio = dist/sphereRadius;
+                if (ratio <= 1.0)
+                {
+
+                    var t1in2d = t1.As2d(ref x2d, ref y2d) + Vector2.right;
+                    var t2in2d = t2.As2d(ref x2d, ref y2d) + Vector2.right;
+                    var t3in2d = t3.As2d(ref x2d, ref y2d) + Vector2.right;
+                    var spin2d = sphereCenter.As2d(ref x2d, ref y2d) + Vector2.right;
+                    var radius2d = (float) Math.Sqrt(1.0 - ratio*ratio)*sphereRadius;
+
+                    return HasCircleTriangleCollision2D(ref spin2d, radius2d, ref t1in2d, ref t2in2d, ref t3in2d);
+                }
+                return false;
+            }
+            private static bool HasCircleTriangleCollision2D(ref Vector2 centre, float radius, ref Vector2 t1, ref Vector2 t2, ref Vector2 t3)
+            {
+                //
+                // TEST 1: Vertex within circle
+                //
+                var c1x = centre.x - t1.x;
+                var c1y = centre.y - t1.y;
+
+                var radiusSqr = radius*radius;
+                var c1sqr = c1x*c1x + c1y*c1y - radiusSqr;
+
+                if (c1sqr <= 0) return true;
+
+                var c2x = centre.x - t2.x;
+                var c2y = centre.y - t2.y;
+                var c2sqr = c2x*c2x + c2y*c2y - radiusSqr;
+
+                if (c2sqr <= 0) return true;
+
+                var c3x = centre.x - t3.x;
+                var c3y = centre.y - t3.y;
+                var c3sqr = c3x*c3x + c3y*c3y - radiusSqr;
+
+                if (c3sqr <= 0) return true;
+
+                //
+                // TEST 2: Circle centre within triangle
+                //
+
+                //
+                // Calculate edges
+                //
+                if (fun.triangle.IsPointInside(ref centre, ref t1, ref t2, ref t3)) return true;
+
+
+                //
+                // TEST 3: Circle intersects edge
+                //
+                var e1x = t2.x - t1.x;
+                var e1y = t2.y - t1.y;
+
+                var e2x = t3.x - t2.x;
+                var e2y = t3.y - t2.y;
+
+                var e3x = t1.x - t3.x;
+                var e3y = t1.y - t3.y;
+
+                var k = c1x*e1x + c1y*e1y;
+
+                if (k > 0)
+                {
+                    var len = e1x*e1x + e1y*e1y;     // squared len
+
+                    if (k < len)
+                    {
+                        if ((c1sqr*len) <= k*k)
+                            return true;
+                    }
+                }
+
+                // Second edge
+                k = c2x*e2x + c2y*e2y;
+
+                if (k > 0)
+                {
+                    var len = e2x*e2x + e2y*e2y;
+
+                    if (k < len)
+                    {
+                        if ((c2sqr*len) <= k*k)
+                            return true;
+                    }
+                }
+
+                // Third edge
+                k = c3x*e3x + c3y*e3y;
+
+                if (k > 0)
+                {
+                    var len = e3x*e3x + e3y*e3y;
+
+                    if (k < len)
+                    {
+                        if ((c3sqr * len) <= k*k)
+                            return true;
+                    }
+                }
+                // We're done, no intersection
+                return false;
+            }
             internal static bool BetweenTriangleAndWheel(ref Vector3 t1, ref Vector3 t2, ref Vector3 t3, ref Vector3 wheelNormal, ref Vector3 wheelPos, float wheelRadius)
             {
                 Vector3 triangleNormal;
@@ -754,8 +870,8 @@ namespace UnityFunctions
                         var w1in2d = w1.As2d(ref x2d, ref y2d);
                         var w2in2d = w2.As2d(ref x2d, ref y2d);
 
-                        if (polygon.IsPointWithin(ref w1in2d, ref t1in2d, ref t2in2d, ref t3in2d) ||
-                            polygon.IsPointWithin(ref w2in2d, ref t1in2d, ref t2in2d, ref t3in2d) ||
+                        if (triangle.IsPointInside(ref w1in2d, ref t1in2d, ref t2in2d, ref t3in2d) ||
+                            triangle.IsPointInside(ref w2in2d, ref t1in2d, ref t2in2d, ref t3in2d) ||
                             Between2DLines(ref t1in2d, ref t2in2d, ref w1in2d, ref w2in2d) ||
                             Between2DLines(ref t2in2d, ref t3in2d, ref w1in2d, ref w2in2d) ||
                             Between2DLines(ref t3in2d, ref t1in2d, ref w1in2d, ref w2in2d))
@@ -2004,51 +2120,6 @@ namespace UnityFunctions
                 }
                 return result;
             }
-            internal static bool IsPointWithin(Vector2 point, Vector2 a, Vector2 b, Vector2 c)
-            {
-                var result = false;
-                var prevPoint = c;
-                var currPoint = a;
-                if (((currPoint.y > point.y) != (prevPoint.y > point.y)) &&
-                     (point.x < (prevPoint.x - currPoint.x) * (point.y - currPoint.y) / (prevPoint.y - currPoint.y) + currPoint.x))
-                    result = true;
-                prevPoint = currPoint;
-
-                currPoint = b;
-                if (((currPoint.y > point.y) != (prevPoint.y > point.y)) &&
-                     (point.x < (prevPoint.x - currPoint.x) * (point.y - currPoint.y) / (prevPoint.y - currPoint.y) + currPoint.x))
-                    result = !result;
-                prevPoint = currPoint;
-
-                currPoint = c;
-                if (((currPoint.y > point.y) != (prevPoint.y > point.y)) &&
-                     (point.x < (prevPoint.x - currPoint.x) * (point.y - currPoint.y) / (prevPoint.y - currPoint.y) + currPoint.x))
-                    result = !result;
-                return result;
-            }
-
-            internal static bool IsPointWithin(ref Vector2 point, ref Vector2 a, ref Vector2 b, ref Vector2 c)
-            {
-                var result = false;
-                var prevPoint = c;
-                var currPoint = a;
-                if (((currPoint.y > point.y) != (prevPoint.y > point.y)) &&
-                     (point.x < (prevPoint.x - currPoint.x) * (point.y - currPoint.y) / (prevPoint.y - currPoint.y) + currPoint.x))
-                    result = true;
-                prevPoint = currPoint;
-
-                currPoint = b;
-                if (((currPoint.y > point.y) != (prevPoint.y > point.y)) &&
-                     (point.x < (prevPoint.x - currPoint.x) * (point.y - currPoint.y) / (prevPoint.y - currPoint.y) + currPoint.x))
-                    result = !result;
-                prevPoint = currPoint;
-
-                currPoint = c;
-                if (((currPoint.y > point.y) != (prevPoint.y > point.y)) &&
-                     (point.x < (prevPoint.x - currPoint.x) * (point.y - currPoint.y) / (prevPoint.y - currPoint.y) + currPoint.x))
-                    result = !result;
-                return result;
-            }
         }
 
         internal static class random
@@ -2473,6 +2544,27 @@ namespace UnityFunctions
                 var h = GetHeight(a, b, c);
                 return sqrt(a*a - h*h);
             }
+            internal static bool IsPointInside(Vector2 point, Vector2 t1, Vector2 t2, Vector2 t3)
+            {
+                var b1 = Sign3(ref point, ref t1, ref t2) < 0.0f;
+                var b2 = Sign3(ref point, ref t2, ref t3) < 0.0f;
+                var b3 = Sign3(ref point, ref t3, ref t1) < 0.0f;
+
+                return (b1 == b2) && (b2 == b3);
+            }
+            internal static bool IsPointInside(ref Vector2 point, ref Vector2 t1, ref Vector2 t2, ref Vector2 t3)
+            {
+                var b1 = Sign3(ref point, ref t1, ref t2) < 0.0f;
+                var b2 = Sign3(ref point, ref t2, ref t3) < 0.0f;
+                var b3 = Sign3(ref point, ref t3, ref t1) < 0.0f;
+
+                return (b1 == b2) && (b2 == b3);
+            }
+            private static float Sign3 (ref Vector2 p1, ref Vector2 p2, ref Vector2 p3)
+            {
+                return (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y);
+            }
+
 
             internal static bool Overlap(Vector3 t1p1, Vector3 t1p2, Vector3 t1p3, Vector3 t2p1, Vector3 t2p2, Vector3 t2p3)
             {

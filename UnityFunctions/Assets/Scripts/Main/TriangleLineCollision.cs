@@ -1,8 +1,9 @@
-﻿using System;
-using Extensions;
+﻿using Extensions;
+using Main;
 using UnityEngine;
+using UnityFunctions;
 
-namespace UnityFunctions
+namespace Main
 {
     public class TriangleLineCollision : BaseMovableTriangle
     {
