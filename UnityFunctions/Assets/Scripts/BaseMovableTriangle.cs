@@ -1,4 +1,6 @@
-﻿using Extensions;
+﻿using System;
+using System.Collections.Generic;
+using Extensions;
 using UnityEngine;
 
 namespace UnityFunctions
@@ -7,6 +9,8 @@ namespace UnityFunctions
     {
         protected Transform _a, _b,_c;
         protected Mesh _mesh;
+
+        protected readonly IDictionary<string,bool> ChangeNames = new Dictionary<string, bool>(StringComparer.InvariantCultureIgnoreCase);
 
         protected GameObject CreateTriangle(double pointSize)
         {
@@ -68,6 +72,35 @@ namespace UnityFunctions
         {
             SetTriangle(t1, t2, t3, m,out a, out b, out c);
             planeNormal = fun.point.GetNormal(a, b, c);
+        }
+        protected static void SetColor(bool hasIntersection, Color ifTrue, Color ifFalse, params Transform[] ts)
+        {
+            foreach (var t in ts)
+            {
+                t.gameObject.SetStandardShaderTransparentColor(hasIntersection ? ifTrue : ifFalse);
+            }
+        }
+
+        protected void SetColorOnChanged(bool hasIntersection, Color ifTrue, Color ifFalse, params Transform[] ts)
+        {
+            if(ts.Length == 0) throw new ArgumentException("Please provide 1 or more Transform parameters for SetColorOnChanged method");
+            SetColorOnChanged("hc"+ts[0].GetHashCode(), hasIntersection, ifTrue, ifFalse, ts);
+        }
+        protected void SetColorOnChanged(string changeName, bool hasIntersection, Color ifTrue, Color ifFalse, params Transform[] ts)
+        {
+            bool val;
+            var found = ChangeNames.TryGetValue(changeName, out val);
+            if(found && val == hasIntersection) return;// no change;
+            ChangeNames[changeName] = hasIntersection;
+            foreach (var t in ts)
+            {
+                t.gameObject.SetStandardShaderTransparentColor(hasIntersection ? ifTrue : ifFalse);
+            }
+        }
+
+        protected static Color rgba(double r, double g, double b, double a)
+        {
+            return new Color((float)r,(float)g,(float)b,(float)a);
         }
     }
 }

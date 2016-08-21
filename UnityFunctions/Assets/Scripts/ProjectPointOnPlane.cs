@@ -35,7 +35,7 @@ public class ProjectPointOnPlane : BaseMovableTriangle {
 	    var isAbove = fun.point.IsAbovePlane(p, planeNormal, a);
         // test code ENDS here -------------------------------------------------
 
-
+        SetColorOnChanged(isAbove,new Color(0,1,0,0.9f),new Color(1,0,0,0.9f),_projection);
         Debug.DrawLine(p,_projection.position, isAbove ? Color.red : Color.black, 0, true);
 	}
 }

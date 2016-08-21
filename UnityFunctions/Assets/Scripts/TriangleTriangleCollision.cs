@@ -9,13 +9,13 @@ namespace UnityFunctions
         private Transform _t1p1,_t1p2,_t1p3;
         private Transform _t2p1,_t2p2,_t2p3;
         private Mesh _mesh1, _mesh2;
-        private GameObject _t1, _t2;
+        private Transform _t1, _t2;
 
         void Start ()
 	    {
 	        const float pointSize = 0.025f;
-	        _t1 = CreateTriangle(pointSize, out _t1p1, out _t1p2, out _t1p3, out _mesh1);
-            _t2 = CreateTriangle(pointSize, out _t2p1, out _t2p2, out _t2p3, out _mesh2);
+	        _t1 = CreateTriangle(pointSize, out _t1p1, out _t1p2, out _t1p3, out _mesh1).transform;
+            _t2 = CreateTriangle(pointSize, out _t2p1, out _t2p2, out _t2p3, out _mesh2).transform;
 
             _t2p1.position += Vector3.forward*0.5f;
             _t2p2.position += Vector3.forward*0.5f;
@@ -36,16 +36,8 @@ namespace UnityFunctions
                     _t2p1.position, _t2p2.position, _t2p3.position);
             // test code ENDS here -------------------------------------------------
 
-            ChangeColors(hasIntersection, Color.green, Color.grey, _t1p1, _t1p2, _t1p3, _t2p1, _t2p2, _t2p3);
-            ChangeColors(hasIntersection, new Color(0,0,1,0.5f), new Color(0.7f,0.8f,1f,0.5f), _t1.transform,_t2.transform);
-        }
-
-        private static void ChangeColors(bool hasIntersection, Color ifTrue, Color ifFalse, params Transform[] ts)
-        {
-            foreach (var t in ts)
-            {
-                t.gameObject.SetStandardShaderTransparentColor(hasIntersection ? ifTrue : ifFalse);
-            }
+            SetColorOnChanged(hasIntersection, Color.green, Color.grey, _t1p1, _t1p2, _t1p3, _t2p1, _t2p2, _t2p3);
+            SetColorOnChanged(hasIntersection, new Color(0,0,1,0.5f), new Color(0.7f,0.8f,1f,0.5f), _t1,_t2);
         }
     }
 }

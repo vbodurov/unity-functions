@@ -1,6 +1,7 @@
 ﻿ 
 using System;
 using System.Collections.Generic;
+using Unianio.Extensions;
 using UnityEngine;
 
 namespace UnityFunctions
@@ -576,29 +577,31 @@ namespace UnityFunctions
                 ref Vector3 plane2Normal, ref Vector3 plane2Position, 
                 out Vector3 intersectionPoint, out Vector3 intersectionNormal)
             {
-                intersectionPoint = Vector3.zero;
+                
  
 		        //We can get the direction of the line of intersection of the two planes by calculating the 
 		        //cross product of the normals of the two planes. Note that this is just a direction and the line
 		        //is not fixed in space yet. We need a point for that to go with the line vector.
-		        intersectionNormal = Vector3.Cross(plane1Normal, plane2Normal);
- 
+		        cross.Product(ref plane1Normal, ref plane2Normal, out intersectionNormal);
+                intersectionNormal = intersectionNormal.normalized;
 		        //Next is to calculate a point on the line to fix it's position in space. This is done by finding a vector from
 		        //the plane2 location, moving parallel to it's plane, and intersecting plane1. To prevent rounding
 		        //errors, this vector also has to be perpendicular to lineDirection. To get this vector, calculate
 		        //the cross product of the normal of plane2 and the lineDirection.		
-		        Vector3 ldir = Vector3.Cross(plane2Normal, intersectionNormal);		
+		        Vector3 ldir;
+                cross.Product(ref plane2Normal, ref intersectionNormal, out ldir);		
  
-		        float denominator = Vector3.Dot(plane1Normal, ldir);
+		        var denominator = dot.Product(ref plane1Normal, ref ldir);
 		        //Prevent divide by zero
-		        if(Mathf.Abs(denominator) > 0.001f){
+		        if(abs(denominator) > 0.00001){
  
-			        Vector3 plane1ToPlane2 = plane1Position - plane2Position;
-			        float t = Vector3.Dot(plane1Normal, plane1ToPlane2) / denominator;
+			        var plane1ToPlane2 = plane1Position - plane2Position;
+			        var t = dot.Product(ref plane1Normal, ref plane1ToPlane2) / denominator;
 			        intersectionPoint = plane2Position + t * ldir;
  
 			        return true;
 		        }
+                intersectionPoint = Vector3.zero;
 			    return false;
             }
 
@@ -614,30 +617,31 @@ namespace UnityFunctions
                 Vector3 plane2Normal, Vector3 plane2Position, 
                 out Vector3 intersectionPoint, out Vector3 intersectionNormal)
             {
-                intersectionPoint = Vector3.zero;
+                
  
 		        //We can get the direction of the line of intersection of the two planes by calculating the 
 		        //cross product of the normals of the two planes. Note that this is just a direction and the line
 		        //is not fixed in space yet. We need a point for that to go with the line vector.
-		        intersectionNormal = Vector3.Cross(plane1Normal, plane2Normal);
- 
+		        cross.Product(ref plane1Normal, ref plane2Normal, out intersectionNormal);
+                intersectionNormal = intersectionNormal.normalized;
 		        //Next is to calculate a point on the line to fix it's position in space. This is done by finding a vector from
 		        //the plane2 location, moving parallel to it's plane, and intersecting plane1. To prevent rounding
 		        //errors, this vector also has to be perpendicular to lineDirection. To get this vector, calculate
 		        //the cross product of the normal of plane2 and the lineDirection.		
-		        Vector3 ldir = Vector3.Cross(plane2Normal, intersectionNormal);		
+		        Vector3 ldir;
+                cross.Product(ref plane2Normal, ref intersectionNormal, out ldir);		
  
-		        float denominator = Vector3.Dot(plane1Normal, ldir);
- 
+		        var denominator = dot.Product(ref plane1Normal, ref ldir);
 		        //Prevent divide by zero
-		        if(Mathf.Abs(denominator) > 0.001f){
+		        if(abs(denominator) > 0.00001){
  
-			        Vector3 plane1ToPlane2 = plane1Position - plane2Position;
-			        float t = Vector3.Dot(plane1Normal, plane1ToPlane2) / denominator;
+			        var plane1ToPlane2 = plane1Position - plane2Position;
+			        var t = dot.Product(ref plane1Normal, ref plane1ToPlane2) / denominator;
 			        intersectionPoint = plane2Position + t * ldir;
  
 			        return true;
 		        }
+                intersectionPoint = Vector3.zero;
 			    return false;
             }
 
@@ -667,6 +671,100 @@ namespace UnityFunctions
                     return Single.NaN;
                 }
                 return num - (float)Math.Sqrt(squareOfRadius - sqDiff);
+            }
+
+            internal static bool Between2DLines(Vector2 line1p1, Vector2 line1p2, Vector2 line2p1, Vector2 line2p2)
+            {
+                return Between2DLines(ref line1p1, ref line1p2, ref line2p1, ref line2p2);
+            }
+            internal static bool Between2DLines(ref Vector2 line1p1, ref Vector2 line1p2, ref Vector2 line2p1, ref Vector2 line2p2)
+            {
+                // Find the four orientations needed for general and
+                // special cases
+                var o1 = Orientation(ref line1p1, ref line1p2, ref line2p1);
+                var o2 = Orientation(ref line1p1, ref line1p2, ref line2p2);
+                var o3 = Orientation(ref line2p1, ref line2p2, ref line1p1);
+                var o4 = Orientation(ref line2p1, ref line2p2, ref line1p2);
+ 
+                // General case
+                if (o1 != o2 && o3 != o4)
+                    return true;
+ 
+                // Special Cases : colinear
+                if (o1 == 0 && OnSegment(ref line1p1, ref line2p1, ref line1p2)) return true;
+ 
+                if (o2 == 0 && OnSegment(ref line1p1, ref line2p2, ref line1p2)) return true;
+ 
+                if (o3 == 0 && OnSegment(ref line2p1, ref line1p1, ref line2p2)) return true;
+ 
+                if (o4 == 0 && OnSegment(ref line2p1, ref line1p2, ref line2p2)) return true;
+ 
+                return false; // Doesn't fall in any of the above cases
+            }
+            private static bool OnSegment(ref Vector2 p, ref Vector2 q, ref Vector2 r)
+            {
+                if (q.x <= max(p.x, r.x) && q.x >= min(p.x, r.x) &&
+                    q.y <= max(p.y, r.y) && q.y >= min(p.y, r.y))
+                   return true;
+ 
+                return false;
+            }
+ 
+            // To find orientation of ordered triplet (p, q, r).
+            // The function returns following values
+            // 0 --> p, q and r are colinear
+            // 1 --> Clockwise
+            // 2 --> Counterclockwise
+            private static int Orientation(ref Vector2 p, ref Vector2 q, ref Vector2 r)
+            {
+                // See http://www.geeksforgeeks.org/orientation-3-ordered-points/
+                // for details of below formula.
+                var val = (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y);
+ 
+                if (val < 0.000001 && val > -0.000001) return 0;  // colinear
+ 
+                return (val > 0)? 1: 2; // clock or counterclock wise
+            }
+
+            internal static bool BetweenTriangleAndWheel(ref Vector3 t1, ref Vector3 t2, ref Vector3 t3, ref Vector3 wheelNormal, ref Vector3 wheelPos, float wheelRadius)
+            {
+                Vector3 triangleNormal;
+                point.GetNormal(ref t1, ref t2, ref t3, out triangleNormal);
+
+                Vector3 intPoint,intNorm;
+                var linesIntersect = BetweenPlanes(ref triangleNormal, ref t1, ref wheelNormal, ref wheelPos, out intPoint, out intNorm);
+                if (linesIntersect)
+                {
+                    var distToInt = distance.Between(ref intPoint, ref wheelPos);
+                    var ratio = distToInt/wheelRadius;
+                    if (ratio <= 1.0)
+                    {
+                        var side = (float) Math.Sqrt(1.0 - ratio*ratio)*wheelRadius;
+                        var xPos = wheelPos + (intPoint - wheelPos);
+                        var w1 = xPos + intNorm*side;
+                        var w2 = xPos + intNorm*-side;
+
+                        var x2d = intNorm;
+                        Vector3 y2d;
+                        vector.GetNormal(ref intNorm, ref triangleNormal, out y2d);
+
+                        var t1in2d = t1.As2d(ref x2d, ref y2d);
+                        var t2in2d = t2.As2d(ref x2d, ref y2d);
+                        var t3in2d = t3.As2d(ref x2d, ref y2d);
+                        var w1in2d = w1.As2d(ref x2d, ref y2d);
+                        var w2in2d = w2.As2d(ref x2d, ref y2d);
+
+                        if (polygon.IsPointWithin(ref w1in2d, ref t1in2d, ref t2in2d, ref t3in2d) ||
+                            polygon.IsPointWithin(ref w2in2d, ref t1in2d, ref t2in2d, ref t3in2d) ||
+                            Between2DLines(ref t1in2d, ref t2in2d, ref w1in2d, ref w2in2d) ||
+                            Between2DLines(ref t2in2d, ref t3in2d, ref w1in2d, ref w2in2d) ||
+                            Between2DLines(ref t3in2d, ref t1in2d, ref w1in2d, ref w2in2d))
+                        {
+                            return true;
+                        }
+                    }
+                }
+                return false;
             }
         }
 
@@ -1558,7 +1656,6 @@ namespace UnityFunctions
                 var zero = Vector3.zero;
                 return IsAbovePlane(ref point, ref planeNormal, ref zero);
             }
-            // TODO: Verify and fix https://github.com/BSVino/MathForGameDevelopers/blob/master/math/collision.cpp
             internal static Vector3 ProjectOnPlane(ref Vector3 point, ref Vector3 planeNormal, ref Vector3 planePoint)
             {
                 planeNormal = planeNormal.normalized;
@@ -1579,6 +1676,30 @@ namespace UnityFunctions
                 var vectorToPlane = point - planePoint;
                 var distance = -dot.Product(ref planeNormal, ref vectorToPlane);
                 return point + planeNormal * distance;
+            }
+            internal static Vector3 ProjectOnLine(Vector3 point, Vector3 line1, Vector3 line2)
+            {
+                var pointToLine = point - line1;
+                var lineVector = line2 - line1;
+                Vector3 onNormal;
+                vector.ProjectOnNormal(ref pointToLine, ref lineVector, out onNormal);
+                return onNormal + line1;
+            }
+            internal static Vector3 ProjectOnLine(ref Vector3 point, ref Vector3 line1, ref Vector3 line2)
+            {
+                var pointToLine = point - line1;
+                var lineVector = line2 - line1;
+                Vector3 onNormal;
+                vector.ProjectOnNormal(ref pointToLine, ref lineVector, out onNormal);
+                return onNormal + line1;
+            }
+            internal static void ProjectOnLine(ref Vector3 point, ref Vector3 line1, ref Vector3 line2, out Vector3 projection)
+            {
+                var pointToLine = point - line1;
+                var lineVector = line2 - line1;
+                Vector3 onNormal;
+                vector.ProjectOnNormal(ref pointToLine, ref lineVector, out onNormal);
+                projection = onNormal + line1;
             }
             internal static void ProjectOnLine2D(ref Vector2 point, ref Vector2 linePoint1, ref Vector2 linePoint2, out Vector2 result)
             {
@@ -1860,6 +1981,73 @@ namespace UnityFunctions
                 dir = dir.normalized;
 
                 return from + dir*distance;
+            }
+        }
+
+        internal static class polygon
+        {
+            internal static bool IsPointWithin(Vector2 point, Vector2[] points)
+            {
+                var result = false;
+                int curr;
+                var count = points.Length;
+                var prevPoint = points[points.Length - 1];
+                for (curr = 0; curr < count; curr++)
+                {
+                    var currPoint = points[curr];
+
+                    if (((currPoint.y > point.y) != (prevPoint.y > point.y)) &&
+                         (point.x < (prevPoint.x - currPoint.x) * (point.y - currPoint.y) / (prevPoint.y - currPoint.y) + currPoint.x))
+                        result = !result;
+
+                    prevPoint = currPoint;
+                }
+                return result;
+            }
+            internal static bool IsPointWithin(Vector2 point, Vector2 a, Vector2 b, Vector2 c)
+            {
+                var result = false;
+                var prevPoint = c;
+                var currPoint = a;
+                if (((currPoint.y > point.y) != (prevPoint.y > point.y)) &&
+                     (point.x < (prevPoint.x - currPoint.x) * (point.y - currPoint.y) / (prevPoint.y - currPoint.y) + currPoint.x))
+                    result = true;
+                prevPoint = currPoint;
+
+                currPoint = b;
+                if (((currPoint.y > point.y) != (prevPoint.y > point.y)) &&
+                     (point.x < (prevPoint.x - currPoint.x) * (point.y - currPoint.y) / (prevPoint.y - currPoint.y) + currPoint.x))
+                    result = !result;
+                prevPoint = currPoint;
+
+                currPoint = c;
+                if (((currPoint.y > point.y) != (prevPoint.y > point.y)) &&
+                     (point.x < (prevPoint.x - currPoint.x) * (point.y - currPoint.y) / (prevPoint.y - currPoint.y) + currPoint.x))
+                    result = !result;
+                return result;
+            }
+
+            internal static bool IsPointWithin(ref Vector2 point, ref Vector2 a, ref Vector2 b, ref Vector2 c)
+            {
+                var result = false;
+                var prevPoint = c;
+                var currPoint = a;
+                if (((currPoint.y > point.y) != (prevPoint.y > point.y)) &&
+                     (point.x < (prevPoint.x - currPoint.x) * (point.y - currPoint.y) / (prevPoint.y - currPoint.y) + currPoint.x))
+                    result = true;
+                prevPoint = currPoint;
+
+                currPoint = b;
+                if (((currPoint.y > point.y) != (prevPoint.y > point.y)) &&
+                     (point.x < (prevPoint.x - currPoint.x) * (point.y - currPoint.y) / (prevPoint.y - currPoint.y) + currPoint.x))
+                    result = !result;
+                prevPoint = currPoint;
+
+                currPoint = c;
+                if (((currPoint.y > point.y) != (prevPoint.y > point.y)) &&
+                     (point.x < (prevPoint.x - currPoint.x) * (point.y - currPoint.y) / (prevPoint.y - currPoint.y) + currPoint.x))
+                    result = !result;
+                return result;
             }
         }
 
@@ -2586,17 +2774,17 @@ namespace UnityFunctions
             }
             internal static Vector3 ProjectOnNormal(Vector3 vector, Vector3 onNormal)
             {
-                var dotProduct = (float)((double) onNormal.x * (double) onNormal.x + (double) onNormal.y * (double) onNormal.y + (double) onNormal.z * (double) onNormal.z);;
-                if ((double)dotProduct < (double) Mathf.Epsilon)
+                var dotProduct = ((double) onNormal.x * (double) onNormal.x + (double) onNormal.y * (double) onNormal.y + (double) onNormal.z * (double) onNormal.z);
+                if (dotProduct < (double) Mathf.Epsilon)
                     return Vector3.zero;
-                return onNormal * Vector3.Dot(vector, onNormal) / (float)dotProduct;
+                return onNormal * dot.Product(ref vector, ref onNormal) / (float)dotProduct;
             }
             internal static Vector3 ProjectOnNormal(ref Vector3 vector, ref Vector3 onNormal)
             {
-                var dotProduct = (float)((double) onNormal.x * (double) onNormal.x + (double) onNormal.y * (double) onNormal.y + (double) onNormal.z * (double) onNormal.z);;
-                if ((double)dotProduct < (double) Mathf.Epsilon)
+                var dotProduct = ((double) onNormal.x * (double) onNormal.x + (double) onNormal.y * (double) onNormal.y + (double) onNormal.z * (double) onNormal.z);
+                if (dotProduct < (double) Mathf.Epsilon)
                     return Vector3.zero;
-                return onNormal * Vector3.Dot(vector, onNormal) / (float)dotProduct;
+                return onNormal * dot.Product(ref vector, ref onNormal) / (float)dotProduct;
             }
             internal static void ProjectOnNormal(ref Vector3 vector, ref Vector3 onNormal, out Vector3 projection)
             {
@@ -2604,7 +2792,7 @@ namespace UnityFunctions
                 if ((double)dotProduct < (double) Mathf.Epsilon)
                     projection = Vector3.zero;
                 else
-                    projection = onNormal * Vector3.Dot(vector, onNormal) / (float)dotProduct;
+                    projection = onNormal * dot.Product(ref vector, ref onNormal) / (float)dotProduct;
             }
             internal static Vector3 ProjectOnPlane(ref Vector3 vector, ref Vector3 planeNormal)
             {

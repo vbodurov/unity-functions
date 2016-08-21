@@ -35,16 +35,10 @@ namespace UnityFunctions
 
             Debug.DrawLine(line1, line2, hasIntersection ? Color.green : Color.red, 0, true);
 
-            ChangeColors(hasIntersection, Color.green, Color.grey, _a, _b, _c, _line1, _line2);
-            ChangeColors(hasIntersection, new Color(0,0,1,0.5f), new Color(0.7f,0.8f,1f,0.5f), _t.transform);
+            SetColorOnChanged(hasIntersection, Color.green, Color.grey, _a, _b, _c, _line1, _line2);
+            SetColorOnChanged(hasIntersection, new Color(0,0,1,0.5f), new Color(0.7f,0.8f,1f,0.5f), _t.transform);
         }
 
-        private static void ChangeColors(bool hasIntersection, Color ifTrue, Color ifFalse, params Transform[] ts)
-        {
-            foreach (var t in ts)
-            {
-                t.gameObject.SetStandardShaderTransparentColor(hasIntersection ? ifTrue : ifFalse);
-            }
-        }
+        
     }
 }

@@ -6,7 +6,6 @@ public class RayTriangleCollision : BaseMovableTriangle
 {
     private Transform _origin;
     private Transform _intersection;
-    private bool _isInsideTri;
 	void Start ()
 	{
 	    const float pointSize = 0.025f;
@@ -46,11 +45,7 @@ public class RayTriangleCollision : BaseMovableTriangle
             Debug.DrawLine(rayOr,rayOr+rayFw*0.2f,Color.black,0,true);
 	    }
 
-        if (_isInsideTri != isInsideTri)
-        {
-            _intersection.gameObject.SetStandardShaderTransparentColor(isInsideTri ? Color.red : Color.gray);
-            _isInsideTri = isInsideTri;
-        }
+        SetColorOnChanged(isInsideTri,Color.red, Color.gray, _intersection);
 
         _intersection.position = p;
         
