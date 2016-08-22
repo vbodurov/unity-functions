@@ -8,7 +8,7 @@ namespace Main
 {
     public class CapsuleSphereCollision : BaseMainScript
     {
-        private const float CapsuleRadius = 0.2f;
+        private const float CapsuleRadius = 0.15f;
         private const float CapsuleHeight = 0.8f;
         private const float SphereRadius = 0.3f;
         private Transform[] _capsule;

@@ -12,3 +12,15 @@ When screen object is selected you can use shortcuts to switch between views:
 
 W - move
 E - rotate
+
+Collisions Visualized:
+
+* Capsule - Capsule
+* Capsule - Sphere
+* Capsule - Disk
+* Triangle - Ray
+* Triangle - Line
+* Triangle - Sphere
+* Triangle - Triangle
+* Triangle - Disk
+* Disk - Disk

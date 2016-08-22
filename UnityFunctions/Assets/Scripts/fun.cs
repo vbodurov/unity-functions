@@ -295,27 +295,51 @@ namespace UnityFunctions
 
         internal static class intersection
         {
+            /// <summary>
+            /// The points of the capsule are the centers of the spheres at the end of capsules
+            /// </summary>
+            /// <param name="csb">capsule sphere below center</param>
+            /// <param name="csa">capsule sphere above center</param>
+            /// <param name="capsuleRadius">capsule radius</param>
+            /// <param name="sphereCenter">sphere center point</param>
+            /// <param name="sphereRadius">sphere radius</param>
+            /// <returns></returns>
             internal static bool BetweenCapsuleAndSphere(
-                ref Vector3 c1p1, ref Vector3 c1p2, float capsuleRadius, 
+                ref Vector3 csb, ref Vector3 csa, float capsuleRadius, 
                 ref Vector3 sphereCenter, float sphereRadius)
             {
-                // TODO: implement
-                return false;
+                var aboveVec = (csa - csb).normalized;
+                var maxDistance = capsuleRadius + sphereRadius;
+                // is above
+                if (point.IsAbovePlane(ref sphereCenter, ref aboveVec, ref csa))
+                {
+                    return distance.Between(ref sphereCenter, ref csa) <= maxDistance;
+                }
+                var belowVec = -aboveVec;
+                // is below
+                if (point.IsAbovePlane(ref sphereCenter, ref belowVec, ref csb))
+                {
+                    return distance.Between(ref sphereCenter, ref csb) <= maxDistance;
+                }
+                // is in the middle
+                Vector3 proj;
+                fun.point.ProjectOnLine(ref sphereCenter, ref csb, ref csa, out proj);
+                return distance.Between(ref sphereCenter, ref proj) <= maxDistance;
             }
 
             /// <summary>
             /// The points are the centers of the spheres at the end of capsules
             /// </summary>
-            /// <param name="c1p1">capsule 1 lower sphere center</param>
-            /// <param name="c1p2">capsule 1 upper sphere center</param>
+            /// <param name="c1sb">capsule 1 sphere below center</param>
+            /// <param name="c1sa">capsule 1 sphere above center</param>
             /// <param name="radius1">radius of capsule 1 sphere</param>
-            /// <param name="c2p1">capsule 2 lower sphere center</param>
-            /// <param name="c2p2">capsule 2 upper sphere center</param>
+            /// <param name="c2sb">capsule 2 sphere below center</param>
+            /// <param name="c2sa">capsule 2 sphere above center</param>
             /// <param name="radius2">radius of capsule 2 sphere</param>
             /// <returns>true if there is overlap false otherwise</returns>
             internal static bool BetweenCapsules(
-                ref Vector3 c1p1, ref Vector3 c1p2, float radius1, 
-                ref Vector3 c2p1, ref Vector3 c2p2, float radius2)
+                ref Vector3 c1sb, ref Vector3 c1sa, float radius1, 
+                ref Vector3 c2sb, ref Vector3 c2sa, float radius2)
             {
 
                 Vector3 belowA, middleA, middleB, aboveA, aboveB;
@@ -323,19 +347,19 @@ namespace UnityFunctions
                 bool hasMiddle, hasBelow, isAboveThePlane;
                 var hasAbove = hasMiddle = hasBelow = isAboveThePlane = false;
                 // below section
-                var norm1 = (c1p2 - c1p1).normalized;
-                if (BetweenPlaneAndLine(ref norm1, ref c1p1, ref c2p1, ref c2p2, out belowA))
+                var norm1 = (c1sa - c1sb).normalized;
+                if (BetweenPlaneAndLine(ref norm1, ref c1sb, ref c2sb, ref c2sa, out belowA))
                 {
-                    isAboveThePlane = point.IsAbovePlane(ref c2p1, ref norm1, ref c1p1);
-                    belowB = isAboveThePlane ? c2p2 : c2p1;
+                    isAboveThePlane = point.IsAbovePlane(ref c2sb, ref norm1, ref c1sb);
+                    belowB = isAboveThePlane ? c2sa : c2sb;
                     hasBelow = true;
                 }
                 // above section
-                var norm2 = (c1p1 - c1p2).normalized;
-                if (BetweenPlaneAndLine(ref norm2, ref c1p2, ref c2p1, ref c2p2, out aboveA))
+                var norm2 = (c1sb - c1sa).normalized;
+                if (BetweenPlaneAndLine(ref norm2, ref c1sa, ref c2sb, ref c2sa, out aboveA))
                 {
-                    isAboveThePlane = point.IsAbovePlane(ref c2p1, ref norm2, ref c1p2);
-                    aboveB = isAboveThePlane ? c2p2 : c2p1;
+                    isAboveThePlane = point.IsAbovePlane(ref c2sb, ref norm2, ref c1sa);
+                    aboveB = isAboveThePlane ? c2sa : c2sb;
                     hasAbove = true;
                 }
                 if (hasBelow)
@@ -351,7 +375,7 @@ namespace UnityFunctions
                     else
                     {
                         middleA = belowA;
-                        middleB = isAboveThePlane ? c2p1 : c2p2;
+                        middleB = isAboveThePlane ? c2sb : c2sa;
                         hasMiddle = true;
                     }
                 }
@@ -359,23 +383,23 @@ namespace UnityFunctions
                 else if (hasAbove)
                 {
                     middleA = aboveA;
-                    middleB = isAboveThePlane ? c2p1 : c2p2;
+                    middleB = isAboveThePlane ? c2sb : c2sa;
                     hasMiddle = true;
                 }
                 // none
                 else
                 {
                     // is above
-                    if (point.IsAbovePlane(ref c2p1, ref norm1, ref c1p2))
+                    if (point.IsAbovePlane(ref c2sb, ref norm1, ref c1sa))
                     {
-                        aboveA = c2p1;
-                        aboveB = c2p2;
+                        aboveA = c2sb;
+                        aboveB = c2sa;
                         hasAbove = true;
                     }
                     else
                     {
-                        belowA = c2p1;
-                        belowB = c2p2;
+                        belowA = c2sb;
+                        belowB = c2sa;
                         hasBelow = true;
                     }
 
@@ -387,8 +411,8 @@ namespace UnityFunctions
 
                 if (hasBelow)
                 {
-                    var vecA = belowA - c1p1;
-                    var vecB = belowB - c1p1;
+                    var vecA = belowA - c1sb;
+                    var vecB = belowB - c1sb;
                     Vector3 belowNorm;
                     vector.GetNormal(ref vecA, ref vecB, out belowNorm);
                     ComputeAnyNormals(ref belowNorm, out normX, out normY);
@@ -399,14 +423,14 @@ namespace UnityFunctions
                 if (hasMiddle)
                 {
                     ComputeAnyNormals(ref norm1, out normX, out normY);
-                    var middleA2D = (middleA-c1p1).As2d(ref normX, ref normY);
-                    var middleB2D = (middleB-c1p1).As2d(ref normX, ref normY);
+                    var middleA2D = (middleA-c1sb).As2d(ref normX, ref normY);
+                    var middleB2D = (middleB-c1sb).As2d(ref normX, ref normY);
                     if (IsLineGettingCloserToOriginThan(ref middleA2D, ref middleB2D, maxDist)) return true;
                 }
                 if (hasAbove)
                 {
-                    var vecA = aboveA - c1p2;
-                    var vecB = aboveB - c1p2;
+                    var vecA = aboveA - c1sa;
+                    var vecB = aboveB - c1sa;
                     Vector3 aboveNorm;
                     vector.GetNormal(ref vecA, ref vecB, out aboveNorm);
                     ComputeAnyNormals(ref aboveNorm, out normX, out normY);
