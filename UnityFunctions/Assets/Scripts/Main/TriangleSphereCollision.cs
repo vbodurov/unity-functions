@@ -6,7 +6,7 @@ using UnityFunctions;
 
 namespace Main
 {
-    public class TriangleSphereCollision : BaseMovableTriangle
+    public class TriangleSphereCollision : BaseMainScript
     {
         private Transform _sphere;
         private float _sphereRadius;

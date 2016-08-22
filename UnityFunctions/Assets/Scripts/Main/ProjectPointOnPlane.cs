@@ -5,7 +5,7 @@ using UnityFunctions;
 
 namespace Main
 {
-    public class ProjectPointOnPlane : BaseMovableTriangle {
+    public class ProjectPointOnPlane : BaseMainScript {
         private Transform _point, _projection;
 
         // Drag the white ball in Scene view

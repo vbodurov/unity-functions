@@ -6,7 +6,7 @@ using UnityFunctions;
 
 namespace Main
 {
-    public abstract class BaseMovableTriangle : MonoBehaviour
+    public abstract class BaseMainScript : MonoBehaviour
     {
         protected Transform _a, _b,_c;
         protected Mesh _mesh;
@@ -102,6 +102,47 @@ namespace Main
         protected static Color rgba(double r, double g, double b, double a)
         {
             return new Color((float)r,(float)g,(float)b,(float)a);
+        }
+
+        protected Transform[] CreateCapsule(double radius, double height)
+        {
+            var hMin2Rad = (float)(height - radius*2);
+            var cyl = 
+                fun.meshes.CreateCone(
+                    new DtCone
+                    {
+                        bottomRadius = radius,
+                        height = hMin2Rad,
+                        topRadius = radius,
+                        localPos = new Vector3(0,-hMin2Rad/2f,0)
+                    })
+                    .transform;
+
+            // lower end
+            var sp1Go = 
+                fun.meshes.CreateHalfSphere(
+                    new DtSphere
+                    {
+                        radius = radius
+                    })
+                    .transform;
+            sp1Go.SetParent(cyl);
+            sp1Go.localPosition = Vector3.up*-hMin2Rad/2f;
+            sp1Go.localRotation = Quaternion.Euler(180,0,0);
+            sp1Go.hideFlags = HideFlags.HideInHierarchy | HideFlags.NotEditable;
+
+            // upper end
+            var sp2Go = 
+                fun.meshes.CreateHalfSphere(
+                    new DtSphere
+                    {
+                        radius = radius
+                    })
+                    .transform;
+            sp2Go.SetParent(cyl);
+            sp2Go.localPosition = Vector3.up*hMin2Rad/2f;
+            sp2Go.hideFlags = HideFlags.HideInHierarchy | HideFlags.NotEditable;
+            return new [] { cyl, sp1Go, sp2Go };
         }
     }
 }

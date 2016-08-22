@@ -295,6 +295,12 @@ namespace UnityFunctions
 
         internal static class intersection
         {
+            internal static bool BetweenCapsuleAndSphere(ref Vector3 c1P1, ref Vector3 c1P2, float capsuleRadius, ref Vector3 sp, float sphereRadius)
+            {
+                // TODO: implement
+                return false;
+            }
+
             /// <summary>
             /// The points are the centers of the spheres at the end of capsules
             /// </summary>

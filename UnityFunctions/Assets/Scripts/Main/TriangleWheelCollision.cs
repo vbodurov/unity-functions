@@ -4,7 +4,7 @@ using UnityFunctions;
 
 namespace Main
 {
-    public class TriangleWheelCollision : BaseMovableTriangle
+    public class TriangleWheelCollision : BaseMainScript
     {
         private Transform _wheel;
         private float _wheelRadius;

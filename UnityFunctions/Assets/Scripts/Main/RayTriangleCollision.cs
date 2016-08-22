@@ -5,7 +5,7 @@ using UnityFunctions;
 
 namespace Main
 {
-    public class RayTriangleCollision : BaseMovableTriangle
+    public class RayTriangleCollision : BaseMainScript
     {
         private Transform _origin;
         private Transform _intersection;

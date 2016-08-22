@@ -5,7 +5,7 @@ using UnityFunctions;
 
 namespace Main
 {
-    public class TriangleLineCollision : BaseMovableTriangle
+    public class TriangleLineCollision : BaseMainScript
     {
         private Transform _t, _line1, _line2;
 

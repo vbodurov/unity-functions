@@ -4,7 +4,7 @@ using UnityFunctions;
 
 namespace Main
 {
-    public class TriangleTriangleCollision : BaseMovableTriangle
+    public class TriangleTriangleCollision : BaseMainScript
     {
         private Transform _t1p1,_t1p2,_t1p3;
         private Transform _t2p1,_t2p2,_t2p3;
