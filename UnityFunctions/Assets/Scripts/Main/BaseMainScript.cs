@@ -18,9 +18,9 @@ namespace Main
             var dt = new DtTrianglePlane();
 	        var tr = fun.meshes.CreateTwoSidedTrianglePlane(dt).SetStandardShaderTransparentColor(0,0,1,0.5);
 
-	        _a = fun.meshes.CreateSphere(new DtSphere {radius = pointSize}).SetStandardShaderTransparentColor(0,1,0,0.9).transform;
-            _b = fun.meshes.CreateSphere(new DtSphere {radius = pointSize}).SetStandardShaderTransparentColor(0,1,0,0.9).transform;
-            _c = fun.meshes.CreateSphere(new DtSphere {radius = pointSize}).SetStandardShaderTransparentColor(0,1,0,0.9).transform;
+	        _a = fun.meshes.CreateSphere(new DtSphere {radius = pointSize, name = "Tri_ver_a"}).SetStandardShaderTransparentColor(0,1,0,0.9).transform;
+            _b = fun.meshes.CreateSphere(new DtSphere {radius = pointSize, name = "Tri_ver_b"}).SetStandardShaderTransparentColor(0,1,0,0.9).transform;
+            _c = fun.meshes.CreateSphere(new DtSphere {radius = pointSize, name = "Tri_ver_c"}).SetStandardShaderTransparentColor(0,1,0,0.9).transform;
             _mesh = dt.mesh;
 
             _a.position = _mesh.vertices[0];
@@ -35,9 +35,9 @@ namespace Main
             var dt = new DtTrianglePlane();
 	        var tr = fun.meshes.CreateTwoSidedTrianglePlane(dt).SetStandardShaderTransparentColor(0,0,1,0.5);
 
-	        a = fun.meshes.CreateSphere(new DtSphere {radius = pointSize}).SetStandardShaderTransparentColor(0,1,0,0.9).transform;
-            b = fun.meshes.CreateSphere(new DtSphere {radius = pointSize}).SetStandardShaderTransparentColor(0,1,0,0.9).transform;
-            c = fun.meshes.CreateSphere(new DtSphere {radius = pointSize}).SetStandardShaderTransparentColor(0,1,0,0.9).transform;
+	        a = fun.meshes.CreateSphere(new DtSphere {radius = pointSize, name = "Tri_ver_a"}).SetStandardShaderTransparentColor(0,1,0,0.9).transform;
+            b = fun.meshes.CreateSphere(new DtSphere {radius = pointSize, name = "Tri_ver_b"}).SetStandardShaderTransparentColor(0,1,0,0.9).transform;
+            c = fun.meshes.CreateSphere(new DtSphere {radius = pointSize, name = "Tri_ver_c"}).SetStandardShaderTransparentColor(0,1,0,0.9).transform;
             mesh = dt.mesh;
 
             a.position = mesh.vertices[0];

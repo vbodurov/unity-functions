@@ -1049,21 +1049,21 @@ namespace UnityFunctions
                 // We're done, no intersection
                 return false;
             }
-            internal static bool BetweenTriangleAndWheel(ref Vector3 t1, ref Vector3 t2, ref Vector3 t3, ref Vector3 wheelNormal, ref Vector3 wheelPos, float wheelRadius)
+            internal static bool BetweenTriangleAndDisk(ref Vector3 t1, ref Vector3 t2, ref Vector3 t3, ref Vector3 diskNormal, ref Vector3 diskCenter, float diskRadius)
             {
                 Vector3 triangleNormal;
                 point.GetNormal(ref t1, ref t2, ref t3, out triangleNormal);
 
                 Vector3 intPoint,intNorm;
-                var linesIntersect = BetweenPlanes(ref triangleNormal, ref t1, ref wheelNormal, ref wheelPos, out intPoint, out intNorm);
+                var linesIntersect = BetweenPlanes(ref triangleNormal, ref t1, ref diskNormal, ref diskCenter, out intPoint, out intNorm);
                 if (linesIntersect)
                 {
-                    var distToInt = distance.Between(ref intPoint, ref wheelPos);
-                    var ratio = distToInt/wheelRadius;
+                    var distToInt = distance.Between(ref intPoint, ref diskCenter);
+                    var ratio = distToInt/diskRadius;
                     if (ratio <= 1.0)
                     {
-                        var side = (float) Math.Sqrt(1.0 - ratio*ratio)*wheelRadius;
-                        var xPos = wheelPos + (intPoint - wheelPos);
+                        var side = (float) Math.Sqrt(1.0 - ratio*ratio)*diskRadius;
+                        var xPos = diskCenter + (intPoint - diskCenter);
                         var w1 = xPos + intNorm*side;
                         var w2 = xPos + intNorm*-side;
 
