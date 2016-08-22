@@ -304,20 +304,144 @@ namespace UnityFunctions
             /// <param name="diskCenter">The center point of the disk</param>
             /// <param name="diskUp">disk up normal</param>
             /// <param name="diskRadius">disk radius</param>
+            /// <param name="collision">the point best describing the collision point - might not be precise!</param>
             /// <returns></returns>
             internal static bool BetweenCapsuleAndDisk(
                 ref Vector3 csb, ref Vector3 csa, float capsuleRadius, 
-                ref Vector3 diskCenter, ref Vector3 diskUp, float diskRadius)
+                ref Vector3 diskCenter, ref Vector3 diskUp, float diskRadius, out Vector3 collision)
             {
-                // middle part
-//                var capsuleUp = (csa - csb).normalized;
-//
-//                Vector3 diskCenOnCapPl;
-//                fun.point.ProjectOnPlane(ref diskCenter, ref capsuleUp, ref csb, out diskCenOnCapPl);
-//                var capToWheel
+                // see if disk center is within the capsule cylinder
+                Vector3 diskCenterOnAxis;
+                var diskCenIsWithinCylPl = 
+                    point.TryProjectOnLineSegment(ref diskCenter, ref csb, ref csa, out diskCenterOnAxis);
+                if (diskCenIsWithinCylPl && 
+                    distance.Between(ref diskCenterOnAxis, ref diskCenter) <= capsuleRadius)
+                {
+                    collision = diskCenter;
+                    return true;
+                }
+                var capsuleUp = (csa - csb).normalized;
+                var maxDistance = capsuleRadius + diskRadius;
 
-                // TODO: finish it
+                // test collision with below sphere
+                Vector3 capEndOnDiskPl;
+                point.ProjectOnPlane(ref csb, ref diskUp, ref diskCenter, out capEndOnDiskPl);
+                var diskToSph = capEndOnDiskPl - diskCenter;
+                if (diskToSph.sqrMagnitude < 0.000001f)
+                {
+                    if (distance.Between(ref csb, ref diskCenter) < maxDistance)
+                    {
+                        var diff = (csb - diskCenter);
+                        collision = diskCenter + diff.normalized*min(diff.magnitude/2, diskRadius);
+                        return true;
+                    }
+                }
+                else
+                {
+                    diskToSph = diskToSph.normalized;
+                    if (BetweenRayAndSphere(ref diskToSph, ref diskCenter, ref csb, capsuleRadius, out collision))
+                    {
+                        if (distance.Between(ref collision, ref diskCenter) <= diskRadius)
+                        {
+                            Vector3 collisionOnAxis;
+                            if (point.TryProjectOnLineSegment(ref collision, ref csb, ref csa, out collisionOnAxis))
+                            {
+                                Vector3 diskOnPlane;
+                                point.ProjectOnPlane(ref diskCenter, ref capsuleUp, ref collisionOnAxis, out diskOnPlane);
+                                collision = (diskOnPlane - collisionOnAxis).normalized*capsuleRadius + collisionOnAxis;
+                            }
+                            return true;
+                        }
+                    }
+                }
+                // test collision with above sphere
+                point.ProjectOnPlane(ref csa, ref diskUp, ref diskCenter, out capEndOnDiskPl);
+                diskToSph = capEndOnDiskPl - diskCenter;
+                if (diskToSph.sqrMagnitude < 0.000001f)
+                {
+                    if (distance.Between(ref csa, ref diskCenter) < maxDistance)
+                    {
+                        var diff = (csa - diskCenter);
+                        collision = diskCenter + diff.normalized*min(diff.magnitude/2, diskRadius);
+                        return true;
+                    }
+                }
+                else
+                {
+                    diskToSph = diskToSph.normalized;
+                    if (BetweenRayAndSphere(ref diskToSph, ref diskCenter, ref csa, capsuleRadius, out collision))
+                    {
+                        if (distance.Between(ref collision, ref diskCenter) <= diskRadius)
+                        {
+                            Vector3 collisionOnAxis;
+                            if (point.TryProjectOnLineSegment(ref collision, ref csb, ref csa, out collisionOnAxis))
+                            {
+                                Vector3 diskOnPlane;
+                                point.ProjectOnPlane(ref diskCenter, ref capsuleUp, ref collisionOnAxis, out diskOnPlane);
+                                collision = (diskOnPlane - collisionOnAxis).normalized*capsuleRadius + collisionOnAxis;
+                            }
+                            return true;
+                        }
+                    }
+                }
+
+                // middle part
+                Vector3 diskCenOnCapPl;
+                point.ProjectOnPlane(ref diskCenter, ref capsuleUp, ref csb, out diskCenOnCapPl);
+                var capToDisk = (diskCenOnCapPl - csb).normalized*capsuleRadius;
+                var csaShifted = csa + capToDisk;
+                var csbShifted = csb + capToDisk;
+                if (BetweenPlaneAndLineSegment(ref diskUp, ref diskCenter, ref csaShifted, ref csbShifted, out collision))
+                {
+                    if (distance.Between(ref collision, ref diskCenter) <= diskRadius)
+                    {
+                        return true;
+                    }
+                }
+                collision = Vector3.zero;
                 return false;
+            }
+
+            internal static bool BetweenRayAndSphere(
+                ref Vector3 rayFw, ref Vector3 rayOr, 
+                ref Vector3 sphereCenter, float sphereRadius,
+                out Vector3 collision)
+            {
+                var radiusSquared = sphereRadius*sphereRadius;
+                var rayToSphere = sphereCenter - rayOr; 
+                var tca = fun.dot.Product(ref rayToSphere, ref rayFw); 
+                var d2 = fun.dot.Product(ref rayToSphere, ref rayToSphere) - tca * tca;
+                if (d2 > radiusSquared)
+                {
+                    collision = Vector3.zero;
+                    return false;
+                } 
+                var thc = (float)Math.Sqrt(radiusSquared - d2); 
+                var t0 = tca - thc; 
+                var t1 = tca + thc;
+
+                if (t0 > t1)
+                {
+                    var temp = t0;
+                    t0 = t1;
+                    t1 = temp;
+                } 
+ 
+                if (t0 < 0)
+                { 
+                    t0 = t1; // if t0 is negative, let's use t1 instead 
+                    if (t0 < 0)
+                    {
+                        collision = Vector3.zero;
+                        return false; // both t0 and t1 are negative 
+                    }
+                } 
+ 
+                var t = t0;
+
+                collision = rayOr + rayFw*t;
+ 
+                return true;
             }
 
             /// <summary>
@@ -373,7 +497,7 @@ namespace UnityFunctions
                 var hasAbove = hasMiddle = hasBelow = isAboveThePlane = false;
                 // below section
                 var norm1 = (c1sa - c1sb).normalized;
-                if (BetweenPlaneAndLine(ref norm1, ref c1sb, ref c2sb, ref c2sa, out belowA))
+                if (BetweenPlaneAndLineSegment(ref norm1, ref c1sb, ref c2sb, ref c2sa, out belowA))
                 {
                     isAboveThePlane = point.IsAbovePlane(ref c2sb, ref norm1, ref c1sb);
                     belowB = isAboveThePlane ? c2sa : c2sb;
@@ -381,7 +505,7 @@ namespace UnityFunctions
                 }
                 // above section
                 var norm2 = (c1sb - c1sa).normalized;
-                if (BetweenPlaneAndLine(ref norm2, ref c1sa, ref c2sb, ref c2sa, out aboveA))
+                if (BetweenPlaneAndLineSegment(ref norm2, ref c1sa, ref c2sb, ref c2sa, out aboveA))
                 {
                     isAboveThePlane = point.IsAbovePlane(ref c2sb, ref norm2, ref c1sa);
                     aboveB = isAboveThePlane ? c2sa : c2sb;
@@ -643,17 +767,17 @@ namespace UnityFunctions
                 return false;
             }
 
-            internal static bool BetweenPlaneAndLine(
+            internal static bool BetweenPlaneAndLineSegment(
                 ref Vector3 planeNormal, ref Vector3 planePoint,
                 ref Vector3 line1, ref Vector3 line2, out Vector3 collisionPoint)
             {
                 var distanceToCollision = 0f;
                 return 
-                    BetweenPlaneAndLine( ref planeNormal, ref planePoint, 
+                    BetweenPlaneAndLineSegment( ref planeNormal, ref planePoint, 
                         ref line1, ref line2, 
                         out distanceToCollision, out collisionPoint);
             }
-            internal static bool BetweenPlaneAndLine(
+            internal static bool BetweenPlaneAndLineSegment(
                 ref Vector3 planeNormal, ref Vector3 planePoint,
                 ref Vector3 line1, ref Vector3 line2, out float distanceToCollision, out Vector3 collisionPoint)
             {
@@ -2219,6 +2343,20 @@ namespace UnityFunctions
                 Vector3 onNormal;
                 vector.ProjectOnNormal(ref pointToLine, ref lineVector, out onNormal);
                 projection = onNormal + line1;
+            }
+            internal static bool TryProjectOnLineSegment(ref Vector3 point, ref Vector3 line1, ref Vector3 line2, out Vector3 projection)
+            {
+                var pointToLine = point - line1;
+                var lineVector = line2 - line1;
+                Vector3 onNormal;
+                vector.ProjectOnNormal(ref pointToLine, ref lineVector, out onNormal);
+                projection = onNormal + line1;
+                if (!IsOnSegment(ref line1, ref projection, ref line2))
+                {
+                    projection = Vector3.zero;
+                    return false;
+                }
+                return true;
             }
             internal static void ProjectOnLine2D(ref Vector2 point, ref Vector2 linePoint1, ref Vector2 linePoint2, out Vector2 result)
             {

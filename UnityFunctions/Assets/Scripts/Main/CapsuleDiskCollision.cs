@@ -13,6 +13,7 @@ namespace Main
         private const float DiskRadius = 0.8f;
         private Transform[] _capsule;
         private Transform _disk;
+        private Transform _projection;
 
         void Start ()
 	    {
@@ -28,6 +29,10 @@ namespace Main
                     })
                     .transform;
             _disk.position += Vector3.forward*0.5f;
+
+            _projection = 
+                fun.meshes.CreateSphere(new DtSphere {radius = 0.01})
+                    .SetStandardShaderTransparentColor(1,0,0,0.9).transform;
 	    }
 
         void Update()
@@ -39,13 +44,16 @@ namespace Main
 
             
             // test code STARTS here -----------------------------------------------
+            Vector3 collision;
             var hasCollision = 
                 fun.intersection.BetweenCapsuleAndDisk(
-                    ref c1p1, ref c1p2, CapsuleRadius, ref diskCenter, ref diskUp, DiskRadius);
+                    ref c1p1, ref c1p2, CapsuleRadius, ref diskCenter, ref diskUp, DiskRadius, out collision);
             // test code ENDS here -------------------------------------------------
 
+            _projection.position = hasCollision ? collision : new Vector3(0,999,0);
+
             SetColorOnChanged(hasCollision, rgba(0, 1, 0, 0.5), rgba(0.5,0.5,0.5,0.5), _capsule);
-            SetColorOnChanged(hasCollision, rgba(0, 1, 0, 0.5), rgba(0.5,0.5,0.5,0.5), _disk);
+            SetColorOnChanged(hasCollision, rgba(0, 0, 1, 0.5), rgba(0.5,0.5,0.5,0.5), _disk);
         }
 
     }
