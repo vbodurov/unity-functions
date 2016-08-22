@@ -295,7 +295,9 @@ namespace UnityFunctions
 
         internal static class intersection
         {
-            internal static bool BetweenCapsuleAndSphere(ref Vector3 c1P1, ref Vector3 c1P2, float capsuleRadius, ref Vector3 sp, float sphereRadius)
+            internal static bool BetweenCapsuleAndSphere(
+                ref Vector3 c1p1, ref Vector3 c1p2, float capsuleRadius, 
+                ref Vector3 sphereCenter, float sphereRadius)
             {
                 // TODO: implement
                 return false;
@@ -1818,9 +1820,10 @@ namespace UnityFunctions
             internal static GameObject CreateSphere(DtSphere dt)
             {
                 Mesh m;
-                var gameObject = CreateGameObject("Cone", dt, out m);
+                var gameObject = CreateGameObject("Sphere", dt, out m);
 
                 var radius = (float)dt.radius;
+
                 // Longitude |||
                 int nbLong = dt.longitude;
                 // Latitude ---

@@ -1,4 +1,5 @@
 ﻿using System;
+using Extensions;
 using Unianio.Extensions;
 using UnityEngine;
 using UnityFunctions;
@@ -7,9 +8,9 @@ namespace Main
 {
     public class CapsuleSphereCollision : BaseMainScript
     {
-        private const float CapsuleRadius = 0.14f;
-        private const float CapsuleHeight = 0.4f;
-        private const float SphereRadius = 0.6f;
+        private const float CapsuleRadius = 0.2f;
+        private const float CapsuleHeight = 0.8f;
+        private const float SphereRadius = 0.3f;
         private Transform[] _capsule;
         private Transform _sphere;
 
@@ -17,7 +18,7 @@ namespace Main
 	    {
             _capsule = CreateCapsule(CapsuleRadius,CapsuleHeight);
             _sphere = fun.meshes.CreateSphere(new DtSphere {radius = SphereRadius}).transform;
-
+            _sphere.position += Vector3.forward*0.5f;
 	    }
 
         void Update()
@@ -35,6 +36,7 @@ namespace Main
             // test code ENDS here -------------------------------------------------
 
             SetColorOnChanged(hasCollision, rgba(0, 1, 0, 0.5), rgba(0.5,0.5,0.5,0.5), _capsule);
+            SetColorOnChanged(hasCollision, rgba(0, 1, 0, 0.5), rgba(0.5,0.5,0.5,0.5), _sphere);
         }
 
         
