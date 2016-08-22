@@ -7,21 +7,20 @@ namespace Main
     public class TriangleDiskCollision : BaseMainScript
     {
         private Transform _disk;
-        private float _diskRadius;
+        private const float DiskRadius = 0.2f;
 
 
         void Start ()
 	    {
 	        const float pointSize = 0.025f;
 	        CreateTriangle(pointSize);
-            _diskRadius = 0.2f;
 
             _disk =
                 fun.meshes.CreateCone(
                     new DtCone
                     {
                         name = "Disk",
-                        bottomRadius = _diskRadius,
+                        bottomRadius = DiskRadius,
                         height = 0.001f,
                         topRadius = 0.001f
                     })
@@ -37,7 +36,7 @@ namespace Main
             var diskCenter = _disk.position;
 
             // test code STARTS here -----------------------------------------------
-            var hasCollision = fun.intersection.BetweenTriangleAndDisk(ref t1, ref t2, ref t3, ref diskNormal, ref diskCenter, _diskRadius);
+            var hasCollision = fun.intersection.BetweenTriangleAndDisk(ref t1, ref t2, ref t3, ref diskNormal, ref diskCenter, DiskRadius);
             // test code ENDS here -------------------------------------------------
             
             SetColorOnChanged(hasCollision, rgba(0,1,0,0.7), rgba(0.5,0.5,0.5,0.7), _disk, _a, _b, _c);

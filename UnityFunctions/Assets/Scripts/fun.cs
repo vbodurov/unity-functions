@@ -301,6 +301,31 @@ namespace UnityFunctions
             /// <param name="csb">capsule sphere below center</param>
             /// <param name="csa">capsule sphere above center</param>
             /// <param name="capsuleRadius">capsule radius</param>
+            /// <param name="diskCenter">The center point of the disk</param>
+            /// <param name="diskUp">disk up normal</param>
+            /// <param name="diskRadius">disk radius</param>
+            /// <returns></returns>
+            internal static bool BetweenCapsuleAndDisk(
+                ref Vector3 csb, ref Vector3 csa, float capsuleRadius, 
+                ref Vector3 diskCenter, ref Vector3 diskUp, float diskRadius)
+            {
+                // middle part
+//                var capsuleUp = (csa - csb).normalized;
+//
+//                Vector3 diskCenOnCapPl;
+//                fun.point.ProjectOnPlane(ref diskCenter, ref capsuleUp, ref csb, out diskCenOnCapPl);
+//                var capToWheel
+
+                // TODO: finish it
+                return false;
+            }
+
+            /// <summary>
+            /// The points of the capsule are the centers of the spheres at the end of capsules
+            /// </summary>
+            /// <param name="csb">capsule sphere below center</param>
+            /// <param name="csa">capsule sphere above center</param>
+            /// <param name="capsuleRadius">capsule radius</param>
             /// <param name="sphereCenter">sphere center point</param>
             /// <param name="sphereRadius">sphere radius</param>
             /// <returns></returns>

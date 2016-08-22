@@ -111,6 +111,7 @@ namespace Main
                 fun.meshes.CreateCone(
                     new DtCone
                     {
+                        name = "Capsule",
                         bottomRadius = radius,
                         height = hMin2Rad,
                         topRadius = radius,
@@ -123,6 +124,7 @@ namespace Main
                 fun.meshes.CreateHalfSphere(
                     new DtSphere
                     {
+                        name = "CapsuleLowerSphere",
                         radius = radius
                     })
                     .transform;
@@ -136,6 +138,7 @@ namespace Main
                 fun.meshes.CreateHalfSphere(
                     new DtSphere
                     {
+                        name = "CapsuleUpperSphere",
                         radius = radius
                     })
                     .transform;
