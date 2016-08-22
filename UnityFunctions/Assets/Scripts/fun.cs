@@ -295,6 +295,146 @@ namespace UnityFunctions
 
         internal static class intersection
         {
+            /// <summary>
+            /// The points are the centers of the spheres at the end of capsules
+            /// </summary>
+            /// <param name="c1p1">capsule 1 lower sphere center</param>
+            /// <param name="c1p2">capsule 1 upper sphere center</param>
+            /// <param name="radius1">radius of capsule 1 sphere</param>
+            /// <param name="c2p1">capsule 2 lower sphere center</param>
+            /// <param name="c2p2">capsule 2 upper sphere center</param>
+            /// <param name="radius2">radius of capsule 2 sphere</param>
+            /// <returns>true if there is overlap false otherwise</returns>
+            internal static bool BetweenCapsules(
+                ref Vector3 c1p1, ref Vector3 c1p2, float radius1, 
+                ref Vector3 c2p1, ref Vector3 c2p2, float radius2)
+            {
+
+                Vector3 belowA, middleA, middleB, aboveA, aboveB;
+                var belowB = middleA = middleB = aboveB = Vector3.zero;
+                bool hasMiddle, hasBelow, isAboveThePlane;
+                var hasAbove = hasMiddle = hasBelow = isAboveThePlane = false;
+                // below section
+                var norm1 = (c1p2 - c1p1).normalized;
+                if (BetweenPlaneAndLine(ref norm1, ref c1p1, ref c2p1, ref c2p2, out belowA))
+                {
+                    isAboveThePlane = point.IsAbovePlane(ref c2p1, ref norm1, ref c1p1);
+                    belowB = isAboveThePlane ? c2p2 : c2p1;
+                    hasBelow = true;
+                }
+                // above section
+                var norm2 = (c1p1 - c1p2).normalized;
+                if (BetweenPlaneAndLine(ref norm2, ref c1p2, ref c2p1, ref c2p2, out aboveA))
+                {
+                    isAboveThePlane = point.IsAbovePlane(ref c2p1, ref norm2, ref c1p2);
+                    aboveB = isAboveThePlane ? c2p2 : c2p1;
+                    hasAbove = true;
+                }
+                if (hasBelow)
+                {
+                    // hasBelow + hasAbove
+                    if (hasAbove)
+                    {
+                        middleA = belowA;
+                        middleB = aboveA;
+                        hasMiddle = true;
+                    }
+                    // hasBelow
+                    else
+                    {
+                        middleA = belowA;
+                        middleB = isAboveThePlane ? c2p1 : c2p2;
+                        hasMiddle = true;
+                    }
+                }
+                // hasAbove
+                else if (hasAbove)
+                {
+                    middleA = aboveA;
+                    middleB = isAboveThePlane ? c2p1 : c2p2;
+                    hasMiddle = true;
+                }
+                // none
+                else
+                {
+                    // is above
+                    if (point.IsAbovePlane(ref c2p1, ref norm1, ref c1p2))
+                    {
+                        aboveA = c2p1;
+                        aboveB = c2p2;
+                        hasAbove = true;
+                    }
+                    else
+                    {
+                        belowA = c2p1;
+                        belowB = c2p2;
+                        hasBelow = true;
+                    }
+
+                }
+
+                var maxDist = radius1 + radius2;
+
+                Vector3 normX, normY;
+
+                if (hasBelow)
+                {
+                    var vecA = belowA - c1p1;
+                    var vecB = belowB - c1p1;
+                    Vector3 belowNorm;
+                    vector.GetNormal(ref vecA, ref vecB, out belowNorm);
+                    ComputeAnyNormals(ref belowNorm, out normX, out normY);
+                    var belowA2D = vecA.As2d(ref normX, ref normY);
+                    var belowB2D = vecB.As2d(ref normX, ref normY);
+                    if (IsLineGettingCloserToOriginThan(ref belowA2D, ref belowB2D, maxDist)) return true;
+                }
+                if (hasMiddle)
+                {
+                    ComputeAnyNormals(ref norm1, out normX, out normY);
+                    var middleA2D = (middleA-c1p1).As2d(ref normX, ref normY);
+                    var middleB2D = (middleB-c1p1).As2d(ref normX, ref normY);
+                    if (IsLineGettingCloserToOriginThan(ref middleA2D, ref middleB2D, maxDist)) return true;
+                }
+                if (hasAbove)
+                {
+                    var vecA = aboveA - c1p2;
+                    var vecB = aboveB - c1p2;
+                    Vector3 aboveNorm;
+                    vector.GetNormal(ref vecA, ref vecB, out aboveNorm);
+                    ComputeAnyNormals(ref aboveNorm, out normX, out normY);
+                    var aboveA2D = vecA.As2d(ref normX, ref normY);
+                    var aboveB2D = vecB.As2d(ref normX, ref normY);
+                    if (IsLineGettingCloserToOriginThan(ref aboveA2D, ref aboveB2D, maxDist)) return true;
+                }
+                return false;
+            }
+
+            private static bool IsLineGettingCloserToOriginThan(ref Vector2 a, ref Vector2 b, float maxDist)
+            {
+                var k = ((b.y - a.y)*-a.x - (b.x - a.x)*-a.y)/((b.y - a.y) *(b.y - a.y) + (b.x - a.x) *(b.x - a.x));
+                var p = new Vector2(-k*(b.y - a.y), k*(b.x - a.x));
+                if (point.IsOn2DSegment(ref a, ref p, ref b))
+                {
+                    return p.magnitude <= maxDist;
+                }
+                return min(a.magnitude, b.magnitude) <= maxDist;
+            }
+
+            private static void ComputeAnyNormals(ref Vector3 normZ, out Vector3 normX, out Vector3 normY)
+            {
+                var fw = Vector3.forward;
+                cross.Product(ref normZ, ref fw, out normX);
+                if (normX.sqrMagnitude < 0.00001)
+                {
+                    var rt = Vector3.right;
+                    cross.Product(ref normZ, ref rt, out normX);
+                }
+                normX = normX.normalized;
+                vector.GetNormal(ref normZ, ref normX, out normY);
+            }
+
+
+
             internal static bool BetweenLines(ref Vector3 ray1Origin, ref Vector3 ray1Dir, ref Vector3 ray2Origin, ref Vector3 ray2Dir, out Vector3 intersection)
             {
                 var lineVec3 = ray2Origin - ray1Origin;
@@ -439,6 +579,49 @@ namespace UnityFunctions
                 if (distanceToCollision > 0.0)
                 {
                     collisionPoint = rayOrigin + rayNormal*distanceToCollision;
+                    return true;
+                }
+                distanceToCollision = 0;
+                collisionPoint = Vector3.zero;
+                return false;
+            }
+
+            internal static bool BetweenPlaneAndLine(
+                ref Vector3 planeNormal, ref Vector3 planePoint,
+                ref Vector3 line1, ref Vector3 line2, out Vector3 collisionPoint)
+            {
+                var distanceToCollision = 0f;
+                return 
+                    BetweenPlaneAndLine( ref planeNormal, ref planePoint, 
+                        ref line1, ref line2, 
+                        out distanceToCollision, out collisionPoint);
+            }
+            internal static bool BetweenPlaneAndLine(
+                ref Vector3 planeNormal, ref Vector3 planePoint,
+                ref Vector3 line1, ref Vector3 line2, out float distanceToCollision, out Vector3 collisionPoint)
+            {
+                var rayNormal = (line2 - line1).normalized;
+                planeNormal = planeNormal.normalized;
+                var planeDistance = -dot.Product(ref planeNormal, ref planePoint);
+                var a = dot.Product(ref rayNormal, ref planeNormal);
+                var num = -dot.Product(ref line1, ref planeNormal) - planeDistance;
+                if (a < 0.000001f && a > -0.000001f)
+                {
+                    collisionPoint = Vector3.zero;
+                    distanceToCollision = 0;
+                    return false;
+                }
+                distanceToCollision = num / a;
+                if (distanceToCollision > 0.0000001 || distanceToCollision < -0.0000001)
+                {
+                    collisionPoint = line1 + rayNormal*distanceToCollision;
+                    if (!point.IsOnSegment(ref line1, ref collisionPoint, ref line2))
+                    {
+                        collisionPoint = Vector3.zero;
+                        distanceToCollision = 0;
+                        return false;
+                    }
+                    distanceToCollision = abs(distanceToCollision);
                     return true;
                 }
                 distanceToCollision = 0;
@@ -691,23 +874,15 @@ namespace UnityFunctions
                     return true;
  
                 // Special Cases : colinear
-                if (o1 == 0 && OnSegment(ref line1p1, ref line2p1, ref line1p2)) return true;
+                if (o1 == 0 && point.IsOn2DSegment(ref line1p1, ref line2p1, ref line1p2)) return true;
  
-                if (o2 == 0 && OnSegment(ref line1p1, ref line2p2, ref line1p2)) return true;
+                if (o2 == 0 && point.IsOn2DSegment(ref line1p1, ref line2p2, ref line1p2)) return true;
  
-                if (o3 == 0 && OnSegment(ref line2p1, ref line1p1, ref line2p2)) return true;
+                if (o3 == 0 && point.IsOn2DSegment(ref line2p1, ref line1p1, ref line2p2)) return true;
  
-                if (o4 == 0 && OnSegment(ref line2p1, ref line1p2, ref line2p2)) return true;
+                if (o4 == 0 && point.IsOn2DSegment(ref line2p1, ref line1p2, ref line2p2)) return true;
  
                 return false; // Doesn't fall in any of the above cases
-            }
-            private static bool OnSegment(ref Vector2 p, ref Vector2 q, ref Vector2 r)
-            {
-                if (q.x <= max(p.x, r.x) && q.x >= min(p.x, r.x) &&
-                    q.y <= max(p.y, r.y) && q.y >= min(p.y, r.y))
-                   return true;
- 
-                return false;
             }
  
             // To find orientation of ordered triplet (p, q, r).
@@ -1256,20 +1431,20 @@ namespace UnityFunctions
                 float _2pi = Mathf.PI * 2f;
  
                 // Bottom cap
-                vertices[vert++] = new Vector3(0f, 0f, 0f);
+                vertices[vert++] = new Vector3(0f, 0f, 0f)+dt.localPos;
                 while( vert <= numSides )
                 {
 	                float rad = (float)vert / numSides * _2pi;
-	                vertices[vert] = new Vector3(Mathf.Cos(rad) * bottomRadius, 0f, Mathf.Sin(rad) * bottomRadius);
+	                vertices[vert] = new Vector3(Mathf.Cos(rad) * bottomRadius, 0f, Mathf.Sin(rad) * bottomRadius)+dt.localPos;
 	                vert++;
                 }
  
                 // Top cap
-                vertices[vert++] = new Vector3(0f, height, 0f);
+                vertices[vert++] = new Vector3(0f, height, 0f)+dt.localPos;
                 while (vert <= numSides * 2 + 1)
                 {
 	                float rad = (float)(vert - numSides - 1)  / numSides * _2pi;
-	                vertices[vert] = new Vector3(Mathf.Cos(rad) * topRadius, height, Mathf.Sin(rad) * topRadius);
+	                vertices[vert] = new Vector3(Mathf.Cos(rad) * topRadius, height, Mathf.Sin(rad) * topRadius)+dt.localPos;
 	                vert++;
                 }
 
@@ -1279,8 +1454,8 @@ namespace UnityFunctions
                 while (vert <= vertices.Length - 4 )
                 {
 	                float rad = (float)v / numSides * _2pi;
-	                vertices[vert] = new Vector3(Mathf.Cos(rad) * topRadius, height, Mathf.Sin(rad) * topRadius);
-	                vertices[vert + 1] = new Vector3(Mathf.Cos(rad) * bottomRadius, 0, Mathf.Sin(rad) * bottomRadius);
+	                vertices[vert] = new Vector3(Mathf.Cos(rad) * topRadius, height, Mathf.Sin(rad) * topRadius)+dt.localPos;
+	                vertices[vert + 1] = new Vector3(Mathf.Cos(rad) * bottomRadius, 0, Mathf.Sin(rad) * bottomRadius)+dt.localPos;
 	                vert+=2;
 	                v++;
                 }
@@ -1650,7 +1825,7 @@ namespace UnityFunctions
                 float _pi = Mathf.PI;
                 float _2pi = _pi * 2f;
  
-                vertices[0] = Vector3.up * radius;
+                vertices[0] = Vector3.up * radius + dt.localPos;
                 for( int lat = 0; lat < nbLat; lat++ )
                 {
 	                float a1 = _pi * (float)(lat+1) / (nbLat+1);
@@ -1663,16 +1838,128 @@ namespace UnityFunctions
 		                float sin2 = Mathf.Sin(a2);
 		                float cos2 = Mathf.Cos(a2);
  
-		                vertices[ lon + lat * (nbLong + 1) + 1] = new Vector3( sin1 * cos2, cos1, sin1 * sin2 ) * radius;
+		                vertices[ lon + lat * (nbLong + 1) + 1] = new Vector3( sin1 * cos2, cos1, sin1 * sin2 ) * radius + dt.localPos;
 	                }
                 }
-                vertices[vertices.Length-1] = Vector3.up * -radius;
+                vertices[vertices.Length-1] = Vector3.up * -radius + dt.localPos;
                 #endregion
  
                 #region Normales		
                 Vector3[] normales = new Vector3[vertices.Length];
                 for( int n = 0; n < vertices.Length; n++ )
-	                normales[n] = vertices[n].normalized;
+	                normales[n] = (vertices[n] - dt.localPos).normalized;
+                #endregion
+ 
+                #region UVs
+                Vector2[] uvs = new Vector2[vertices.Length];
+                uvs[0] = Vector2.up;
+                uvs[uvs.Length-1] = Vector2.zero;
+                for( int lat = 0; lat < nbLat; lat++ )
+	                for( int lon = 0; lon <= nbLong; lon++ )
+		                uvs[lon + lat * (nbLong + 1) + 1] = new Vector2( (float)lon / nbLong, 1f - (float)(lat+1) / (nbLat+1) );
+                #endregion
+ 
+                #region Triangles
+                int nbFaces = vertices.Length;
+                int nbTriangles = nbFaces * 2;
+                int nbIndexes = nbTriangles * 3;
+                int[] triangles = new int[ nbIndexes ];
+ 
+                //Top Cap
+                int i = 0;
+                for( int lon = 0; lon < nbLong; lon++ )
+                {
+	                triangles[i++] = lon+2;
+	                triangles[i++] = lon+1;
+	                triangles[i++] = 0;
+                }
+ 
+                //Middle
+                for( int lat = 0; lat < nbLat - 1; lat++ )
+                {
+	                for( int lon = 0; lon < nbLong; lon++ )
+	                {
+		                int current = lon + lat * (nbLong + 1) + 1;
+		                int next = current + nbLong + 1;
+ 
+		                triangles[i++] = current;
+		                triangles[i++] = current + 1;
+		                triangles[i++] = next + 1;
+ 
+		                triangles[i++] = current;
+		                triangles[i++] = next + 1;
+		                triangles[i++] = next;
+	                }
+                }
+ 
+                //Bottom Cap
+                for( int lon = 0; lon < nbLong; lon++ )
+                {
+	                triangles[i++] = vertices.Length - 1;
+	                triangles[i++] = vertices.Length - (lon+2) - 1;
+	                triangles[i++] = vertices.Length - (lon+1) - 1;
+                }
+                #endregion
+ 
+                m.vertices = vertices;
+                m.normals = normales;
+                m.uv = uvs;
+                m.triangles = triangles;
+ 
+                m.RecalculateBounds();
+                m.Optimize();
+
+                return gameObject;
+            }
+
+
+            internal static GameObject CreateHalfSphere()
+            {
+                return CreateHalfSphere(new DtSphere());
+            }
+
+            internal static GameObject CreateHalfSphere(DtSphere dt)
+            {
+                Mesh m;
+                var gameObject = CreateGameObject("Cone", dt, out m);
+
+                var radius = (float)dt.radius;
+                // Longitude |||
+                int nbLong = dt.longitude;
+                // Latitude ---
+                int nbLat = dt.latitude;
+                if (nbLat%2 == 0) nbLat -= 1;
+ 
+                #region Vertices
+
+                var nbHalfLat = nbLat/2 + 1;
+                Vector3[] vertices = new Vector3[(nbLong+1) * nbLat + 2];
+                float _pi = Mathf.PI;
+                float _2pi = _pi * 2f;
+ 
+                vertices[0] = Vector3.up * radius + dt.localPos;
+                for( int lat = 0; lat < nbHalfLat; lat++ )
+                {
+	                float a1 = _pi * (float)(lat+1) / (nbLat+1);
+	                float sin1 = Mathf.Sin(a1);
+	                float cos1 = Mathf.Cos(a1);
+ 
+	                for( int lon = 0; lon <= nbLong; lon++ )
+	                {
+		                float a2 = _2pi * (float)(lon == nbLong ? 0 : lon) / nbLong;
+		                float sin2 = Mathf.Sin(a2);
+		                float cos2 = Mathf.Cos(a2);
+ 
+		                vertices[ lon + lat * (nbLong + 1) + 1] = new Vector3( sin1 * cos2, cos1, sin1 * sin2 ) * radius + dt.localPos;
+	                }
+                }
+                vertices[vertices.Length-1] = Vector3.up * -radius + dt.localPos;
+                #endregion
+ 
+                #region Normales		
+                Vector3[] normales = new Vector3[vertices.Length];
+                for( int n = 0; n < vertices.Length; n++ )
+	                normales[n] = (vertices[n] - dt.localPos).normalized;
                 #endregion
  
                 #region UVs
@@ -1742,6 +2029,64 @@ namespace UnityFunctions
 
         internal static class point
         {
+            const float epsilon = 0.0000001f;
+            internal static bool IsOn2DSegment(ref Vector2 segStart, ref Vector2 point, ref Vector2 segEnd)
+            {
+                if (point.x <= max(segStart.x, segEnd.x)+epsilon && 
+                    point.x >= min(segStart.x, segEnd.x)-epsilon && 
+                    point.y <= max(segStart.y, segEnd.y)+epsilon && 
+                    point.y >= min(segStart.y, segEnd.y)-epsilon)
+                   return true;
+ 
+                return false;
+            }
+
+            internal static bool IsOnSegment(ref Vector3 segStart, ref Vector3 point, ref Vector3 segEnd)
+            {
+                if (point.x <= max(segStart.x, segEnd.x)+epsilon && 
+                    point.x >= min(segStart.x, segEnd.x)-epsilon && 
+                    point.y <= max(segStart.y, segEnd.y)+epsilon && 
+                    point.y >= min(segStart.y, segEnd.y)-epsilon && 
+                    point.z <= max(segStart.z, segEnd.z)+epsilon && 
+                    point.z >= min(segStart.z, segEnd.z)-epsilon)
+                   return true;
+ 
+                return false;
+            }
+
+	        //Two non-parallel lines which may or may not touch each other have a point on each line which are closest
+	        //to each other. This function finds those two points. If the lines are not parallel, the function 
+	        //outputs true, otherwise false.
+	        internal static bool ClosestOnTwoLines(ref Vector3 line1p1, ref Vector3 line1Direction, ref Vector3 line2p1, ref Vector3 line2Direction, out Vector3 closestPointLine1, out Vector3 closestPointLine2)
+	        {
+
+                var a = dot.Product(ref line1Direction, ref line1Direction);
+		        var b = dot.Product(ref line1Direction, ref line2Direction);
+		        var e = dot.Product(ref line2Direction, ref line2Direction);
+ 
+		        var d = a*e - b*b;
+ 
+		        //lines are not parallel
+		        if(d > 0.000001 || d < -0.000001){
+ 
+			        var r = line1p1 - line2p1;
+			        var c = dot.Product(ref line1Direction, ref r);
+			        var f = dot.Product(ref line2Direction, ref r);
+ 
+			        var s = (b*f - c*e) / d;
+			        var t = (a*f - c*b) / d;
+ 
+			        closestPointLine1 = line1p1 + line1Direction * s;
+			        closestPointLine2 = line2p1 + line2Direction * t;
+ 
+			        return true;
+		        }
+
+ 		        closestPointLine1 = Vector3.zero;
+		        closestPointLine2 = Vector3.zero;
+
+		        return false;
+	        }
             internal static bool IsLeftOfLine2D(ref Vector2 point, ref Vector2 linePoint1, ref Vector2 linePoint2)
             {
                 return ((linePoint2.x - linePoint1.x)*(point.y - linePoint1.y) - (linePoint2.y - linePoint1.y)*(point.x - linePoint1.x)) > 0;
@@ -2981,6 +3326,7 @@ namespace UnityFunctions
         internal double bottomRadius = .5f;
         internal double topRadius = .01f;
         internal int numSides = 18;
+        internal Vector3 localPos = Vector3.zero;
     }
     internal class DtBox : DtBase
     {
@@ -3000,5 +3346,6 @@ namespace UnityFunctions
         internal double radius = 1;
         internal int longitude = 24;
         internal int latitude = 16;
+        internal Vector3 localPos = Vector3.zero;
     }
 }

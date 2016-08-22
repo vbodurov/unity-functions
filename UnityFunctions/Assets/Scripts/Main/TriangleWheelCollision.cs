@@ -17,7 +17,14 @@ namespace Main
             _wheelRadius = 0.2f;
 
             _wheel =
-                fun.meshes.CreateCone(new DtCone {bottomRadius = _wheelRadius, height = 0.001f, topRadius = 0.001f}).transform;
+                fun.meshes.CreateCone(
+                    new DtCone
+                    {
+                        bottomRadius = _wheelRadius,
+                        height = 0.001f,
+                        topRadius = 0.001f
+                    })
+                    .transform;
 	    }
 
         void Update()

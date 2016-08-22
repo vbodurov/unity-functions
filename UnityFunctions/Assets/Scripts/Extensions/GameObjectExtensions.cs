@@ -11,8 +11,11 @@ namespace Extensions
         internal static GameObject SetStandardShaderTransparentColor(this GameObject go, double r, double g, double b, double a)
         {
             var renderer = go.GetComponent<Renderer>();
-            renderer.material.SetStandardShaderRenderingModeTransparent();
-            renderer.material.color = new Color((float)r,(float)g,(float)b,(float)a);
+            if (renderer != null)
+            {
+                renderer.material.SetStandardShaderRenderingModeTransparent();
+                renderer.material.color = new Color((float)r,(float)g,(float)b,(float)a);
+            }
             return go;
         }
     }
