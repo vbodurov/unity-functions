@@ -1,7 +1,7 @@
 ﻿ 
 using System;
 using System.Collections.Generic;
-using Assets.Scripts.Extensions;
+using Extensions;
 using Unianio.Extensions;
 using UnityEngine;
 
