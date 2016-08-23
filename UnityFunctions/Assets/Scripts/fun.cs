@@ -1,6 +1,7 @@
 ﻿ 
 using System;
 using System.Collections.Generic;
+using Assets.Scripts.Extensions;
 using Unianio.Extensions;
 using UnityEngine;
 
@@ -296,6 +297,197 @@ namespace UnityFunctions
         internal static class intersection
         {
             /// <summary>
+            /// Check if two disks cross each other
+            /// </summary>
+            /// <param name="disk1Center">the center of disk 1</param>
+            /// <param name="disk1Up">the up direction of disk 1</param>
+            /// <param name="disk1Radius">the radius of disk 1</param>
+            /// <param name="disk2Center">the center of disk 2</param>
+            /// <param name="disk2Up">the up direction of disk 2</param>
+            /// <param name="disk2Radius">the radius of disk 2</param>
+            /// <param name="collision">returns the collision point</param>
+            /// <returns></returns>
+            internal static bool BetweenDiskAndDisk(
+                ref Vector3 disk1Center, ref Vector3 disk1Up, float disk1Radius, 
+                ref Vector3 disk2Center, ref Vector3 disk2Up, float disk2Radius, 
+                out Vector3 collision)
+            {
+                var max = disk1Radius + disk2Radius;
+                var distBetweenCenters = distance.Between(ref disk1Center, ref disk2Center);
+                // the centers are too far and the disks could not overlap
+                if (distBetweenCenters > max)
+                {
+                    collision = Vector3.zero;
+                    return false;
+                }
+
+                var dpOfDir = dot.Product(ref disk1Up, ref disk2Up);
+                // if disks point up same or opposite direction
+                if (dpOfDir > 0.99999 || dpOfDir < -0.99999)
+                {
+                    
+                    var centerToCenter = disk2Center - disk1Center;
+                    if (centerToCenter.sqrMagnitude < 0.0001f)
+                    {
+                        collision = disk1Center;
+                        return true;
+                    }
+                    centerToCenter = centerToCenter.normalized;
+                    var dpOf2 = dot.Product(ref disk1Up, ref centerToCenter);
+                    // if the vector between centers and the up vectors are orthogonal (90 degrees) or dot product = 0
+                    if (dpOf2 < 0.000001f && dpOf2 > -0.000001f)
+                    {
+                        // check they are far enough to touch
+                        collision = disk1Center + (disk2Center - disk1Center).normalized*((disk1Radius/max)*distBetweenCenters);
+                        return true;
+                    }
+                    collision = Vector3.zero;
+                    return false;
+                }
+
+                Vector3 normal;
+                BetweenPlanes(ref disk1Up, ref disk1Center, ref disk2Up, ref disk2Center, out collision, out normal);
+
+                var collisionPlusNorm = collision + normal;
+
+                Vector3 norm1X, norm1Y;
+                ComputeAnyNormals(ref disk1Up, out norm1X, out norm1Y);
+                var a = (collision - disk1Center).As2d(ref norm1X, ref norm1Y);
+                var b = (collisionPlusNorm - disk1Center).As2d(ref norm1X, ref norm1Y);
+                Vector2 projection1;
+                var has1 = IsLineGettingCloserToOriginThan(ref a, ref b, disk1Radius, out projection1);
+                if (!has1)
+                {
+                    collision = Vector3.zero;
+                    return false;
+                }
+                Vector3 norm2X, norm2Y;
+                ComputeAnyNormals(ref disk2Up, out norm2X, out norm2Y);
+                a = (collision - disk2Center).As2d(ref norm2X, ref norm2Y);
+                b = (collisionPlusNorm - disk2Center).As2d(ref norm2X, ref norm2Y);
+                Vector2 projection2;
+                var has2 = IsLineGettingCloserToOriginThan(ref a, ref b, disk2Radius, out projection2);
+                if (!has2)
+                {
+                    collision = Vector3.zero;
+                    return false;
+                }
+
+                Vector3 perp1, perp2;
+                projection1.As3d(ref disk1Center, ref norm1X, ref norm1Y, out perp1);
+                projection2.As3d(ref disk2Center, ref norm2X, ref norm2Y, out perp2);
+//Debug.DrawLine(perp1,disk1Center,Color.yellow,0,false);
+//Debug.DrawLine(perp2,disk2Center,Color.white,0,false);
+//Debug.DrawLine(collision,collision+normal,Color.blue,0,false);
+//Debug.DrawLine(collision,collision-normal,Color.blue,0,false);
+                var perp1to2 = perp2 - perp1;
+                if (perp1to2.sqrMagnitude < 0.00001f)
+                {
+                    collision = perp1;
+                    return true;
+                }
+                // in 2d relative to radius from center to perpendicular
+                var relCenToPerp1 = projection1.magnitude/disk1Radius;
+                var relCenToPerp2 = projection2.magnitude/disk2Radius;
+
+                var absPerpToEdge1 = sqrt(1f - relCenToPerp1*relCenToPerp1) * disk1Radius;
+                var absPerpToEdge2 = sqrt(1f - relCenToPerp2*relCenToPerp2) * disk2Radius;
+
+                if (perp1to2.magnitude <= (absPerpToEdge1 + absPerpToEdge2))
+                {
+                    collision = point.MoveRel(ref perp1, ref perp2, disk1Radius/max);
+                    return true;
+                }
+                
+                collision = Vector3.zero;
+                return false;
+            }
+            /// <summary>
+            /// The points of the capsule are the centers of the spheres at the end of capsules
+            /// </summary>
+            /// <param name="csb">capsule sphere below center</param>
+            /// <param name="csa">capsule sphere above center</param>
+            /// <param name="capsuleRadius">capsule radius</param>
+            /// <param name="diskCenter">The center point of the disk</param>
+            /// <param name="diskUp">disk up normal</param>
+            /// <param name="diskRadius">disk radius</param>
+            /// <returns></returns>
+            internal static bool BetweenCapsuleAndDisk(
+                ref Vector3 csb, ref Vector3 csa, float capsuleRadius, 
+                ref Vector3 diskCenter, ref Vector3 diskUp, float diskRadius)
+            {
+                // see if disk center is within the capsule cylinder
+                Vector3 diskCenterOnAxis;
+                var diskCenIsWithinCylPl = 
+                    point.TryProjectOnLineSegment(ref diskCenter, ref csb, ref csa, out diskCenterOnAxis);
+                if (diskCenIsWithinCylPl && 
+                    distance.Between(ref diskCenterOnAxis, ref diskCenter) <= capsuleRadius)
+                {
+                    return true;
+                }
+                var capsuleUp = (csa - csb).normalized;
+                var maxDistance = capsuleRadius + diskRadius;
+                Vector3 collision;
+                // test collision with below sphere
+                Vector3 capEndOnDiskPl;
+                point.ProjectOnPlane(ref csb, ref diskUp, ref diskCenter, out capEndOnDiskPl);
+                var diskToSph = capEndOnDiskPl - diskCenter;
+                if (diskToSph.sqrMagnitude < 0.000001f)
+                {
+                    if (distance.Between(ref csb, ref diskCenter) < maxDistance)
+                    {
+                        return true;
+                    }
+                }
+                else
+                {             
+                    diskToSph = diskToSph.normalized;
+                    if (BetweenRayAndSphere(ref diskToSph, ref diskCenter, ref csb, capsuleRadius, out collision))
+                    {
+                        if (distance.Between(ref collision, ref diskCenter) <= diskRadius)
+                        {
+                            return true;
+                        }
+                    }
+                }
+                // test collision with above sphere
+                point.ProjectOnPlane(ref csa, ref diskUp, ref diskCenter, out capEndOnDiskPl);
+                diskToSph = capEndOnDiskPl - diskCenter;
+                if (diskToSph.sqrMagnitude < 0.000001f)
+                {
+                    if (distance.Between(ref csa, ref diskCenter) < maxDistance)
+                    {
+                        return true;
+                    }
+                }
+                else
+                {
+                    diskToSph = diskToSph.normalized;
+                    if (BetweenRayAndSphere(ref diskToSph, ref diskCenter, ref csa, capsuleRadius, out collision))
+                    {
+                        if (distance.Between(ref collision, ref diskCenter) <= diskRadius)
+                        {
+                            return true;
+                        }
+                    }
+                }
+
+                // middle part
+                Vector3 diskCenOnCapPl;
+                point.ProjectOnPlane(ref diskCenter, ref capsuleUp, ref csb, out diskCenOnCapPl);
+                var capToDisk = (diskCenOnCapPl - csb).normalized*capsuleRadius;
+                var csaShifted = csa + capToDisk;
+                var csbShifted = csb + capToDisk;
+                if (BetweenPlaneAndLineSegment(ref diskUp, ref diskCenter, ref csaShifted, ref csbShifted, out collision))
+                {
+                    if (distance.Between(ref collision, ref diskCenter) <= diskRadius)
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+            /// <summary>
             /// The points of the capsule are the centers of the spheres at the end of capsules
             /// </summary>
             /// <param name="csb">capsule sphere below center</param>
@@ -567,14 +759,14 @@ namespace UnityFunctions
                     ComputeAnyNormals(ref belowNorm, out normX, out normY);
                     var belowA2D = vecA.As2d(ref normX, ref normY);
                     var belowB2D = vecB.As2d(ref normX, ref normY);
-                    if (IsLineGettingCloserToOriginThan(ref belowA2D, ref belowB2D, maxDist)) return true;
+                    if (IsLineSegmentGettingCloserToOriginThan(ref belowA2D, ref belowB2D, maxDist)) return true;
                 }
                 if (hasMiddle)
                 {
                     ComputeAnyNormals(ref norm1, out normX, out normY);
                     var middleA2D = (middleA-c1sb).As2d(ref normX, ref normY);
                     var middleB2D = (middleB-c1sb).As2d(ref normX, ref normY);
-                    if (IsLineGettingCloserToOriginThan(ref middleA2D, ref middleB2D, maxDist)) return true;
+                    if (IsLineSegmentGettingCloserToOriginThan(ref middleA2D, ref middleB2D, maxDist)) return true;
                 }
                 if (hasAbove)
                 {
@@ -585,12 +777,12 @@ namespace UnityFunctions
                     ComputeAnyNormals(ref aboveNorm, out normX, out normY);
                     var aboveA2D = vecA.As2d(ref normX, ref normY);
                     var aboveB2D = vecB.As2d(ref normX, ref normY);
-                    if (IsLineGettingCloserToOriginThan(ref aboveA2D, ref aboveB2D, maxDist)) return true;
+                    if (IsLineSegmentGettingCloserToOriginThan(ref aboveA2D, ref aboveB2D, maxDist)) return true;
                 }
                 return false;
             }
 
-            private static bool IsLineGettingCloserToOriginThan(ref Vector2 a, ref Vector2 b, float maxDist)
+            private static bool IsLineSegmentGettingCloserToOriginThan(ref Vector2 a, ref Vector2 b, float maxDist)
             {
                 var k = ((b.y - a.y)*-a.x - (b.x - a.x)*-a.y)/((b.y - a.y) *(b.y - a.y) + (b.x - a.x) *(b.x - a.x));
                 var p = new Vector2(-k*(b.y - a.y), k*(b.x - a.x));
@@ -599,6 +791,19 @@ namespace UnityFunctions
                     return p.magnitude <= maxDist;
                 }
                 return min(a.magnitude, b.magnitude) <= maxDist;
+            }
+
+            private static bool IsLineGettingCloserToOriginThan(ref Vector2 a, ref Vector2 b, float maxDist)
+            {
+                var k = ((b.y - a.y)*-a.x - (b.x - a.x)*-a.y)/((b.y - a.y) *(b.y - a.y) + (b.x - a.x) *(b.x - a.x));
+                var p = new Vector2(-k*(b.y - a.y), k*(b.x - a.x));
+                return p.magnitude <= maxDist;
+            }
+            private static bool IsLineGettingCloserToOriginThan(ref Vector2 a, ref Vector2 b, float maxDist, out Vector2 projection)
+            {
+                var k = ((b.y - a.y)*-a.x - (b.x - a.x)*-a.y)/((b.y - a.y) *(b.y - a.y) + (b.x - a.x) *(b.x - a.x));
+                projection = new Vector2(-k*(b.y - a.y), k*(b.x - a.x));
+                return projection.magnitude <= maxDist;
             }
 
             private static void ComputeAnyNormals(ref Vector3 normZ, out Vector3 normX, out Vector3 normY)
