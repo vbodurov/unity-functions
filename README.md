@@ -32,5 +32,5 @@ Projecting point on plane:
 
 * [ProjectPointOnPlane.cs](UnityFunctions/Assets/Scripts/Main/ProjectPointOnPlane.cs)
 
-main behaviours for each collision are in **unity-functions\UnityFunctions\Assets\Scripts\Main**:
+main behaviours for each collision are in **unity-functions\UnityFunctions\Assets\Scripts\Main**
 
