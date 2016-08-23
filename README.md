@@ -26,3 +26,17 @@ Collisions Visualized:
 * Triangle - Triangle
 * Triangle - Disk
 * Disk - Disk
+
+Main behaviours for each collision are in **unity-functions\UnityFunctions\Assets\Scripts\Main**:
+
+* CapsuleCapsuleCollision.cs
+* CapsuleDiskCollision.cs
+* CapsuleSphereCollision.cs
+* DiskDiskCollision.cs
+* ProjectPointOnPlane.cs
+* RaySphereCollision.cs
+* RayTriangleCollision.cs
+* TriangleDiskCollision.cs
+* TriangleLineCollision.cs
+* TriangleSphereCollision.cs
+* TriangleTriangleCollision.cs
