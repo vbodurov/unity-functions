@@ -8,7 +8,7 @@ How to:
 
 2. Play the scene
 
-3. Open "Scene View" then select a ball or other object and move it.
+3. Open "Scene View" then select object and move it.
 
 When screen object is selected you can use shortcuts to switch between views:
 
