@@ -17,26 +17,20 @@ E - rotate
 
 Collisions Visualized:
 
-* Capsule - Capsule
-* Capsule - Sphere
-* Capsule - Disk
-* Triangle - Ray
-* Triangle - Line
-* Triangle - Sphere
-* Triangle - Triangle
-* Triangle - Disk
-* Disk - Disk
+* Capsule - Capsule [CapsuleCapsuleCollision.cs](UnityFunctions/Assets/Scripts/Main/CapsuleCapsuleCollision.cs)
+* Capsule - Sphere [CapsuleSphereCollision.cs](UnityFunctions/Assets/Scripts/Main/CapsuleSphereCollision.cs)
+* Capsule - Disk [CapsuleDiskCollision.cs](UnityFunctions/Assets/Scripts/Main/CapsuleDiskCollision.cs)
+* Triangle - Ray [RayTriangleCollision.cs](UnityFunctions/Assets/Scripts/Main/RayTriangleCollision.cs)
+* Triangle - Line [TriangleLineCollision.cs](UnityFunctions/Assets/Scripts/Main/TriangleLineCollision.cs)
+* Triangle - Sphere [TriangleSphereCollision.cs](UnityFunctions/Assets/Scripts/Main/TriangleSphereCollision.cs)
+* Triangle - Triangle [TriangleTriangleCollision.cs](UnityFunctions/Assets/Scripts/Main/TriangleTriangleCollision.cs)
+* Triangle - Disk [TriangleDiskCollision.cs](UnityFunctions/Assets/Scripts/Main/TriangleDiskCollision.cs)
+* Disk - Disk [DiskDiskCollision.cs](UnityFunctions/Assets/Scripts/Main/DiskDiskCollision.cs)
+* Ray - Sphere [RaySphereCollision.cs](UnityFunctions/Assets/Scripts/Main/RaySphereCollision.cs)
 
-Main behaviours for each collision are in **unity-functions\UnityFunctions\Assets\Scripts\Main**:
+Projecting point on plane:
 
-* [CapsuleCapsuleCollision.cs](UnityFunctions/Assets/Scripts/Main/CapsuleCapsuleCollision.cs)
-* [CapsuleDiskCollision.cs](UnityFunctions/Assets/Scripts/Main/CapsuleDiskCollision.cs)
-* [CapsuleSphereCollision.cs](UnityFunctions/Assets/Scripts/Main/CapsuleSphereCollision.cs)
-* [DiskDiskCollision.cs](UnityFunctions/Assets/Scripts/Main/DiskDiskCollision.cs)
 * [ProjectPointOnPlane.cs](UnityFunctions/Assets/Scripts/Main/ProjectPointOnPlane.cs)
-* [RaySphereCollision.cs](UnityFunctions/Assets/Scripts/Main/RaySphereCollision.cs)
-* [RayTriangleCollision.cs](UnityFunctions/Assets/Scripts/Main/RayTriangleCollision.cs)
-* [TriangleDiskCollision.cs](UnityFunctions/Assets/Scripts/Main/TriangleDiskCollision.cs)
-* [TriangleLineCollision.cs](UnityFunctions/Assets/Scripts/Main/TriangleLineCollision.cs)
-* [TriangleSphereCollision.cs](UnityFunctions/Assets/Scripts/Main/TriangleSphereCollision.cs)
-* [TriangleTriangleCollision.cs](UnityFunctions/Assets/Scripts/Main/TriangleTriangleCollision.cs)
+
+main behaviours for each collision are in **unity-functions\UnityFunctions\Assets\Scripts\Main**:
+
