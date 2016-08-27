@@ -1621,7 +1621,7 @@ namespace UnityFunctions
                 var width = (float)dt.width;
 
 		        #region Vertices		
-		        var vertices = new Vector3[4];
+		        var vertices = new Vector3[3];
                 vertices[0] = new Vector3(length*-0.5f, width*-0.5f,0);
 		        vertices[1] = new Vector3(length*0.5f, width*-0.5f,0);
                 vertices[2] = new Vector3(length*-0.5f, width*0.5f,0);

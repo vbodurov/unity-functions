@@ -82,10 +82,10 @@ namespace Main
             }
         }
 
-        protected void SetColorOnChanged(bool hasIntersection, Color ifTrue, Color ifFalse, params Transform[] ts)
+        protected void SetColorOnChanged(bool hasCondition, Color ifTrue, Color ifFalse, params Transform[] ts)
         {
             if(ts.Length == 0) throw new ArgumentException("Please provide 1 or more Transform parameters for SetColorOnChanged method");
-            SetColorOnChanged("hc"+ts[0].GetHashCode(), hasIntersection, ifTrue, ifFalse, ts);
+            SetColorOnChanged("hc"+ts[0].GetHashCode(), hasCondition, ifTrue, ifFalse, ts);
         }
         protected void SetColorOnChanged(string changeName, bool hasIntersection, Color ifTrue, Color ifFalse, params Transform[] ts)
         {
