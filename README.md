@@ -28,9 +28,10 @@ Collisions Visualized:
 * Disk - Disk: [DiskDiskCollision.cs](UnityFunctions/Assets/Scripts/Main/DiskDiskCollision.cs)
 * Ray - Sphere: [RaySphereCollision.cs](UnityFunctions/Assets/Scripts/Main/RaySphereCollision.cs)
 
-Projecting point on plane:
+Projecting on plane:
 
-* [ProjectPointOnPlane.cs](UnityFunctions/Assets/Scripts/Main/ProjectPointOnPlane.cs)
+* Project point on a plane [ProjectPointOnPlane.cs](UnityFunctions/Assets/Scripts/Main/ProjectPointOnPlane.cs)
+* Project vector on a plane [ProjectVectorOnPlane.cs](UnityFunctions/Assets/Scripts/Main/ProjectVectorOnPlane.cs)
 
 main behaviours for each collision are in **unity-functions\UnityFunctions\Assets\Scripts\Main**
 
