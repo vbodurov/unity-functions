@@ -36,7 +36,10 @@ namespace Main
             var diskCenter = _disk.position;
 
             // test code STARTS here -----------------------------------------------
-            var hasCollision = fun.intersection.BetweenTriangleAndDisk(ref t1, ref t2, ref t3, ref diskNormal, ref diskCenter, DiskRadius);
+            var hasCollision = 
+                fun.intersection.BetweenTriangleAndDisk(
+                    ref t1, ref t2, ref t3, 
+                    ref diskNormal, ref diskCenter, DiskRadius);
             // test code ENDS here -------------------------------------------------
             
             SetColorOnChanged(hasCollision, rgba(0,1,0,0.7), rgba(0.5,0.5,0.5,0.7), _disk, _a, _b, _c);

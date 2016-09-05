@@ -402,6 +402,7 @@ namespace UnityFunctions
                 collision = Vector3.zero;
                 return false;
             }
+
             /// <summary>
             /// The points of the capsule are the centers of the spheres at the end of capsules
             /// </summary>
@@ -425,9 +426,25 @@ namespace UnityFunctions
                 {
                     return true;
                 }
+                
                 var capsuleUp = (csa - csb).normalized;
-                var maxDistance = capsuleRadius + diskRadius;
                 Vector3 collision;
+                // middle part
+                Vector3 diskCenOnCapPl;
+                point.ProjectOnPlane(ref diskCenter, ref capsuleUp, ref csb, out diskCenOnCapPl);
+                var capToDisk = (diskCenOnCapPl - csb).normalized*capsuleRadius;
+                var csaShifted = csa + capToDisk;
+                var csbShifted = csb + capToDisk;
+                if (BetweenPlaneAndLineSegment(ref diskUp, ref diskCenter, ref csaShifted, ref csbShifted, out collision))
+                {
+                    if (distance.Between(ref collision, ref diskCenter) <= diskRadius)
+                    {
+                        return true;
+                    }
+                }
+
+                var maxDistance = capsuleRadius + diskRadius;
+                
                 // test collision with below sphere
                 Vector3 capEndOnDiskPl;
                 point.ProjectOnPlane(ref csb, ref diskUp, ref diskCenter, out capEndOnDiskPl);
@@ -472,21 +489,10 @@ namespace UnityFunctions
                     }
                 }
 
-                // middle part
-                Vector3 diskCenOnCapPl;
-                point.ProjectOnPlane(ref diskCenter, ref capsuleUp, ref csb, out diskCenOnCapPl);
-                var capToDisk = (diskCenOnCapPl - csb).normalized*capsuleRadius;
-                var csaShifted = csa + capToDisk;
-                var csbShifted = csb + capToDisk;
-                if (BetweenPlaneAndLineSegment(ref diskUp, ref diskCenter, ref csaShifted, ref csbShifted, out collision))
-                {
-                    if (distance.Between(ref collision, ref diskCenter) <= diskRadius)
-                    {
-                        return true;
-                    }
-                }
+                
                 return false;
             }
+
             /// <summary>
             /// The points of the capsule are the centers of the spheres at the end of capsules
             /// </summary>
@@ -514,6 +520,21 @@ namespace UnityFunctions
                 }
                 var capsuleUp = (csa - csb).normalized;
                 var maxDistance = capsuleRadius + diskRadius;
+
+                // middle part
+                Vector3 diskCenOnCapPl;
+                point.ProjectOnPlane(ref diskCenter, ref capsuleUp, ref csb, out diskCenOnCapPl);
+                var capToDisk = (diskCenOnCapPl - csb).normalized*capsuleRadius;
+                var csaShifted = csa + capToDisk;
+                var csbShifted = csb + capToDisk;
+                if (BetweenPlaneAndLineSegment(ref diskUp, ref diskCenter, ref csaShifted, ref csbShifted, out collision))
+                {
+                    if (distance.Between(ref collision, ref diskCenter) <= diskRadius)
+                    {
+                        return true;
+                    }
+                }
+
 
                 // test collision with below sphere
                 Vector3 capEndOnDiskPl;
@@ -577,19 +598,7 @@ namespace UnityFunctions
                     }
                 }
 
-                // middle part
-                Vector3 diskCenOnCapPl;
-                point.ProjectOnPlane(ref diskCenter, ref capsuleUp, ref csb, out diskCenOnCapPl);
-                var capToDisk = (diskCenOnCapPl - csb).normalized*capsuleRadius;
-                var csaShifted = csa + capToDisk;
-                var csbShifted = csb + capToDisk;
-                if (BetweenPlaneAndLineSegment(ref diskUp, ref diskCenter, ref csaShifted, ref csbShifted, out collision))
-                {
-                    if (distance.Between(ref collision, ref diskCenter) <= diskRadius)
-                    {
-                        return true;
-                    }
-                }
+                
                 collision = Vector3.zero;
                 return false;
             }
@@ -649,8 +658,14 @@ namespace UnityFunctions
                 ref Vector3 csb, ref Vector3 csa, float capsuleRadius, 
                 ref Vector3 sphereCenter, float sphereRadius)
             {
-                var aboveVec = (csa - csb).normalized;
                 var maxDistance = capsuleRadius + sphereRadius;
+                // is in the middle
+                Vector3 proj;
+                if (point.TryProjectOnLineSegment(ref sphereCenter, ref csb, ref csa, out proj))
+                {
+                    return distance.Between(ref sphereCenter, ref proj) <= maxDistance;
+                }
+                var aboveVec = (csa - csb).normalized;
                 // is above
                 if (point.IsAbovePlane(ref sphereCenter, ref aboveVec, ref csa))
                 {
@@ -662,10 +677,63 @@ namespace UnityFunctions
                 {
                     return distance.Between(ref sphereCenter, ref csb) <= maxDistance;
                 }
+                return false;
+            }
+
+            /// <summary>
+            /// The points of the capsule are the centers of the spheres at the end of capsules
+            /// </summary>
+            /// <param name="csb">capsule sphere below center</param>
+            /// <param name="csa">capsule sphere above center</param>
+            /// <param name="capsuleRadius">capsule radius</param>
+            /// <param name="sphereCenter">sphere center point</param>
+            /// <param name="sphereRadius">sphere radius</param>
+            /// <param name="collision">the point of collision</param>
+            /// <returns></returns>
+            internal static bool BetweenCapsuleAndSphere(
+                ref Vector3 csb, ref Vector3 csa, float capsuleRadius, 
+                ref Vector3 sphereCenter, float sphereRadius, out Vector3 collision)
+            {
+                var maxDistance = capsuleRadius + sphereRadius;
                 // is in the middle
                 Vector3 proj;
-                fun.point.ProjectOnLine(ref sphereCenter, ref csb, ref csa, out proj);
-                return distance.Between(ref sphereCenter, ref proj) <= maxDistance;
+                if (point.TryProjectOnLineSegment(ref sphereCenter, ref csb, ref csa, out proj))
+                {
+                    return HasOverlapOfTwoSpheres(
+                        ref sphereCenter, ref proj, maxDistance, sphereRadius, out collision);
+                }
+                var aboveVec = (csa - csb).normalized;
+                // is above
+                if (point.IsAbovePlane(ref sphereCenter, ref aboveVec, ref csa))
+                {
+                    return HasOverlapOfTwoSpheres(
+                        ref sphereCenter, ref csa, maxDistance, sphereRadius, out collision);
+                }
+                var belowVec = -aboveVec;
+                // is below
+                if (point.IsAbovePlane(ref sphereCenter, ref belowVec, ref csb))
+                {
+                    return HasOverlapOfTwoSpheres(
+                        ref sphereCenter, ref csb, maxDistance, sphereRadius, out collision);
+                }
+                collision = Vector3.zero;
+                return false;
+            }
+
+            private static bool HasOverlapOfTwoSpheres(
+                ref Vector3 sphereCenter1, ref Vector3 sphereCenter2, 
+                float sumOfRadii, float sphereRadius1, out Vector3 collision)
+            {
+                var d = distance.Between(ref sphereCenter1, ref sphereCenter2);
+                var has = d <= sumOfRadii;
+                if (has)
+                {
+                    var ratio = sphereRadius1/sumOfRadii;
+                    point.TryMoveAbs(ref sphereCenter1, ref sphereCenter2, d*ratio, out collision);
+                    return true;
+                }
+                collision = Vector3.zero;
+                return false;
             }
 
             /// <summary>
@@ -3241,6 +3309,23 @@ namespace UnityFunctions
 
         internal static class triangle
         {
+            internal static Vector3 GetCentroid(Vector3 a, Vector3 b, Vector3 c)
+            {
+                return new Vector3((a.x+b.x+c.x)/3f,(a.y+b.y+c.y)/3f,(a.z+b.z+c.z)/3f);
+            }
+            internal static Vector3 GetCentroid(ref Vector3 a, ref Vector3 b, ref Vector3 c)
+            {
+                return new Vector3((a.x+b.x+c.x)/3f,(a.y+b.y+c.y)/3f,(a.z+b.z+c.z)/3f);
+            }
+            internal static Vector2 GetCentroid2D(Vector2 a, Vector2 b, Vector2 c)
+            {
+                return new Vector2((a.x+b.x+c.x)/3f,(a.y+b.y+c.y)/3f);
+            }
+            internal static Vector2 GetCentroid2D(ref Vector2 a, ref Vector2 b, ref Vector2 c)
+            {
+                return new Vector2((a.x+b.x+c.x)/3f,(a.y+b.y+c.y)/3f);
+            }
+
             /*
                ^
               /|\  
