@@ -21,7 +21,7 @@ namespace Main
             _sphere = fun.meshes.CreateSphere(new DtSphere {radius = SphereRadius}).transform;
             _sphere.position += Vector3.forward*0.5f;
             _collision = 
-                fun.meshes.CreateSphere(new DtSphere {radius = 0.03})
+                fun.meshes.CreateSphere(new DtSphere {radius = 0.03,name = "collision"})
                     .SetStandardShaderTransparentColor(1,0,0,0.9).transform;
 	    }
 

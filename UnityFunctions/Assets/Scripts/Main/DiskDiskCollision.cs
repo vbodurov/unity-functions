@@ -37,7 +37,7 @@ namespace Main
             _disk2.position += Vector3.forward*0.9f;
 
             _collision = 
-                fun.meshes.CreateSphere(new DtSphere {radius = 0.025})
+                fun.meshes.CreateSphere(new DtSphere {radius = 0.025,name = "collision"})
                     .SetStandardShaderTransparentColor(1,0,0,0.9).transform;
 	    }
 

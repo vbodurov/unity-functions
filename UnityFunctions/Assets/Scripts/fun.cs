@@ -757,6 +757,7 @@ namespace UnityFunctions
                 var hasAbove = hasMiddle = hasBelow = isAboveThePlane = false;
                 // below section
                 var norm1 = (c1sa - c1sb).normalized;
+                // is the plane of capsule 1 lower sphere cutting the line between capsule 2 sphere centers
                 if (BetweenPlaneAndLineSegment(ref norm1, ref c1sb, ref c2sb, ref c2sa, out belowA))
                 {
                     isAboveThePlane = point.IsAbovePlane(ref c2sb, ref norm1, ref c1sb);
@@ -765,6 +766,7 @@ namespace UnityFunctions
                 }
                 // above section
                 var norm2 = (c1sb - c1sa).normalized;
+                // is the plane of capsule 1 upper sphere cutting the line between capsule 2 sphere centers
                 if (BetweenPlaneAndLineSegment(ref norm2, ref c1sa, ref c2sb, ref c2sa, out aboveA))
                 {
                     isAboveThePlane = point.IsAbovePlane(ref c2sb, ref norm2, ref c1sa);
@@ -817,7 +819,7 @@ namespace UnityFunctions
                 var maxDist = radius1 + radius2;
 
                 Vector3 normX, normY;
-
+                // check each segment in isolation
                 if (hasBelow)
                 {
                     var vecA = belowA - c1sb;
@@ -847,6 +849,159 @@ namespace UnityFunctions
                     var aboveB2D = vecB.As2d(ref normX, ref normY);
                     if (IsLineSegmentGettingCloserToOriginThan(ref aboveA2D, ref aboveB2D, maxDist)) return true;
                 }
+                return false;
+            }
+
+            /// <summary>
+            /// The points are the centers of the spheres at the end of capsules
+            /// </summary>
+            /// <param name="c1sb">capsule 1 sphere below center</param>
+            /// <param name="c1sa">capsule 1 sphere above center</param>
+            /// <param name="radius1">radius of capsule 1 sphere</param>
+            /// <param name="c2sb">capsule 2 sphere below center</param>
+            /// <param name="c2sa">capsule 2 sphere above center</param>
+            /// <param name="radius2">radius of capsule 2 sphere</param>
+            /// <param name="collision">The point of collision</param>
+            /// <returns>true if there is overlap false otherwise</returns>
+            internal static bool BetweenCapsules(
+                ref Vector3 c1sb, ref Vector3 c1sa, float radius1, 
+                ref Vector3 c2sb, ref Vector3 c2sa, float radius2, out Vector3 collision)
+            {
+
+                Vector3 belowA, middleA, middleB, aboveA, aboveB;
+                var belowB = middleA = middleB = aboveB = Vector3.zero;
+                bool hasMiddle, hasBelow, isAboveThePlane;
+                var hasAbove = hasMiddle = hasBelow = isAboveThePlane = false;
+                // below section
+                var norm1 = (c1sa - c1sb).normalized;
+                // is the plane of capsule 1 lower sphere cutting the line between capsule 2 sphere centers
+                if (BetweenPlaneAndLineSegment(ref norm1, ref c1sb, ref c2sb, ref c2sa, out belowA))
+                {
+                    isAboveThePlane = point.IsAbovePlane(ref c2sb, ref norm1, ref c1sb);
+                    belowB = isAboveThePlane ? c2sa : c2sb;
+                    hasBelow = true;
+                }
+                // above section
+                var norm2 = (c1sb - c1sa).normalized;
+                // is the plane of capsule 1 upper sphere cutting the line between capsule 2 sphere centers
+                if (BetweenPlaneAndLineSegment(ref norm2, ref c1sa, ref c2sb, ref c2sa, out aboveA))
+                {
+                    isAboveThePlane = point.IsAbovePlane(ref c2sb, ref norm2, ref c1sa);
+                    aboveB = isAboveThePlane ? c2sa : c2sb;
+                    hasAbove = true;
+                }
+                if (hasBelow)
+                {
+                    // hasBelow + hasAbove
+                    if (hasAbove)
+                    {
+                        middleA = belowA;
+                        middleB = aboveA;
+                        hasMiddle = true;
+                    }
+                    // hasBelow
+                    else
+                    {
+                        middleA = belowA;
+                        middleB = isAboveThePlane ? c2sb : c2sa;
+                        hasMiddle = true;
+                    }
+                }
+                // hasAbove
+                else if (hasAbove)
+                {
+                    middleA = aboveA;
+                    middleB = isAboveThePlane ? c2sb : c2sa;
+                    hasMiddle = true;
+                }
+                // none
+                else
+                {
+                    // is above
+                    if (point.IsAbovePlane(ref c2sb, ref norm1, ref c1sa))
+                    {
+                        aboveA = c2sb;
+                        aboveB = c2sa;
+                        hasAbove = true;
+                    }
+                    else
+                    {
+                        belowA = c2sb;
+                        belowB = c2sa;
+                        hasBelow = true;
+                    }
+
+                }
+
+                var maxDist = radius1 + radius2;
+
+                Vector3 normX, normY;
+                // check each segment in isolation
+                if (hasMiddle)
+                {
+                    ComputeAnyNormals(ref norm1, out normX, out normY);
+                    var middleA2D = (middleA-c1sb).As2d(ref normX, ref normY);
+                    var middleB2D = (middleB-c1sb).As2d(ref normX, ref normY);
+                    if (IsLineSegmentGettingCloserToOriginThan(ref middleA2D, ref middleB2D, maxDist))
+                    {
+                        Vector3 r1, r2;
+                        if (point.ClosestOnTwoLineSegments(ref c1sb, ref c1sa, ref middleA, ref middleB, out r1, out r2))
+                        {
+                            var d = distance.Between(ref r1, ref r2);
+                            point.TryMoveAbs(ref r1, ref r2, (radius1/maxDist)*d, out collision);
+                        }
+                        else // if the capsules are parallel
+                        {
+                            Vector3 p1, p2;
+                            point.ProjectOnLine(ref middleA, ref c1sb, ref c1sa, out p1);
+                            point.ProjectOnLine(ref middleB, ref c1sb, ref c1sa, out p2);
+                            Vector3 m1,m2;
+                            point.MoveRel(ref p1, ref p2, 0.5, out m1);
+                            point.MoveRel(ref middleA, ref middleB, 0.5, out m2);
+                            var d = distance.Between(ref m1, ref m2);
+                            point.TryMoveAbs(ref m1, ref m2, (radius1/maxDist)*d, out collision);
+                        }
+
+                        return true;
+                    }
+                }
+                if (hasBelow)
+                {
+                    var vecA = belowA - c1sb;
+                    var vecB = belowB - c1sb;
+                    Vector3 belowNorm;
+                    vector.GetNormal(ref vecA, ref vecB, out belowNorm);
+                    ComputeAnyNormals(ref belowNorm, out normX, out normY);
+                    var belowA2D = vecA.As2d(ref normX, ref normY);
+                    var belowB2D = vecB.As2d(ref normX, ref normY);
+                    if (IsLineSegmentGettingCloserToOriginThan(ref belowA2D, ref belowB2D, maxDist))
+                    {
+                        Vector3 r;
+                        point.ClosestOnLineSegment(ref c1sb, ref belowA, ref belowB, out r);
+                        var d = distance.Between(ref c1sb, ref r);
+                        point.TryMoveAbs(ref c1sb, ref r, (radius1/maxDist)*d, out collision);
+                        return true;
+                    }
+                }
+                if (hasAbove)
+                {
+                    var vecA = aboveA - c1sa;
+                    var vecB = aboveB - c1sa;
+                    Vector3 aboveNorm;
+                    vector.GetNormal(ref vecA, ref vecB, out aboveNorm);
+                    ComputeAnyNormals(ref aboveNorm, out normX, out normY);
+                    var aboveA2D = vecA.As2d(ref normX, ref normY);
+                    var aboveB2D = vecB.As2d(ref normX, ref normY);
+                    if (IsLineSegmentGettingCloserToOriginThan(ref aboveA2D, ref aboveB2D, maxDist))
+                    {
+                        Vector3 r;
+                        point.ClosestOnLineSegment(ref c1sa, ref aboveA, ref aboveB, out r);
+                        var d = distance.Between(ref c1sa, ref r);
+                        point.TryMoveAbs(ref c1sa, ref r, (radius1/maxDist)*d, out collision);
+                        return true;
+                    }
+                }
+                collision = Vector3.zero;
                 return false;
             }
 
@@ -2509,9 +2664,51 @@ namespace UnityFunctions
                 return false;
             }
 
-	        //Two non-parallel lines which may or may not touch each other have a point on each line which are closest
-	        //to each other. This function finds those two points. If the lines are not parallel, the function 
-	        //outputs true, otherwise false.
+            internal static bool ClosestOnLineSegment(ref Vector3 p, ref Vector3 line1, ref Vector3 line2, out Vector3 closest)
+            {
+                point.ProjectOnLine(ref p, ref line1, ref line2, out closest);
+                if (!IsOnSegment(ref line1, ref closest, ref line2))
+                {
+                    var d1 = distanceSquared.Between(ref line1, ref closest);
+                    var d2 = distanceSquared.Between(ref line2, ref closest);
+                    closest = d1 < d2 ? line1 : line2;
+                    return false;
+                }
+                return true;
+            }
+            internal static bool ClosestOnTwoLineSegments(
+                ref Vector3 line1p1, ref Vector3 line1p2, 
+                ref Vector3 line2p1, ref Vector3 line2p2, 
+                out Vector3 closestPointLine1, out Vector3 closestPointLine2)
+            {
+                var dir1 = (line1p2 - line1p1).normalized;
+                var dir2 = (line2p2 - line2p1).normalized;
+
+                // if the lines are parallel then any point is closest so we return false
+                var linesAreNotParallel = 
+                    ClosestOnTwoLines(
+                        ref line1p1, ref dir1, ref line2p1, ref dir2, 
+                        out closestPointLine1, out closestPointLine2);
+
+	            if (linesAreNotParallel)
+	            {
+                    if (!IsOnSegment(ref line1p1, ref closestPointLine1, ref line1p2))
+                    {
+                        var d1 = distanceSquared.Between(ref line1p1, ref closestPointLine1);
+                        var d2 = distanceSquared.Between(ref line1p2, ref closestPointLine1);
+                        closestPointLine1 = d1 < d2 ? line1p1 : line1p2;
+                    }
+                    if (!IsOnSegment(ref line2p1, ref closestPointLine2, ref line2p2))
+                    {
+                        var d1 = distanceSquared.Between(ref line2p1, ref closestPointLine2);
+                        var d2 = distanceSquared.Between(ref line2p2, ref closestPointLine2);
+                        closestPointLine2 = d1 < d2 ? line2p1 : line2p2;
+                    }
+                }
+
+	            return linesAreNotParallel;
+            }
+            // if the lines are parallel then any point is closest so we return false
 	        internal static bool ClosestOnTwoLines(ref Vector3 line1p1, ref Vector3 line1Direction, ref Vector3 line2p1, ref Vector3 line2Direction, out Vector3 closestPointLine1, out Vector3 closestPointLine2)
 	        {
 
@@ -2520,9 +2717,8 @@ namespace UnityFunctions
 		        var e = dot.Product(ref line2Direction, ref line2Direction);
  
 		        var d = a*e - b*b;
- 
 		        //lines are not parallel
-		        if(d > 0.000001 || d < -0.000001){
+		        if(d > 0.00001 || d < -0.00001){
  
 			        var r = line1p1 - line2p1;
 			        var c = dot.Product(ref line1Direction, ref r);
@@ -2533,14 +2729,13 @@ namespace UnityFunctions
  
 			        closestPointLine1 = line1p1 + line1Direction * s;
 			        closestPointLine2 = line2p1 + line2Direction * t;
- 
-			        return true;
+                    return true;
 		        }
 
- 		        closestPointLine1 = Vector3.zero;
-		        closestPointLine2 = Vector3.zero;
-
-		        return false;
+ 		        closestPointLine1 = line1p1;
+	            var line2p2 = line2p1 + line2Direction;
+	            point.ProjectOnLine(ref line1p1, ref line2p1, ref line2p2, out closestPointLine2);
+                return false;
 	        }
             internal static bool IsLeftOfLine2D(ref Vector2 point, ref Vector2 linePoint1, ref Vector2 linePoint2)
             {
