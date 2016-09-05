@@ -1275,9 +1275,11 @@ namespace UnityFunctions
                 intersection2 = new Vector2(point1.x + t * dx, point1.y + t * dy);
                 return 2;
             }
+            /// <summary>
+            /// returns the number of intersections
+            /// </summary>
             internal static int BetweenLineAndCircle(
-                float cx, float cy, 
-                float radius, 
+                Vector2 circleCenter, float circleRadius, 
                 Vector2 point1, Vector2 point2, 
                 out Vector2 intersection1, out Vector2 intersection2)
             {
@@ -1287,15 +1289,15 @@ namespace UnityFunctions
                 var dy = point2.y - point1.y;
 
                 var a = dx * dx + dy * dy;
-                var b = 2 * (dx * (point1.x - cx) + dy * (point1.y - cy));
-                var c = (point1.x - cx) * (point1.x - cx) + (point1.y - cy) * (point1.y - cy) - radius * radius;
+                var b = 2 * (dx * (point1.x - circleCenter.x) + dy * (point1.y - circleCenter.y));
+                var c = (point1.x - circleCenter.x) * (point1.x - circleCenter.x) + (point1.y - circleCenter.y) * (point1.y - circleCenter.y) - circleRadius * circleRadius;
 
                 var determinate = b * b - 4 * a * c;
                 if ((a <= 0.0000001) || (determinate < -0.0000001))
                 {
                     // No real solutions.
-                    intersection1 = new Vector2(float.NaN, float.NaN);
-                    intersection2 = new Vector2(float.NaN, float.NaN);
+                    intersection1 = Vector2.zero;
+                    intersection2 = Vector2.zero;
                     return 0;
                 }
                 if (determinate < 0.0000001 && determinate > -0.0000001)
@@ -1303,7 +1305,7 @@ namespace UnityFunctions
                     // One solution.
                     t = -b / (2 * a);
                     intersection1 = new Vector2(point1.x + t * dx, point1.y + t * dy);
-                    intersection2 = new Vector2(float.NaN, float.NaN);
+                    intersection2 = Vector2.zero;
                     return 1;
                 }
                 
@@ -1312,6 +1314,101 @@ namespace UnityFunctions
                 intersection1 = new Vector2(point1.x + t * dx, point1.y + t * dy);
                 t = (float)((-b - Math.Sqrt(determinate)) / (2 * a));
                 intersection2 = new Vector2(point1.x + t * dx, point1.y + t * dy);
+
+                return 2;
+            }
+            
+            internal static int BetweenLineAndCircle(
+                ref Vector2 circleCenter, float circleRadius, 
+                ref Vector2 point1, ref Vector2 point2, 
+                out Vector2 intersection1, out Vector2 intersection2)
+            {
+                // test to see if line is inside the circle
+                var dx = point2.x - point1.x;
+                var dy = point2.y - point1.y;
+
+                var a = dx * dx + dy * dy;
+                var b = 2 * (dx * (point1.x - circleCenter.x) + dy * (point1.y - circleCenter.y));
+                var c = (point1.x - circleCenter.x) * (point1.x - circleCenter.x) + (point1.y - circleCenter.y) * (point1.y - circleCenter.y) - circleRadius * circleRadius;
+
+                var determinate = b * b - 4 * a * c;
+                if ((a <= 0.0000001) || (determinate < -0.0000001))
+                {
+                    // No real solutions.
+                    intersection1 = Vector2.zero;
+                    intersection2 = Vector2.zero;
+                    return 0;
+                }
+                float t;
+                if (determinate < 0.0000001 && determinate > -0.0000001)
+                {
+                    // One solution.
+                    t = -b / (2 * a);
+                    intersection1 = new Vector2(point1.x + t * dx, point1.y + t * dy);
+                    intersection2 = Vector2.zero;
+                    return 1;
+                }
+                
+                // Two solutions.
+                t = (float)((-b + Math.Sqrt(determinate)) / (2 * a));
+                intersection1 = new Vector2(point1.x + t * dx, point1.y + t * dy);
+                t = (float)((-b - Math.Sqrt(determinate)) / (2 * a));
+                intersection2 = new Vector2(point1.x + t * dx, point1.y + t * dy);
+                return 2;
+            }
+
+            internal static int BetweenLineSegmentAndCircle(
+                ref Vector2 circleCenter, float circleRadius, 
+                ref Vector2 point1, ref Vector2 point2, 
+                out Vector2 intersection1, out Vector2 intersection2)
+            {
+                // test to see if line is inside the circle
+                var dsq = distanceSquared.Between(ref circleCenter, ref point1);
+                var circleRadiusSqr = circleRadius*circleRadius;
+                if (dsq < circleRadiusSqr)
+                {
+                    dsq = distanceSquared.Between(ref circleCenter, ref point2);
+                    if (dsq < circleRadiusSqr)
+                    {
+                        intersection1 = Vector2.zero;
+                        intersection2 = Vector2.zero;
+                        return 0;
+                    }
+                }
+
+                var dx = point2.x - point1.x;
+                var dy = point2.y - point1.y;
+
+                var a = dx * dx + dy * dy;
+                var b = 2 * (dx * (point1.x - circleCenter.x) + dy * (point1.y - circleCenter.y));
+                var c = (point1.x - circleCenter.x) * (point1.x - circleCenter.x) + (point1.y - circleCenter.y) * (point1.y - circleCenter.y) - circleRadius * circleRadius;
+
+                var determinate = b * b - 4 * a * c;
+                if ((a <= 0.0000001) || (determinate < -0.0000001))
+                {
+                    // No real solutions.
+                    intersection1 = Vector2.zero;
+                    intersection2 = Vector2.zero;
+                    return 0;
+                }
+                float t;
+                if (determinate < 0.0000001 && determinate > -0.0000001)
+                {
+                    // One solution.
+                    t = -b / (2 * a);
+                    intersection1 = new Vector2(point1.x + t * dx, point1.y + t * dy);
+                    point.EnforceWithin(ref intersection1, ref point1, ref point2);
+                    intersection2 = Vector2.zero;
+                    return 1;
+                }
+                
+                // Two solutions.
+                t = (float)((-b + Math.Sqrt(determinate)) / (2 * a));
+                intersection1 = new Vector2(point1.x + t * dx, point1.y + t * dy);
+                point.EnforceWithin(ref intersection1, ref point1, ref point2);
+                t = (float)((-b - Math.Sqrt(determinate)) / (2 * a));
+                intersection2 = new Vector2(point1.x + t * dx, point1.y + t * dy);
+                point.EnforceWithin(ref intersection2, ref point1, ref point2);
                 return 2;
             }
 
@@ -1510,26 +1607,126 @@ namespace UnityFunctions
                 return (val > 0)? 1: 2; // clock or counterclock wise
             }
 
+
+            internal static bool BetweenTriangleAndSphere(
+                ref Vector3 t1, ref Vector3 t2, ref Vector3 t3, 
+                ref Vector3 sphereCenter, float sphereRadius,
+                out Vector3 collision)
+            {
+                Vector3 triangleNormal;
+                point.GetNormal(ref t1, ref t2, ref t3, out triangleNormal);
+
+                Vector3 proj;
+                point.ProjectOnPlane(ref sphereCenter, ref triangleNormal, ref t1, out proj);
+                var x2d = (t2 - t1).normalized;
+                Vector3 y2d;
+                vector.GetNormal(ref x2d, ref triangleNormal, out y2d);
+
+                var dist = distance.Between(ref sphereCenter, ref proj);
+                var ratio = dist/sphereRadius;
+                if (ratio <= 1.0)
+                {
+
+                    var t1in2d = Vector2.zero;
+                    var t2in2d = (t2 - t1).As2d(ref x2d, ref y2d);
+                    var t3in2d = (t3 - t1).As2d(ref x2d, ref y2d);
+                    var spin2d = (sphereCenter - t1).As2d(ref x2d, ref y2d);
+                    var radius2d = (float) Math.Sqrt(1.0 - ratio*ratio)*sphereRadius;
+                    if (HasCircleTriangleCollision2D(ref spin2d, radius2d, ref t1in2d, ref t2in2d, ref t3in2d))
+                    {
+                        Vector2 int2d;
+                        GetCircleLineIntersectionPoint(ref spin2d, radius2d, ref t1in2d, ref t2in2d, ref t3in2d, out int2d);
+//for (var a = 0; a < 360; a += 5)
+//{
+//Debug.DrawLine(
+//    spin2d+(Vector2)((Vector3)(Vector2.right*radius2d)).RotateAbout(Vector3.forward, a), 
+//    spin2d+(Vector2)((Vector3)(Vector2.right*radius2d)).RotateAbout(Vector3.forward, a+5), 
+//    Color.red,0, false);
+//}
+//Debug.DrawLine(t1in2d,t2in2d,Color.black,0, false);
+//Debug.DrawLine(t2in2d,t3in2d,Color.black,0, false);
+//Debug.DrawLine(t3in2d,t1in2d,Color.black,0, false);
+//Debug.DrawLine(Vector2.one*100,int2d,Color.magenta,0, false);
+                        int2d.As3d(ref t1, ref x2d, ref y2d, out collision);
+                        return true;
+                    }
+                }
+                collision = Vector3.zero;
+                return false;
+            }
+
+            private static bool GetCircleLineIntersectionPoint(
+                ref Vector2 circleCenter, float radius, 
+                ref Vector2 t1, ref Vector2 t2, ref Vector2 t3, out Vector2 intersect)
+            {
+                intersect = Vector2.zero;
+                var n1 = GetLineCircleIntersectionPoint(
+                        false, ref circleCenter, radius, ref t1, ref t2, ref intersect);
+                var n2 = GetLineCircleIntersectionPoint(
+                        n1 > 0, ref circleCenter, radius, ref t2, ref t3, ref intersect);
+                var n3 = GetLineCircleIntersectionPoint(
+                        n1 + n2 > 0, ref circleCenter, radius, ref t3, ref t1, ref intersect);
+                var hasIntersection = (n1 + n2 + n3) > 0;
+                if (hasIntersection)
+                {
+                    return true;
+                }
+
+                // if the circle is inside the triangle
+                if (distanceSquared.Between(ref t1, ref circleCenter) > radius*radius)
+                {
+                    intersect = circleCenter;
+                    return false;
+                }
+                // if the triangle is inside the circle
+                Vector2 centroid;
+                triangle.GetCentroid2D(ref t1, ref t2, ref t3, out centroid);
+                intersect = centroid;
+                return false;
+            }
+
+            private static int GetLineCircleIntersectionPoint(
+                bool hasPrevious, 
+                ref Vector2 circleCenter, float curcleRadius,
+                ref Vector2 point1, ref Vector2 point2, ref Vector2 output)
+            {
+                Vector2 intersection1,intersection2;
+                var num = 
+                    BetweenLineSegmentAndCircle(
+                        ref circleCenter, curcleRadius, 
+                        ref point1, ref point2, 
+                        out intersection1, out intersection2);
+                var current = Vector2.zero;
+                if (num == 1) current = intersection1;
+                else if (num == 2) point.Middle(ref intersection1, ref intersection2, out current);
+                if (num > 0)
+                {
+                    if (hasPrevious) point.Middle(ref output, ref current, out output);
+                    else output = current;
+                }
+                return num;
+            }
+
             internal static bool BetweenTriangleAndSphere(ref Vector3 t1, ref Vector3 t2, ref Vector3 t3, ref Vector3 sphereCenter, float sphereRadius)
             {
                 Vector3 triangleNormal;
                 point.GetNormal(ref t1, ref t2, ref t3, out triangleNormal);
 
                 Vector3 proj;
-                fun.point.ProjectOnPlane(ref sphereCenter, ref triangleNormal, ref t1, out proj);
+                point.ProjectOnPlane(ref sphereCenter, ref triangleNormal, ref t1, out proj);
                 var x2d = (t2 - t1).normalized;
                 Vector3 y2d;
-                fun.vector.GetNormal(ref x2d, ref triangleNormal, out y2d);
+                vector.GetNormal(ref x2d, ref triangleNormal, out y2d);
 
-                var dist = fun.distance.Between(ref sphereCenter, ref proj);
+                var dist = distance.Between(ref sphereCenter, ref proj);
                 var ratio = dist/sphereRadius;
                 if (ratio <= 1.0)
                 {
 
-                    var t1in2d = t1.As2d(ref x2d, ref y2d) + Vector2.right;
-                    var t2in2d = t2.As2d(ref x2d, ref y2d) + Vector2.right;
-                    var t3in2d = t3.As2d(ref x2d, ref y2d) + Vector2.right;
-                    var spin2d = sphereCenter.As2d(ref x2d, ref y2d) + Vector2.right;
+                    var t1in2d = t1.As2d(ref x2d, ref y2d);
+                    var t2in2d = t2.As2d(ref x2d, ref y2d);
+                    var t3in2d = t3.As2d(ref x2d, ref y2d);
+                    var spin2d = sphereCenter.As2d(ref x2d, ref y2d);
                     var radius2d = (float) Math.Sqrt(1.0 - ratio*ratio)*sphereRadius;
 
                     return HasCircleTriangleCollision2D(ref spin2d, radius2d, ref t1in2d, ref t2in2d, ref t3in2d);
@@ -3107,6 +3304,30 @@ namespace UnityFunctions
 
                 return from + dir*distance;
             }
+
+            internal static void Middle(ref Vector2 a, ref Vector2 b, out Vector2 output)
+            {
+                output = new Vector2((b.x - a.x)*0.5f+a.x, (b.y - a.y)*0.5f+a.y);
+            }
+            internal static void Middle(ref Vector3 a, ref Vector3 b, out Vector3 output)
+            {
+                output = new Vector3((b.x - a.x)*0.5f+a.x, (b.y - a.y)*0.5f+a.y, (b.z - a.z)*0.5f+a.z);
+            }
+
+            internal static void EnforceWithin(ref Vector2 current, ref Vector2 start, ref Vector2 end)
+            {
+                var isWithin =
+                    current.x <= max(start.x, end.x) + epsilon && current.x >= min(start.x, end.x) - epsilon &&
+                    current.y <= max(start.y, end.y) + epsilon && current.y >= min(start.y, end.y) - epsilon;
+
+                if (!isWithin)
+                {
+                    var dSq1 = distanceSquared.Between(ref current, ref start);
+                    var dSq2 = distanceSquared.Between(ref current, ref end);
+
+                    current = dSq1 < dSq2 ? start : end;
+                }
+            }
         }
 
         internal static class polygon
@@ -3519,6 +3740,10 @@ namespace UnityFunctions
             internal static Vector2 GetCentroid2D(ref Vector2 a, ref Vector2 b, ref Vector2 c)
             {
                 return new Vector2((a.x+b.x+c.x)/3f,(a.y+b.y+c.y)/3f);
+            }
+            internal static void GetCentroid2D(ref Vector2 a, ref Vector2 b, ref Vector2 c, out Vector2 centroid)
+            {
+                centroid = new Vector2((a.x+b.x+c.x)/3f,(a.y+b.y+c.y)/3f);
             }
 
             /*

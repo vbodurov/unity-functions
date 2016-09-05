@@ -16,5 +16,18 @@ namespace Extensions
         {
             result = origin + normalizedX*v2.x + normalizedY*v2.y;
         }
+
+        internal static Vector3 As3dOriginZero(this Vector2 v2, Vector3 normalizedX, Vector3 normalizedY)
+        {
+            return normalizedX*v2.x + normalizedY*v2.y;
+        }
+        internal static Vector3 As3dOriginZero(this Vector2 v2, ref Vector3 normalizedX, ref Vector3 normalizedY)
+        {
+            return normalizedX*v2.x + normalizedY*v2.y;
+        }
+        internal static void As3dOriginZero(this Vector2 v2, ref Vector3 normalizedX, ref Vector3 normalizedY, out Vector3 result)
+        {
+            result = normalizedX*v2.x + normalizedY*v2.y;
+        }
     }
 }
