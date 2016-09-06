@@ -9,8 +9,6 @@ namespace Main
 {
     public class TriangleSphereCollision : BaseMainScript
     {
-        private static readonly Color green = new Color(0,1,0,0.8f);
-        private static readonly Color gray = new Color(0.5f,0.5f,0.5f,0.8f);
         private Transform _sphere;
         private float _sphereRadius;
         private Transform _collision;
@@ -40,14 +38,14 @@ namespace Main
             Vector3 collision;
             var hasCollision = 
                 fun.intersection.BetweenTriangleAndSphere(
-                    ref t1, ref t2, ref t3, ref spherePos, _sphereRadius, out collision);
+                    ref t1, ref t2, ref t3, 
+                    ref spherePos, _sphereRadius, 
+                    out collision);
             
             // test code ENDS here -------------------------------------------------
+
             _collision.position = hasCollision ? collision : new Vector3(0,999,0);
-
-
-            SetColorOnChanged(hasCollision, green, gray, _sphere, _a, _b, _c);
-
+            SetColorOnChanged(hasCollision, rgba(0,1,0,0.8), rgba(0.5,0.5,0.5,0.8), _sphere, _a, _b, _c);
         }
 
         

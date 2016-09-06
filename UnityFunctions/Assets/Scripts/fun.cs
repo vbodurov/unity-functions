@@ -1590,6 +1590,68 @@ namespace UnityFunctions
  
                 return false; // Doesn't fall in any of the above cases
             }
+            internal static bool Between2DLines(Vector2 lineA1, Vector2 lineA2, Vector2 lineB1, Vector2 lineB2, out Vector2 intersect)
+            {
+                var a1 = lineA2.y - lineA1.y;
+                var b1 = lineA1.x - lineA2.x;
+                var c1 = a1 * lineA1.x + b1 * lineA1.y;
+
+                var a2 = lineB2.y - lineB1.y;
+                var b2 = lineB1.x - lineB2.x;
+                var c2 = a2 * lineB1.x + b2 * lineB1.y;
+
+                var det = a1 * b2 - a2 * b1;
+                // if lines are parallel
+                if (det < 0.00001f && det > -0.00001f)
+                {
+                    intersect = Vector2.zero;
+                    return false;
+                }
+                var x = (b2 * c1 - b1 * c2) / det;
+                var y = (a1 * c2 - a2 * c1) / det;
+                intersect = new Vector2(x, y);
+
+                return
+                    intersect.x >= Mathf.Min(lineA1.x, lineA2.x) &&
+                    intersect.x <= Mathf.Max(lineA1.x, lineA2.x) &&
+                    intersect.y >= Mathf.Min(lineA1.y, lineA2.y) &&
+                    intersect.y <= Mathf.Max(lineA1.y, lineA2.y) &&
+                    intersect.x >= Mathf.Min(lineB1.x, lineB2.x) &&
+                    intersect.x <= Mathf.Max(lineB1.x, lineB2.x) &&
+                    intersect.y >= Mathf.Min(lineB1.y, lineB2.y) &&
+                    intersect.y <= Mathf.Max(lineB1.y, lineB2.y);
+            }
+            internal static bool Between2DLines(ref Vector2 lineA1, ref Vector2 lineA2, ref Vector2 lineB1, ref Vector2 lineB2, out Vector2 intersect)
+            {
+                var a1 = lineA2.y - lineA1.y;
+                var b1 = lineA1.x - lineA2.x;
+                var c1 = a1 * lineA1.x + b1 * lineA1.y;
+
+                var a2 = lineB2.y - lineB1.y;
+                var b2 = lineB1.x - lineB2.x;
+                var c2 = a2 * lineB1.x + b2 * lineB1.y;
+
+                var det = a1 * b2 - a2 * b1;
+                // if lines are parallel
+                if (det < 0.00001f && det > -0.00001f)
+                {
+                    intersect = Vector2.zero;
+                    return false;
+                }
+                var x = (b2 * c1 - b1 * c2) / det;
+                var y = (a1 * c2 - a2 * c1) / det;
+                intersect = new Vector2(x, y);
+
+                return
+                    intersect.x >= Mathf.Min(lineA1.x, lineA2.x) &&
+                    intersect.x <= Mathf.Max(lineA1.x, lineA2.x) &&
+                    intersect.y >= Mathf.Min(lineA1.y, lineA2.y) &&
+                    intersect.y <= Mathf.Max(lineA1.y, lineA2.y) &&
+                    intersect.x >= Mathf.Min(lineB1.x, lineB2.x) &&
+                    intersect.x <= Mathf.Max(lineB1.x, lineB2.x) &&
+                    intersect.y >= Mathf.Min(lineB1.y, lineB2.y) &&
+                    intersect.y <= Mathf.Max(lineB1.y, lineB2.y);
+            }
  
             // To find orientation of ordered triplet (p, q, r).
             // The function returns following values
@@ -1823,10 +1885,41 @@ namespace UnityFunctions
                 // We're done, no intersection
                 return false;
             }
-            internal static bool BetweenTriangleAndDisk(ref Vector3 t1, ref Vector3 t2, ref Vector3 t3, ref Vector3 diskNormal, ref Vector3 diskCenter, float diskRadius)
+            internal static bool BetweenTriangleAndDisk(
+                ref Vector3 t1, ref Vector3 t2, ref Vector3 t3, 
+                ref Vector3 diskNormal, ref Vector3 diskCenter, float diskRadius, 
+                out Vector3 intersect)
             {
                 Vector3 triangleNormal;
                 point.GetNormal(ref t1, ref t2, ref t3, out triangleNormal);
+                diskNormal.Normalize(); // ensure disk normal is unit vector
+
+                // they are parallel
+                if (abs(dot.Product(ref triangleNormal, ref diskNormal)) > 0.999999f)
+                {
+                    var diskCenterPlus = diskCenter + diskNormal;
+                    Vector3 proj;
+                    point.ProjectOnLine(ref t1, ref diskCenter, ref diskCenterPlus, out proj);
+                    // they lie on the same plane
+                    if (distanceSquared.Between(ref proj, ref diskCenter) < 0.0001)
+                    {
+                        Vector3 x2d,y2d;
+                        ComputeAnyNormals(ref diskNormal, out x2d, out y2d);
+
+                        var t1in2d = Vector2.zero;
+                        var t2in2d = (t2 - t1).As2d(ref x2d, ref y2d);
+                        var t3in2d = (t3 - t1).As2d(ref x2d, ref y2d);
+                        var dcin2d = (diskCenter - t1).As2d(ref x2d, ref y2d);
+
+                        if (HasCircleTriangleCollision2D(ref dcin2d, diskRadius, ref t1in2d, ref t2in2d, ref t3in2d))
+                        {
+                            Vector2 int2d;
+                            GetCircleLineIntersectionPoint(ref dcin2d, diskRadius, ref t1in2d, ref t2in2d, ref t3in2d, out int2d);
+                            intersect = int2d.As3d(ref t1, ref x2d, ref y2d);
+                            return true;
+                        }
+                    }
+                }
 
                 Vector3 intPoint,intNorm;
                 var linesIntersect = BetweenPlanes(ref triangleNormal, ref t1, ref diskNormal, ref diskCenter, out intPoint, out intNorm);
@@ -1845,25 +1938,72 @@ namespace UnityFunctions
                         Vector3 y2d;
                         vector.GetNormal(ref intNorm, ref triangleNormal, out y2d);
 
-                        var t1in2d = t1.As2d(ref x2d, ref y2d);
-                        var t2in2d = t2.As2d(ref x2d, ref y2d);
-                        var t3in2d = t3.As2d(ref x2d, ref y2d);
-                        var w1in2d = w1.As2d(ref x2d, ref y2d);
-                        var w2in2d = w2.As2d(ref x2d, ref y2d);
+                        var t1in2d = Vector2.zero;
+                        var t2in2d = (t2 - t1).As2d(ref x2d, ref y2d);
+                        var t3in2d = (t3 - t1).As2d(ref x2d, ref y2d);
+                        var w1in2d = (w1 - t1).As2d(ref x2d, ref y2d);
+                        var w2in2d = (w2 - t1).As2d(ref x2d, ref y2d);
+//Debug.DrawLine(Vector3.one*100, w1in2d, Color.red, 0, false);
+//Debug.DrawLine(Vector3.one*100, w2in2d, Color.black, 0, false);
 
-                        if (triangle.IsPointInside(ref w1in2d, ref t1in2d, ref t2in2d, ref t3in2d) ||
-                            triangle.IsPointInside(ref w2in2d, ref t1in2d, ref t2in2d, ref t3in2d) ||
-                            Between2DLines(ref t1in2d, ref t2in2d, ref w1in2d, ref w2in2d) ||
-                            Between2DLines(ref t2in2d, ref t3in2d, ref w1in2d, ref w2in2d) ||
-                            Between2DLines(ref t3in2d, ref t1in2d, ref w1in2d, ref w2in2d))
+                        Vector2 int2d;
+                        if (Between2DTriangleAndLineSegment(
+                            ref t1in2d, ref t2in2d, ref t3in2d,
+                            ref w1in2d, ref w2in2d, out int2d))
                         {
+                            intersect = int2d.As3d(ref t1, ref x2d, ref y2d);
                             return true;
                         }
                     }
                 }
+                intersect = Vector3.zero;
+                return false;
+            }
+
+            internal static bool Between2DTriangleAndLineSegment(
+                ref Vector2 t1in2d, ref Vector2 t2in2d, ref Vector2 t3in2d,
+                ref Vector2 w1in2d, ref Vector2 w2in2d,
+                out Vector2 intersect)
+            {
+                Vector2 curr;
+                var c = Vector2.zero;
+                var b1 = false;
+                var b2 = false;
+                var b3 = false;
+                if (Between2DLines(ref t1in2d, ref t2in2d, ref w1in2d, ref w2in2d, out curr))
+                {
+                    b1 = true;
+                    c = curr;
+                }
+                if (Between2DLines(ref t2in2d, ref t3in2d, ref w1in2d, ref w2in2d, out curr))
+                {
+                    b2 = true;
+                    c = b1 ? point.Middle(c, curr) : curr;
+                }
+                if (Between2DLines(ref t3in2d, ref t1in2d, ref w1in2d, ref w2in2d, out curr))
+                {
+                    b3 = true;
+                    c = b1 || b2 ? point.Middle(c, curr) : curr;
+                }
+                if (b1 || b2 || b3)
+                {
+                    intersect = c;
+                    return true;
+                }
+
+                if (triangle.IsPointInside(ref w1in2d, ref t1in2d, ref t2in2d, ref t3in2d) ||
+                    triangle.IsPointInside(ref w2in2d, ref t1in2d, ref t2in2d, ref t3in2d))
+                {
+                    Vector2 wcin2d;
+                    point.Middle(ref w1in2d, ref w2in2d, out wcin2d);
+                    intersect = wcin2d;
+                    return true;
+                }
+                intersect = Vector2.zero;
                 return false;
             }
         }
+
 
         internal static class meshes
         {
@@ -3305,6 +3445,10 @@ namespace UnityFunctions
                 return from + dir*distance;
             }
 
+            internal static Vector2 Middle(Vector2 a, Vector2 b)
+            {
+                return new Vector2((b.x - a.x)*0.5f+a.x, (b.y - a.y)*0.5f+a.y);
+            }
             internal static void Middle(ref Vector2 a, ref Vector2 b, out Vector2 output)
             {
                 output = new Vector2((b.x - a.x)*0.5f+a.x, (b.y - a.y)*0.5f+a.y);
