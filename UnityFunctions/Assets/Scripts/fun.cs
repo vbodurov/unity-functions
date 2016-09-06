@@ -1669,7 +1669,6 @@ namespace UnityFunctions
                 return (val > 0)? 1: 2; // clock or counterclock wise
             }
 
-
             internal static bool BetweenTriangleAndSphere(
                 ref Vector3 t1, ref Vector3 t2, ref Vector3 t3, 
                 ref Vector3 sphereCenter, float sphereRadius,
@@ -1961,8 +1960,8 @@ namespace UnityFunctions
             }
 
             internal static bool Between2DTriangleAndLineSegment(
-                ref Vector2 t1in2d, ref Vector2 t2in2d, ref Vector2 t3in2d,
-                ref Vector2 w1in2d, ref Vector2 w2in2d,
+                ref Vector2 t1, ref Vector2 t2, ref Vector2 t3,
+                ref Vector2 line1, ref Vector2 line2,
                 out Vector2 intersect)
             {
                 Vector2 curr;
@@ -1970,17 +1969,17 @@ namespace UnityFunctions
                 var b1 = false;
                 var b2 = false;
                 var b3 = false;
-                if (Between2DLines(ref t1in2d, ref t2in2d, ref w1in2d, ref w2in2d, out curr))
+                if (Between2DLines(ref t1, ref t2, ref line1, ref line2, out curr))
                 {
                     b1 = true;
                     c = curr;
                 }
-                if (Between2DLines(ref t2in2d, ref t3in2d, ref w1in2d, ref w2in2d, out curr))
+                if (Between2DLines(ref t2, ref t3, ref line1, ref line2, out curr))
                 {
                     b2 = true;
                     c = b1 ? point.Middle(c, curr) : curr;
                 }
-                if (Between2DLines(ref t3in2d, ref t1in2d, ref w1in2d, ref w2in2d, out curr))
+                if (Between2DLines(ref t3, ref t1, ref line1, ref line2, out curr))
                 {
                     b3 = true;
                     c = b1 || b2 ? point.Middle(c, curr) : curr;
@@ -1991,15 +1990,79 @@ namespace UnityFunctions
                     return true;
                 }
 
-                if (triangle.IsPointInside(ref w1in2d, ref t1in2d, ref t2in2d, ref t3in2d) ||
-                    triangle.IsPointInside(ref w2in2d, ref t1in2d, ref t2in2d, ref t3in2d))
+                if (triangle.IsPointInside(ref line1, ref t1, ref t2, ref t3) ||
+                    triangle.IsPointInside(ref line2, ref t1, ref t2, ref t3))
                 {
                     Vector2 wcin2d;
-                    point.Middle(ref w1in2d, ref w2in2d, out wcin2d);
+                    point.Middle(ref line1, ref line2, out wcin2d);
                     intersect = wcin2d;
                     return true;
                 }
                 intersect = Vector2.zero;
+                return false;
+            }
+
+            /// <summary>
+            /// note the collision point returned is not precise, but is good enough for my needs
+            /// </summary>
+            internal static bool BetweenTriangles(
+                ref Vector3 t1p1, ref Vector3 t1p2, ref Vector3 t1p3, 
+                ref Vector3 t2p1, ref Vector3 t2p2, ref Vector3 t2p3, 
+                out Vector3 collision)
+            {
+                if (triangle.Overlap(
+                    ref t1p1, ref t1p2, ref t1p3,
+                    ref t2p1, ref t2p2, ref t2p3))
+                {
+                    Vector3 normalT1, normalT2;
+                    point.GetNormal(ref t1p1, ref t1p2, ref t1p3, out normalT1);
+                    point.GetNormal(ref t2p1, ref t2p2, ref t2p3, out normalT2);
+
+                    // then are on the same plane
+                    if (abs(dot.Product(ref normalT1, ref normalT2)) > 0.999999f)
+                    {
+                        Vector3 cen1, cen2;
+                        triangle.GetCentroid(ref t1p1, ref t1p2, ref t1p3, out cen1);
+                        triangle.GetCentroid(ref t2p1, ref t2p2, ref t2p3, out cen2);
+
+                        point.Middle(ref cen1, ref cen2, out collision);
+
+                        return true;
+                    }
+
+                    Vector3 intPoint, intNormal;
+                    BetweenPlanes(ref normalT1, ref t1p1, ref normalT2, ref t2p1, out intPoint, out intNormal);
+
+                    var l1 = (intPoint + intNormal*999);
+                    var l2 = (intPoint - intNormal*999);
+
+                    Vector3 x2d,y2d;
+                    ComputeAnyNormals(ref normalT1, out x2d, out y2d);
+                    var t12d = Vector2.zero;
+                    var t22d = (t1p2 - t1p1).As2d(ref x2d, ref y2d);
+                    var t32d = (t1p3 - t1p1).As2d(ref x2d, ref y2d);
+                    var w12d = (l1 - t1p1).As2d(ref x2d, ref y2d);
+                    var w22d = (l2 - t1p1).As2d(ref x2d, ref y2d);
+
+                    Vector2 int2d;
+                    Between2DTriangleAndLineSegment(ref t12d, ref t22d, ref t32d, ref w12d, ref w22d, out int2d);
+                    var p1 = int2d.As3d(ref t1p1, ref x2d, ref y2d);
+
+                    ComputeAnyNormals(ref normalT2, out x2d, out y2d);
+                    t22d = (t2p2 - t2p1).As2d(ref x2d, ref y2d);
+                    t32d = (t2p3 - t2p1).As2d(ref x2d, ref y2d);
+                    w12d = (l1 - t2p1).As2d(ref x2d, ref y2d);
+                    w22d = (l2 - t2p1).As2d(ref x2d, ref y2d);
+
+                    Between2DTriangleAndLineSegment(ref t12d, ref t22d, ref t32d, ref w12d, ref w22d, out int2d);
+                    var p2 = int2d.As3d(ref t2p1, ref x2d, ref y2d);
+//Debug.DrawLine(Vector3.one*100, p1, Color.red, 0, false);
+//Debug.DrawLine(Vector3.one*100, p2, Color.black, 0, false);
+                    point.Middle(ref p1, ref p2, out collision);
+                    return true;
+                }
+
+                collision = Vector3.zero;
                 return false;
             }
         }
@@ -3876,6 +3939,10 @@ namespace UnityFunctions
             internal static Vector3 GetCentroid(ref Vector3 a, ref Vector3 b, ref Vector3 c)
             {
                 return new Vector3((a.x+b.x+c.x)/3f,(a.y+b.y+c.y)/3f,(a.z+b.z+c.z)/3f);
+            }
+            internal static void GetCentroid(ref Vector3 a, ref Vector3 b, ref Vector3 c, out Vector3 output)
+            {
+                output = new Vector3((a.x+b.x+c.x)/3f,(a.y+b.y+c.y)/3f,(a.z+b.z+c.z)/3f);
             }
             internal static Vector2 GetCentroid2D(Vector2 a, Vector2 b, Vector2 c)
             {
