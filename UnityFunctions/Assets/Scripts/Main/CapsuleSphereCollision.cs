@@ -11,13 +11,15 @@ namespace Main
         private const float CapsuleRadius = 0.15f;
         private const float CapsuleHeight = 0.8f;
         private const float SphereRadius = 0.3f;
-        private Transform[] _capsule;
+        private Transform _capsule;
         private Transform _sphere;
         private Transform _collision;
 
         void Start ()
 	    {
-            _capsule = CreateCapsule(CapsuleRadius,CapsuleHeight);
+            _capsule = fun.meshes.CreateCapsule(
+                        new DtCapsule {radius = CapsuleRadius, height = CapsuleHeight, name = "capsule"})
+                        .transform;
             _sphere = fun.meshes.CreateSphere(new DtSphere {radius = SphereRadius}).transform;
             _sphere.position += Vector3.forward*0.5f;
             _collision = 
@@ -28,8 +30,8 @@ namespace Main
         void Update()
         {
 
-            var c1p1 = _capsule[0].position - _capsule[0].up*(CapsuleHeight/2 - CapsuleRadius);
-            var c1p2 = _capsule[0].position + _capsule[0].up*(CapsuleHeight/2 - CapsuleRadius);
+            var c1p1 = _capsule.position - _capsule.up*(CapsuleHeight/2);
+            var c1p2 = _capsule.position + _capsule.up*(CapsuleHeight/2);
             var sp = _sphere.position;
 
             

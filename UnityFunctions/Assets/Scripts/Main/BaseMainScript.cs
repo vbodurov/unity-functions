@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using Extensions;
 using UnityEngine;
 using UnityFunctions;
@@ -103,49 +104,6 @@ namespace Main
         {
             return new Color((float)r,(float)g,(float)b,(float)a);
         }
-
-        protected Transform[] CreateCapsule(double radius, double height)
-        {
-            var hMin2Rad = (float)(height - radius*2);
-            var cyl = 
-                fun.meshes.CreateCone(
-                    new DtCone
-                    {
-                        name = "Capsule",
-                        bottomRadius = radius,
-                        height = hMin2Rad,
-                        topRadius = radius,
-                        localPos = new Vector3(0,-hMin2Rad/2f,0)
-                    })
-                    .transform;
-
-            // lower end
-            var sp1Go = 
-                fun.meshes.CreateHalfSphere(
-                    new DtSphere
-                    {
-                        name = "CapsuleLowerSphere",
-                        radius = radius
-                    })
-                    .transform;
-            sp1Go.SetParent(cyl);
-            sp1Go.localPosition = Vector3.up*-hMin2Rad/2f;
-            sp1Go.localRotation = Quaternion.Euler(180,0,0);
-            sp1Go.hideFlags = HideFlags.HideInHierarchy | HideFlags.NotEditable;
-
-            // upper end
-            var sp2Go = 
-                fun.meshes.CreateHalfSphere(
-                    new DtSphere
-                    {
-                        name = "CapsuleUpperSphere",
-                        radius = radius
-                    })
-                    .transform;
-            sp2Go.SetParent(cyl);
-            sp2Go.localPosition = Vector3.up*hMin2Rad/2f;
-            sp2Go.hideFlags = HideFlags.HideInHierarchy | HideFlags.NotEditable;
-            return new [] { cyl, sp1Go, sp2Go };
-        }
+        
     }
 }

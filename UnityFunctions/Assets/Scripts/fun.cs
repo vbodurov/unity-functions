@@ -2070,7 +2070,7 @@ namespace UnityFunctions
 
         internal static class meshes
         {
-            private static GameObject CreateGameObject(string prefix, DtBase data, out Mesh mesh)
+            internal static GameObject CreateGameObject(string prefix, DtBase data, out Mesh mesh)
             {
                 var gameObject = new GameObject(data.name ?? prefix+"_"+DateTime.UtcNow.Ticks);
                 var renderer = gameObject.AddComponent<MeshRenderer>();
@@ -2812,6 +2812,144 @@ namespace UnityFunctions
             }
             #endregion
 
+            #region Capsule
+            internal static GameObject CreateCapsule()
+            {
+                return CreateCapsule(new DtCapsule());
+            }
+
+            internal static GameObject CreateCapsule(DtCapsule dt)
+            {
+                Mesh m;
+                var gameObject = CreateGameObject("Capsule", dt, out m);
+ 
+                var height = (float)dt.height;
+                var radius = (float)dt.radius;
+                // Longitude |||
+                int nbLong = dt.longitude;
+                // Latitude ---
+                int nbLat = dt.latitude;
+
+
+                #region Vertices
+                Vector3[] vertices = new Vector3[(nbLong+1) * nbLat + 2];
+                float _pi = Mathf.PI;
+                float _2pi = _pi * 2f;
+
+                var upperShift = Vector3.up*(height/2f);
+
+                vertices[0] = Vector3.up * radius + upperShift + dt.localPos;
+                var halfLat = nbLat/2;
+                for( int lat = 0; lat < halfLat; lat++ )
+                {
+	                float a1 = _pi * (float)(lat+1) / (nbLat+1);
+	                float sin1 = Mathf.Sin(a1);
+	                float cos1 = Mathf.Cos(a1);
+
+	                for( int lon = 0; lon <= nbLong; lon++ )
+	                {
+		                float a2 = _2pi * (float)(lon == nbLong ? 0 : lon) / nbLong;
+		                float sin2 = Mathf.Sin(a2);
+		                float cos2 = Mathf.Cos(a2);
+		                vertices[ lon + lat * (nbLong + 1) + 1] = new Vector3( sin1 * cos2, cos1, sin1 * sin2 ) * radius + upperShift + dt.localPos;
+	                }
+                }
+
+                var lowerShift = Vector3.up*(-height/2f);
+
+                for( int lat = halfLat; lat < nbLat; lat++ )
+                {
+	                float a1 = _pi * (float)(lat+1) / (nbLat+1);
+	                float sin1 = Mathf.Sin(a1);
+	                float cos1 = Mathf.Cos(a1);
+
+	                for( int lon = 0; lon <= nbLong; lon++ )
+	                {
+		                float a2 = _2pi * (float)(lon == nbLong ? 0 : lon) / nbLong;
+		                float sin2 = Mathf.Sin(a2);
+		                float cos2 = Mathf.Cos(a2);
+		                vertices[ lon + lat * (nbLong + 1) + 1] = new Vector3( sin1 * cos2, cos1, sin1 * sin2 ) * radius + lowerShift + dt.localPos;
+	                }
+                }
+                vertices[vertices.Length-1] = Vector3.up * -radius + lowerShift + dt.localPos;
+                #endregion
+ 
+                #region Normales		
+                Vector3[] normales = new Vector3[vertices.Length];
+                for (int n = 0; n < vertices.Length/2; n++)
+                {
+                    normales[n] = ((vertices[n] - upperShift).normalized - dt.localPos).normalized;
+                }
+                for (int n = vertices.Length/2; n < vertices.Length; n++)
+                {
+                    normales[n] = ((vertices[n] - lowerShift).normalized - dt.localPos).normalized;
+                }
+                #endregion
+ 
+                #region UVs
+                Vector2[] uvs = new Vector2[vertices.Length];
+                uvs[0] = Vector2.up;
+                uvs[uvs.Length-1] = Vector2.zero;
+                for( int lat = 0; lat < nbLat; lat++ )
+	                for( int lon = 0; lon <= nbLong; lon++ )
+		                uvs[lon + lat * (nbLong + 1) + 1] = new Vector2( (float)lon / nbLong, 1f - (float)(lat+1) / (nbLat+1) );
+                #endregion
+ 
+                #region Triangles
+                int nbFaces = vertices.Length;
+                int nbTriangles = nbFaces * 2;
+                int nbIndexes = nbTriangles * 3;
+                int[] triangles = new int[ nbIndexes ];
+ 
+                //Top Cap
+                int i = 0;
+                for( int lon = 0; lon < nbLong; lon++ )
+                {
+	                triangles[i++] = lon+2;
+	                triangles[i++] = lon+1;
+	                triangles[i++] = 0;
+                }
+ 
+                //Middle
+                for( int lat = 0; lat < nbLat - 1; lat++ )
+                {
+	                for( int lon = 0; lon < nbLong; lon++ )
+	                {
+		                int current = lon + lat * (nbLong + 1) + 1;
+		                int next = current + nbLong + 1;
+ 
+		                triangles[i++] = current;
+		                triangles[i++] = current + 1;
+		                triangles[i++] = next + 1;
+ 
+		                triangles[i++] = current;
+		                triangles[i++] = next + 1;
+		                triangles[i++] = next;
+	                }
+                }
+ 
+                //Bottom Cap
+                for( int lon = 0; lon < nbLong; lon++ )
+                {
+	                triangles[i++] = vertices.Length - 1;
+	                triangles[i++] = vertices.Length - (lon+2) - 1;
+	                triangles[i++] = vertices.Length - (lon+1) - 1;
+                }
+                #endregion
+
+
+ 
+                m.vertices = vertices;
+                m.normals = normales;
+                m.uv = uvs;
+                m.triangles = triangles;
+ 
+                m.RecalculateBounds();
+                m.Optimize();
+                return gameObject;
+            }
+            #endregion
+
             #region Sphere
             internal static GameObject CreateSphere()
             {
@@ -2931,7 +3069,7 @@ namespace UnityFunctions
             internal static GameObject CreateHalfSphere(DtSphere dt)
             {
                 Mesh m;
-                var gameObject = CreateGameObject("Cone", dt, out m);
+                var gameObject = CreateGameObject("HalfSphere", dt, out m);
 
                 var radius = (float)dt.radius;
                 // Longitude |||
@@ -4443,6 +4581,15 @@ namespace UnityFunctions
         internal double bottomRadius = .5f;
         internal double topRadius = .01f;
         internal int numSides = 18;
+        internal Vector3 localPos = Vector3.zero;
+    }
+
+    internal class DtCapsule : DtBase
+    {
+        internal double height = 3f;
+        internal double radius = 1f;
+        internal int longitude = 24;
+        internal int latitude = 16;
         internal Vector3 localPos = Vector3.zero;
     }
     internal class DtBox : DtBase

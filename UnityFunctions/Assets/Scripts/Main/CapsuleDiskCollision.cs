@@ -11,13 +11,16 @@ namespace Main
         private const float CapsuleRadius = 0.1f;
         private const float CapsuleHeight = 0.8f;
         private const float DiskRadius = 0.8f;
-        private Transform[] _capsule;
+        private Transform _capsule;
         private Transform _disk;
         private Transform _collision;
 
         void Start ()
 	    {
-            _capsule = CreateCapsule(CapsuleRadius,CapsuleHeight);
+            _capsule = 
+                    fun.meshes.CreateCapsule(
+                    new DtCapsule {radius = CapsuleRadius, height = CapsuleHeight, name = "capsule"})
+                    .transform;
             _disk =
                 fun.meshes.CreateCone(
                     new DtCone
@@ -37,8 +40,8 @@ namespace Main
 
         void Update()
         {
-            var c1p1 = _capsule[0].position - _capsule[0].up*(CapsuleHeight/2 - CapsuleRadius);
-            var c1p2 = _capsule[0].position + _capsule[0].up*(CapsuleHeight/2 - CapsuleRadius);
+            var c1p1 = _capsule.position - _capsule.up*(CapsuleHeight/2);
+            var c1p2 = _capsule.position + _capsule.up*(CapsuleHeight/2);
             var diskCenter = _disk.position;
             var diskUp = _disk.up;
 
