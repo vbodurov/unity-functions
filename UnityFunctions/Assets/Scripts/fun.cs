@@ -3178,6 +3178,34 @@ namespace UnityFunctions
         internal static class point
         {
             const float epsilon = 0.0000001f;
+
+            internal static void ToLocal(ref Vector3 worldPoint, ref Quaternion worldRotation, ref Vector3 worldPosition, out Vector3 localPoint)
+            {
+                localPoint = Quaternion.Inverse(worldRotation)*(worldPoint - worldPosition);
+            }
+            internal static Vector3 ToLocal(ref Vector3 worldPoint, ref Quaternion worldRotation, ref Vector3 worldPosition)
+            {
+                return Quaternion.Inverse(worldRotation)*(worldPoint - worldPosition);
+            }
+            internal static Vector3 ToLocal(Vector3 worldPoint, Quaternion worldRotation, Vector3 worldPosition)
+            {
+                return Quaternion.Inverse(worldRotation)*(worldPoint - worldPosition);
+            }
+
+
+            internal static void ToWorld(ref Vector3 localPoint, ref Quaternion worldRotation, ref Vector3 worldPosition, out Vector3 worldPoint)
+            {
+                worldPoint = worldRotation * localPoint + worldPosition;
+            }
+            internal static Vector3 ToWorld(ref Vector3 localPoint, ref Quaternion worldRotation, ref Vector3 worldPosition)
+            {
+                return worldRotation * localPoint + worldPosition;
+            }
+            internal static Vector3 ToWorld(Vector3 localPoint, Quaternion worldRotation, Vector3 worldPosition)
+            {
+                return worldRotation * localPoint + worldPosition;
+            }
+
             internal static bool IsOn2DSegment(ref Vector2 segStart, ref Vector2 point, ref Vector2 segEnd)
             {
                 if (point.x <= max(segStart.x, segEnd.x)+epsilon && 
