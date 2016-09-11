@@ -917,6 +917,7 @@ namespace UnityFunctions
                 // none
                 else
                 {
+                    var minNorm1 = -norm1;
                     // is above
                     if (point.IsAbovePlane(ref c2sb, ref norm1, ref c1sa))
                     {
@@ -924,13 +925,18 @@ namespace UnityFunctions
                         aboveB = c2sa;
                         hasAbove = true;
                     }
-                    else
+                    else if (point.IsAbovePlane(ref c2sb, ref minNorm1, ref c1sb))
                     {
                         belowA = c2sb;
                         belowB = c2sa;
                         hasBelow = true;
                     }
-
+                    else
+                    {
+                        middleA = c2sb;
+                        middleB = c2sa;
+                        hasMiddle = true;
+                    }
                 }
 
                 var maxDist = radius1 + radius2;
@@ -939,6 +945,8 @@ namespace UnityFunctions
                 // check each segment in isolation
                 if (hasMiddle)
                 {
+//Debug.DrawLine(Vector3.zero, middleA, Color.black, 0, false);
+//Debug.DrawLine(Vector3.zero, middleB, Color.red, 0, false);
                     ComputeAnyNormals(ref norm1, out normX, out normY);
                     var middleA2D = (middleA-c1sb).As2d(ref normX, ref normY);
                     var middleB2D = (middleB-c1sb).As2d(ref normX, ref normY);
@@ -967,6 +975,8 @@ namespace UnityFunctions
                 }
                 if (hasBelow)
                 {
+//Debug.DrawLine(Vector3.zero, belowA+Vector3.forward*0.02f, Color.blue, 0, false);
+//Debug.DrawLine(Vector3.zero, belowB+Vector3.forward*0.02f, Color.magenta, 0, false);
                     var vecA = belowA - c1sb;
                     var vecB = belowB - c1sb;
                     Vector3 belowNorm;
@@ -985,6 +995,8 @@ namespace UnityFunctions
                 }
                 if (hasAbove)
                 {
+//Debug.DrawLine(Vector3.zero, aboveA+Vector3.forward*0.04f, Color.yellow, 0, false);
+//Debug.DrawLine(Vector3.zero, aboveB+Vector3.forward*0.04f, Color.white, 0, false);
                     var vecA = aboveA - c1sa;
                     var vecB = aboveB - c1sa;
                     Vector3 aboveNorm;
