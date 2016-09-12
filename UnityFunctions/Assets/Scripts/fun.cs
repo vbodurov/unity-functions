@@ -1358,7 +1358,7 @@ namespace UnityFunctions
                 return 2;
             }
 
-            internal static int BetweenLineSegmentAndCircle(
+            internal static int BetweenLineSegmentAndCircle2D(
                 ref Vector2 circleCenter, float circleRadius, 
                 ref Vector2 point1, ref Vector2 point2, 
                 out Vector2 intersection1, out Vector2 intersection2)
@@ -1697,7 +1697,7 @@ namespace UnityFunctions
                     if (HasCircleTriangleCollision2D(ref spin2d, radius2d, ref t1in2d, ref t2in2d, ref t3in2d))
                     {
                         Vector2 int2d;
-                        GetCircleLineIntersectionPoint(ref spin2d, radius2d, ref t1in2d, ref t2in2d, ref t3in2d, out int2d);
+                        GetCircleTriangle2DIntersectionPoint(ref spin2d, radius2d, ref t1in2d, ref t2in2d, ref t3in2d, out int2d);
 //for (var a = 0; a < 360; a += 5)
 //{
 //Debug.DrawLine(
@@ -1717,7 +1717,7 @@ namespace UnityFunctions
                 return false;
             }
 
-            private static bool GetCircleLineIntersectionPoint(
+            private static bool GetCircleTriangle2DIntersectionPoint(
                 ref Vector2 circleCenter, float radius, 
                 ref Vector2 t1, ref Vector2 t2, ref Vector2 t3, out Vector2 intersect)
             {
@@ -1754,7 +1754,7 @@ namespace UnityFunctions
             {
                 Vector2 intersection1,intersection2;
                 var num = 
-                    BetweenLineSegmentAndCircle(
+                    BetweenLineSegmentAndCircle2D(
                         ref circleCenter, curcleRadius, 
                         ref point1, ref point2, 
                         out intersection1, out intersection2);
@@ -1914,7 +1914,7 @@ namespace UnityFunctions
                         if (HasCircleTriangleCollision2D(ref dcin2d, diskRadius, ref t1in2d, ref t2in2d, ref t3in2d))
                         {
                             Vector2 int2d;
-                            GetCircleLineIntersectionPoint(ref dcin2d, diskRadius, ref t1in2d, ref t2in2d, ref t3in2d, out int2d);
+                            GetCircleTriangle2DIntersectionPoint(ref dcin2d, diskRadius, ref t1in2d, ref t2in2d, ref t3in2d, out int2d);
                             intersect = int2d.As3d(ref t1, ref x2d, ref y2d);
                             return true;
                         }
