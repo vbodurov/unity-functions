@@ -19,23 +19,23 @@ main behaviours for each collision are in **unity-functions\UnityFunctions\Asset
 
 ## Collisions Visualized:
 
-* Capsule - Capsule: [CapsuleCapsuleCollision.cs](UnityFunctions/Assets/Scripts/Main/CapsuleCapsuleCollision.cs)
-* Capsule - Disk: [CapsuleDiskCollision.cs](UnityFunctions/Assets/Scripts/Main/CapsuleDiskCollision.cs)
-* Capsule - Sphere: [CapsuleSphereCollision.cs](UnityFunctions/Assets/Scripts/Main/CapsuleSphereCollision.cs)
-* Disk - Disk: [DiskDiskCollision.cs](UnityFunctions/Assets/Scripts/Main/DiskDiskCollision.cs)
-* Ray - Sphere: [RaySphereCollision.cs](UnityFunctions/Assets/Scripts/Main/RaySphereCollision.cs)
-* Ray - Triangle:[RayTriangleCollision.cs](UnityFunctions/Assets/Scripts/Main/RayTriangleCollision.cs)
-* Triangle - Disk: [TriangleDiskCollision.cs](UnityFunctions/Assets/Scripts/Main/TriangleDiskCollision.cs)
-* Triangle - Line: [TriangleLineCollision.cs](UnityFunctions/Assets/Scripts/Main/TriangleLineCollision.cs)
-* Triangle - Sphere: [TriangleSphereCollision.cs](UnityFunctions/Assets/Scripts/Main/TriangleSphereCollision.cs)
-* Triangle - Triangle: [TriangleTriangleCollision.cs](UnityFunctions/Assets/Scripts/Main/TriangleTriangleCollision.cs)
+* Capsule - Capsule: [CapsuleCapsuleCollision.cs](https://github.com/vbodurov/unity-functions/blob/master/UnityFunctions/Assets/Scripts/Main/CapsuleCapsuleCollision.cs)
+* Capsule - Disk: [CapsuleDiskCollision.cs](https://github.com/vbodurov/unity-functions/blob/master/UnityFunctions/Assets/Scripts/Main/CapsuleDiskCollision.cs)
+* Capsule - Sphere: [CapsuleSphereCollision.cs](https://github.com/vbodurov/unity-functions/blob/master/UnityFunctions/Assets/Scripts/Main/CapsuleSphereCollision.cs)
+* Disk - Disk: [DiskDiskCollision.cs](https://github.com/vbodurov/unity-functions/blob/master/UnityFunctions/Assets/Scripts/Main/DiskDiskCollision.cs)
+* Ray - Sphere: [RaySphereCollision.cs](https://github.com/vbodurov/unity-functions/blob/master/UnityFunctions/Assets/Scripts/Main/RaySphereCollision.cs)
+* Ray - Triangle:[RayTriangleCollision.cs](https://github.com/vbodurov/unity-functions/blob/master/UnityFunctions/Assets/Scripts/Main/RayTriangleCollision.cs)
+* Triangle - Disk: [TriangleDiskCollision.cs](https://github.com/vbodurov/unity-functions/blob/master/UnityFunctions/Assets/Scripts/Main/TriangleDiskCollision.cs)
+* Triangle - Line: [TriangleLineCollision.cs](https://github.com/vbodurov/unity-functions/blob/master/UnityFunctions/Assets/Scripts/Main/TriangleLineCollision.cs)
+* Triangle - Sphere: [TriangleSphereCollision.cs](https://github.com/vbodurov/unity-functions/blob/master/UnityFunctions/Assets/Scripts/Main/TriangleSphereCollision.cs)
+* Triangle - Triangle: [TriangleTriangleCollision.cs](https://github.com/vbodurov/unity-functions/blob/master/UnityFunctions/Assets/Scripts/Main/TriangleTriangleCollision.cs)
 
 ## Projecting on a Plane:
 
-* Project point on a plane [ProjectPointOnPlane.cs](UnityFunctions/Assets/Scripts/Main/ProjectPointOnPlane.cs)
-* Project vector on a plane [ProjectVectorOnPlane.cs](UnityFunctions/Assets/Scripts/Main/ProjectVectorOnPlane.cs)
+* Project point on a plane [ProjectPointOnPlane.cs](https://github.com/vbodurov/unity-functions/blob/master/UnityFunctions/Assets/Scripts/Main/ProjectPointOnPlane.cs)
+* Project vector on a plane [ProjectVectorOnPlane.cs](https://github.com/vbodurov/unity-functions/blob/master/UnityFunctions/Assets/Scripts/Main/ProjectVectorOnPlane.cs)
 
 ## Transforming Spaces:
 
-* Between Local and World without Transform [TestComputeRelative.cs](UnityFunctions/Assets/Scripts/Main/MiscTests/TestComputeRelative.cs)
+* Between Local and World without Transform [TestComputeRelative.cs](https://github.com/vbodurov/unity-functions/blob/master/UnityFunctions/Assets/Scripts/Main/MiscTests/TestComputeRelative.cs)
 
