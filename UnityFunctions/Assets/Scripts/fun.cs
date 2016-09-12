@@ -351,7 +351,7 @@ namespace UnityFunctions
                 var collisionPlusNorm = collision + normal;
 
                 Vector3 norm1X, norm1Y;
-                ComputeAnyNormals(ref disk1Up, out norm1X, out norm1Y);
+                vector.ComputeRandomXYAxesForPlane(ref disk1Up, out norm1X, out norm1Y);
                 var a = (collision - disk1Center).As2d(ref norm1X, ref norm1Y);
                 var b = (collisionPlusNorm - disk1Center).As2d(ref norm1X, ref norm1Y);
                 Vector2 projection1;
@@ -362,7 +362,7 @@ namespace UnityFunctions
                     return false;
                 }
                 Vector3 norm2X, norm2Y;
-                ComputeAnyNormals(ref disk2Up, out norm2X, out norm2Y);
+                vector.ComputeRandomXYAxesForPlane(ref disk2Up, out norm2X, out norm2Y);
                 a = (collision - disk2Center).As2d(ref norm2X, ref norm2Y);
                 b = (collisionPlusNorm - disk2Center).As2d(ref norm2X, ref norm2Y);
                 Vector2 projection2;
@@ -826,14 +826,14 @@ namespace UnityFunctions
                     var vecB = belowB - c1sb;
                     Vector3 belowNorm;
                     vector.GetNormal(ref vecA, ref vecB, out belowNorm);
-                    ComputeAnyNormals(ref belowNorm, out normX, out normY);
+                    vector.ComputeRandomXYAxesForPlane(ref belowNorm, out normX, out normY);
                     var belowA2D = vecA.As2d(ref normX, ref normY);
                     var belowB2D = vecB.As2d(ref normX, ref normY);
                     if (IsLineSegmentGettingCloserToOriginThan(ref belowA2D, ref belowB2D, maxDist)) return true;
                 }
                 if (hasMiddle)
                 {
-                    ComputeAnyNormals(ref norm1, out normX, out normY);
+                    vector.ComputeRandomXYAxesForPlane(ref norm1, out normX, out normY);
                     var middleA2D = (middleA-c1sb).As2d(ref normX, ref normY);
                     var middleB2D = (middleB-c1sb).As2d(ref normX, ref normY);
                     if (IsLineSegmentGettingCloserToOriginThan(ref middleA2D, ref middleB2D, maxDist)) return true;
@@ -844,7 +844,7 @@ namespace UnityFunctions
                     var vecB = aboveB - c1sa;
                     Vector3 aboveNorm;
                     vector.GetNormal(ref vecA, ref vecB, out aboveNorm);
-                    ComputeAnyNormals(ref aboveNorm, out normX, out normY);
+                    vector.ComputeRandomXYAxesForPlane(ref aboveNorm, out normX, out normY);
                     var aboveA2D = vecA.As2d(ref normX, ref normY);
                     var aboveB2D = vecB.As2d(ref normX, ref normY);
                     if (IsLineSegmentGettingCloserToOriginThan(ref aboveA2D, ref aboveB2D, maxDist)) return true;
@@ -947,7 +947,7 @@ namespace UnityFunctions
                 {
 //Debug.DrawLine(Vector3.zero, middleA, Color.black, 0, false);
 //Debug.DrawLine(Vector3.zero, middleB, Color.red, 0, false);
-                    ComputeAnyNormals(ref norm1, out normX, out normY);
+                    vector.ComputeRandomXYAxesForPlane(ref norm1, out normX, out normY);
                     var middleA2D = (middleA-c1sb).As2d(ref normX, ref normY);
                     var middleB2D = (middleB-c1sb).As2d(ref normX, ref normY);
                     if (IsLineSegmentGettingCloserToOriginThan(ref middleA2D, ref middleB2D, maxDist))
@@ -981,7 +981,7 @@ namespace UnityFunctions
                     var vecB = belowB - c1sb;
                     Vector3 belowNorm;
                     vector.GetNormal(ref vecA, ref vecB, out belowNorm);
-                    ComputeAnyNormals(ref belowNorm, out normX, out normY);
+                    vector.ComputeRandomXYAxesForPlane(ref belowNorm, out normX, out normY);
                     var belowA2D = vecA.As2d(ref normX, ref normY);
                     var belowB2D = vecB.As2d(ref normX, ref normY);
                     if (IsLineSegmentGettingCloserToOriginThan(ref belowA2D, ref belowB2D, maxDist))
@@ -1001,7 +1001,7 @@ namespace UnityFunctions
                     var vecB = aboveB - c1sa;
                     Vector3 aboveNorm;
                     vector.GetNormal(ref vecA, ref vecB, out aboveNorm);
-                    ComputeAnyNormals(ref aboveNorm, out normX, out normY);
+                    vector.ComputeRandomXYAxesForPlane(ref aboveNorm, out normX, out normY);
                     var aboveA2D = vecA.As2d(ref normX, ref normY);
                     var aboveB2D = vecB.As2d(ref normX, ref normY);
                     if (IsLineSegmentGettingCloserToOriginThan(ref aboveA2D, ref aboveB2D, maxDist))
@@ -1041,18 +1041,7 @@ namespace UnityFunctions
                 return projection.magnitude <= maxDist;
             }
 
-            private static void ComputeAnyNormals(ref Vector3 normZ, out Vector3 normX, out Vector3 normY)
-            {
-                var fw = Vector3.forward;
-                cross.Product(ref normZ, ref fw, out normX);
-                if (normX.sqrMagnitude < 0.00001)
-                {
-                    var rt = Vector3.right;
-                    cross.Product(ref normZ, ref rt, out normX);
-                }
-                normX = normX.normalized;
-                vector.GetNormal(ref normZ, ref normX, out normY);
-            }
+            
 
 
 
@@ -1915,7 +1904,7 @@ namespace UnityFunctions
                     if (distanceSquared.Between(ref proj, ref diskCenter) < 0.0001)
                     {
                         Vector3 x2d,y2d;
-                        ComputeAnyNormals(ref diskNormal, out x2d, out y2d);
+                        vector.ComputeRandomXYAxesForPlane(ref diskNormal, out x2d, out y2d);
 
                         var t1in2d = Vector2.zero;
                         var t2in2d = (t2 - t1).As2d(ref x2d, ref y2d);
@@ -2049,7 +2038,7 @@ namespace UnityFunctions
                     var l2 = (intPoint - intNormal*999);
 
                     Vector3 x2d,y2d;
-                    ComputeAnyNormals(ref normalT1, out x2d, out y2d);
+                    vector.ComputeRandomXYAxesForPlane(ref normalT1, out x2d, out y2d);
                     var t12d = Vector2.zero;
                     var t22d = (t1p2 - t1p1).As2d(ref x2d, ref y2d);
                     var t32d = (t1p3 - t1p1).As2d(ref x2d, ref y2d);
@@ -2060,7 +2049,7 @@ namespace UnityFunctions
                     Between2DTriangleAndLineSegment(ref t12d, ref t22d, ref t32d, ref w12d, ref w22d, out int2d);
                     var p1 = int2d.As3d(ref t1p1, ref x2d, ref y2d);
 
-                    ComputeAnyNormals(ref normalT2, out x2d, out y2d);
+                    vector.ComputeRandomXYAxesForPlane(ref normalT2, out x2d, out y2d);
                     t22d = (t2p2 - t2p1).As2d(ref x2d, ref y2d);
                     t32d = (t2p3 - t2p1).As2d(ref x2d, ref y2d);
                     w12d = (l1 - t2p1).As2d(ref x2d, ref y2d);
@@ -4595,6 +4584,18 @@ namespace UnityFunctions
                 right.Normalize();
                 cross.Product(ref forward, ref right, out realUp);
                return realUp.normalized;
+            }
+            internal static void ComputeRandomXYAxesForPlane(ref Vector3 planeNormal, out Vector3 normX, out Vector3 normY)
+            {
+                var fw = Vector3.right;
+                cross.Product(ref planeNormal, ref fw, out normX);
+                if (normX.sqrMagnitude < 0.001)
+                {
+                    var rt = Vector3.forward;
+                    cross.Product(ref planeNormal, ref rt, out normX);
+                }
+                normX = normX.normalized;
+                vector.GetNormal(ref planeNormal, ref normX, out normY);
             }
         }
     }

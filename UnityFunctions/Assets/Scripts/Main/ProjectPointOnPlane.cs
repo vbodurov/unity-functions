@@ -5,7 +5,8 @@ using UnityFunctions;
 
 namespace Main
 {
-    public class ProjectPointOnPlane : BaseMainScript {
+    public class ProjectPointOnPlane : BaseMainScript
+    {
         private Transform _point, _projection;
 
         // Drag the white ball in Scene view

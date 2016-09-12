@@ -59,7 +59,7 @@ namespace Main
         protected void SetTriangle(out Vector3 a, out Vector3 b, out Vector3 c, out Vector3 planeNormal)
         {
             SetTriangle(out a, out b, out c);
-            planeNormal = fun.point.GetNormal(a, b, c);
+            fun.point.GetNormal(ref a, ref b, ref c, out planeNormal);
         }
 
         protected void SetTriangle(Transform t1, Transform t2, Transform t3, Mesh m, out Vector3 a, out Vector3 b, out Vector3 c)

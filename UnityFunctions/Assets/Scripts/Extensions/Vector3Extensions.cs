@@ -25,6 +25,22 @@ namespace Unianio.Extensions
             result = new Vector2(fun.dot.Product(ref v3, ref normalizedX),fun.dot.Product(ref v3, ref normalizedY));
         }
 
+        internal static Vector2 As2d(this Vector3 v3, Vector3 origin, Vector3 normalizedX, Vector3 normalizedY)
+        {
+            v3 = v3 - origin;
+            return new Vector2(fun.dot.Product(ref v3, ref normalizedX),fun.dot.Product(ref v3, ref normalizedY));
+        }
+        internal static Vector2 As2d(this Vector3 v3, ref Vector3 origin, ref Vector3 normalizedX, ref Vector3 normalizedY)
+        {
+            v3 = v3 - origin;
+            return new Vector2(fun.dot.Product(ref v3, ref normalizedX),fun.dot.Product(ref v3, ref normalizedY));
+        }
+        internal static void As2d(this Vector3 v3, ref Vector3 origin, ref Vector3 normalizedX, ref Vector3 normalizedY, out Vector2 result)
+        {
+            v3 = v3 - origin;
+            result = new Vector2(fun.dot.Product(ref v3, ref normalizedX),fun.dot.Product(ref v3, ref normalizedY));
+        }
+
         internal static Vector3 MidWayTo(this Vector3 a, Vector3 b)
         {
             return fun.point.MoveRel(a,b,0.5);
