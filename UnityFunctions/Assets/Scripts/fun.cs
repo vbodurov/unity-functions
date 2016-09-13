@@ -410,12 +410,12 @@ namespace UnityFunctions
             /// <param name="csa">capsule sphere above center</param>
             /// <param name="capsuleRadius">capsule radius</param>
             /// <param name="diskCenter">The center point of the disk</param>
-            /// <param name="diskUp">disk up normal</param>
+            /// <param name="diskNormal">disk up normal</param>
             /// <param name="diskRadius">disk radius</param>
             /// <returns></returns>
             internal static bool BetweenCapsuleAndDisk(
                 ref Vector3 csb, ref Vector3 csa, float capsuleRadius, 
-                ref Vector3 diskCenter, ref Vector3 diskUp, float diskRadius)
+                ref Vector3 diskNormal, ref Vector3 diskCenter, float diskRadius)
             {
                 // see if disk center is within the capsule cylinder
                 Vector3 diskCenterOnAxis;
@@ -435,7 +435,7 @@ namespace UnityFunctions
                 var capToDisk = (diskCenOnCapPl - csb).normalized*capsuleRadius;
                 var csaShifted = csa + capToDisk;
                 var csbShifted = csb + capToDisk;
-                if (BetweenPlaneAndLineSegment(ref diskUp, ref diskCenter, ref csaShifted, ref csbShifted, out collision))
+                if (BetweenPlaneAndLineSegment(ref diskNormal, ref diskCenter, ref csaShifted, ref csbShifted, out collision))
                 {
                     if (distance.Between(ref collision, ref diskCenter) <= diskRadius)
                     {
@@ -447,7 +447,7 @@ namespace UnityFunctions
                 
                 // test collision with below sphere
                 Vector3 capEndOnDiskPl;
-                point.ProjectOnPlane(ref csb, ref diskUp, ref diskCenter, out capEndOnDiskPl);
+                point.ProjectOnPlane(ref csb, ref diskNormal, ref diskCenter, out capEndOnDiskPl);
                 var diskToSph = capEndOnDiskPl - diskCenter;
                 if (diskToSph.sqrMagnitude < 0.000001f)
                 {
@@ -468,7 +468,7 @@ namespace UnityFunctions
                     }
                 }
                 // test collision with above sphere
-                point.ProjectOnPlane(ref csa, ref diskUp, ref diskCenter, out capEndOnDiskPl);
+                point.ProjectOnPlane(ref csa, ref diskNormal, ref diskCenter, out capEndOnDiskPl);
                 diskToSph = capEndOnDiskPl - diskCenter;
                 if (diskToSph.sqrMagnitude < 0.000001f)
                 {
@@ -500,13 +500,13 @@ namespace UnityFunctions
             /// <param name="csa">capsule sphere above center</param>
             /// <param name="capsuleRadius">capsule radius</param>
             /// <param name="diskCenter">The center point of the disk</param>
-            /// <param name="diskUp">disk up normal</param>
+            /// <param name="diskNormal">disk up normal</param>
             /// <param name="diskRadius">disk radius</param>
             /// <param name="collision">the point best describing the collision point - might not be precise!</param>
             /// <returns></returns>
             internal static bool BetweenCapsuleAndDisk(
                 ref Vector3 csb, ref Vector3 csa, float capsuleRadius, 
-                ref Vector3 diskCenter, ref Vector3 diskUp, float diskRadius, out Vector3 collision)
+                ref Vector3 diskNormal, ref Vector3 diskCenter, float diskRadius, out Vector3 collision)
             {
                 // see if disk center is within the capsule cylinder
                 Vector3 diskCenterOnAxis;
@@ -527,7 +527,7 @@ namespace UnityFunctions
                 var capToDisk = (diskCenOnCapPl - csb).normalized*capsuleRadius;
                 var csaShifted = csa + capToDisk;
                 var csbShifted = csb + capToDisk;
-                if (BetweenPlaneAndLineSegment(ref diskUp, ref diskCenter, ref csaShifted, ref csbShifted, out collision))
+                if (BetweenPlaneAndLineSegment(ref diskNormal, ref diskCenter, ref csaShifted, ref csbShifted, out collision))
                 {
                     if (distance.Between(ref collision, ref diskCenter) <= diskRadius)
                     {
@@ -538,7 +538,7 @@ namespace UnityFunctions
 
                 // test collision with below sphere
                 Vector3 capEndOnDiskPl;
-                point.ProjectOnPlane(ref csb, ref diskUp, ref diskCenter, out capEndOnDiskPl);
+                point.ProjectOnPlane(ref csb, ref diskNormal, ref diskCenter, out capEndOnDiskPl);
                 var diskToSph = capEndOnDiskPl - diskCenter;
                 if (diskToSph.sqrMagnitude < 0.000001f)
                 {
@@ -568,7 +568,7 @@ namespace UnityFunctions
                     }
                 }
                 // test collision with above sphere
-                point.ProjectOnPlane(ref csa, ref diskUp, ref diskCenter, out capEndOnDiskPl);
+                point.ProjectOnPlane(ref csa, ref diskNormal, ref diskCenter, out capEndOnDiskPl);
                 diskToSph = capEndOnDiskPl - diskCenter;
                 if (diskToSph.sqrMagnitude < 0.000001f)
                 {

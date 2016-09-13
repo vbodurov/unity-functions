@@ -42,15 +42,15 @@ namespace Main
         {
             var c1p1 = _capsule.position - _capsule.up*(CapsuleHeight/2);
             var c1p2 = _capsule.position + _capsule.up*(CapsuleHeight/2);
+            var diskNormal = _disk.up;
             var diskCenter = _disk.position;
-            var diskUp = _disk.up;
 
             
             // test code STARTS here -----------------------------------------------
             Vector3 collision;
             var hasCollision = 
                 fun.intersection.BetweenCapsuleAndDisk(
-                    ref c1p1, ref c1p2, CapsuleRadius, ref diskCenter, ref diskUp, DiskRadius, out collision);
+                    ref c1p1, ref c1p2, CapsuleRadius, ref diskNormal, ref diskCenter, DiskRadius, out collision);
             // test code ENDS here -------------------------------------------------
 
             _collision.position = hasCollision ? collision : new Vector3(0,999,0);
