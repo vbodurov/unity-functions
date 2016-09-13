@@ -1,5 +1,4 @@
 ﻿using Extensions;
-using Main;
 using UnityEngine;
 using UnityFunctions;
 
@@ -31,7 +30,6 @@ namespace Main
                 fun.meshes.CreateSphere(new DtSphere {radius = 0.03, name = "collision"})
                     .SetStandardShaderTransparentColor(1,0,0,0.9).transform;
 	    }
-
         void Update()
         {
             Vector3 t1, t2, t3, triangleNormal;

@@ -48,7 +48,7 @@ namespace Main
                 Debug.DrawLine(rayOr,rayOr+rayFw*0.2f,Color.black,0,true);
             }
 
-            SetColorOnChanged(isInsideTri,Color.red, Color.gray, _intersection);
+            SetColorOnChanged(isInsideTri,Color.red, Color.gray, _intersection,_origin);
 
             _intersection.position = p;
         

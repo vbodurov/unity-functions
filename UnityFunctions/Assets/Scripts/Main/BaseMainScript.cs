@@ -104,6 +104,11 @@ namespace Main
         {
             return new Color((float)r,(float)g,(float)b,(float)a);
         }
+
+        protected static Vector3 V3(double x, double y, double z)
+        {
+            return new Vector3((float)x,(float)y,(float)z);
+        }
         
     }
 }

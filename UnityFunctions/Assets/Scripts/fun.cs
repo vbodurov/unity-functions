@@ -1593,13 +1593,13 @@ namespace UnityFunctions
             }
             internal static bool Between2DLines(Vector2 lineA1, Vector2 lineA2, Vector2 lineB1, Vector2 lineB2, out Vector2 intersect)
             {
-                var a1 = lineA2.y - lineA1.y;
-                var b1 = lineA1.x - lineA2.x;
-                var c1 = a1 * lineA1.x + b1 * lineA1.y;
+                var a1 = (double)lineA2.y - (double)lineA1.y;
+                var b1 = (double)lineA1.x - (double)lineA2.x;
+                var c1 = a1 * (double)lineA1.x + b1 * (double)lineA1.y;
 
-                var a2 = lineB2.y - lineB1.y;
-                var b2 = lineB1.x - lineB2.x;
-                var c2 = a2 * lineB1.x + b2 * lineB1.y;
+                var a2 = (double)lineB2.y - (double)lineB1.y;
+                var b2 = (double)lineB1.x - (double)lineB2.x;
+                var c2 = a2 * (double)lineB1.x + b2 * (double)lineB1.y;
 
                 var det = a1 * b2 - a2 * b1;
                 // if lines are parallel
@@ -1610,7 +1610,7 @@ namespace UnityFunctions
                 }
                 var x = (b2 * c1 - b1 * c2) / det;
                 var y = (a1 * c2 - a2 * c1) / det;
-                intersect = new Vector2(x, y);
+                intersect = new Vector2((float)x, (float)y);
 
                 return
                     intersect.x >= Mathf.Min(lineA1.x, lineA2.x) &&
@@ -1624,25 +1624,23 @@ namespace UnityFunctions
             }
             internal static bool Between2DLines(ref Vector2 lineA1, ref Vector2 lineA2, ref Vector2 lineB1, ref Vector2 lineB2, out Vector2 intersect)
             {
-                var a1 = lineA2.y - lineA1.y;
-                var b1 = lineA1.x - lineA2.x;
-                var c1 = a1 * lineA1.x + b1 * lineA1.y;
+                var a1 = (double)lineA2.y - (double)lineA1.y;
+                var b1 = (double)lineA1.x - (double)lineA2.x;
+                var c1 = a1 * (double)lineA1.x + b1 * (double)lineA1.y;
 
-                var a2 = lineB2.y - lineB1.y;
-                var b2 = lineB1.x - lineB2.x;
+                var a2 = (double)lineB2.y - (double)lineB1.y;
+                var b2 = (double)lineB1.x - (double)lineB2.x;
                 var c2 = a2 * lineB1.x + b2 * lineB1.y;
-
                 var det = a1 * b2 - a2 * b1;
                 // if lines are parallel
-                if (det < 0.00001f && det > -0.00001f)
+                if (det < 0.00001 && det > -0.00001)
                 {
                     intersect = Vector2.zero;
                     return false;
                 }
                 var x = (b2 * c1 - b1 * c2) / det;
                 var y = (a1 * c2 - a2 * c1) / det;
-                intersect = new Vector2(x, y);
-
+                intersect = new Vector2((float)x, (float)y);
                 return
                     intersect.x >= Mathf.Min(lineA1.x, lineA2.x) &&
                     intersect.x <= Mathf.Max(lineA1.x, lineA2.x) &&
@@ -1663,7 +1661,7 @@ namespace UnityFunctions
             {
                 // See http://www.geeksforgeeks.org/orientation-3-ordered-points/
                 // for details of below formula.
-                var val = (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y);
+                var val = ((double)q.y - (double)p.y) * ((double)r.x - (double)q.x) - ((double)q.x - (double)p.x) * ((double)r.y - (double)q.y);
  
                 if (val < 0.000001 && val > -0.000001) return 0;  // colinear
  
@@ -1943,9 +1941,6 @@ namespace UnityFunctions
                         var t3in2d = (t3 - t1).As2d(ref x2d, ref y2d);
                         var w1in2d = (w1 - t1).As2d(ref x2d, ref y2d);
                         var w2in2d = (w2 - t1).As2d(ref x2d, ref y2d);
-//Debug.DrawLine(Vector3.one*100, w1in2d, Color.red, 0, false);
-//Debug.DrawLine(Vector3.one*100, w2in2d, Color.black, 0, false);
-
                         Vector2 int2d;
                         if (Between2DTriangleAndLineSegment(
                             ref t1in2d, ref t2in2d, ref t3in2d,
