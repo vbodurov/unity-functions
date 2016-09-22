@@ -13,6 +13,10 @@ namespace Main.MiscTests
         {
             return start*Quaternion.AngleAxis(Angle*(float) progress, Axis);
         }
+        public Quaternion Slerp(double progress)
+        {
+            return Quaternion.AngleAxis(Angle*(float) progress, Axis);
+        }
     }
     public class TestMoreThan360Rotation : BaseMainScript
     {
@@ -46,7 +50,7 @@ namespace Main.MiscTests
             var ini = Vector3.one.normalized;
 
             // test code STARTS here -----------------------------------------------
-            ini = _rotation.Slerp(Quaternion.identity, x)*ini;
+            ini = _rotation.Slerp(x)*ini;
             _capsule.LookAt(ini*100);
             // test code ENDS here -------------------------------------------------
 
