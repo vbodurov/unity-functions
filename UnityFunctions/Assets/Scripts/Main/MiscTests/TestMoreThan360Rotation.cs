@@ -5,19 +5,6 @@ using UnityFunctions;
 
 namespace Main.MiscTests
 {
-    public struct AngleAxisData
-    {
-        public float Angle;
-        public Vector3 Axis;
-        public Quaternion Slerp(Quaternion start, double progress)
-        {
-            return start*Quaternion.AngleAxis(Angle*(float) progress, Axis);
-        }
-        public Quaternion Slerp(double progress)
-        {
-            return Quaternion.AngleAxis(Angle*(float) progress, Axis);
-        }
-    }
     public class TestMoreThan360Rotation : BaseMainScript
     {
         private Transform _capsule;
@@ -40,7 +27,7 @@ namespace Main.MiscTests
             _capsule.LookAt(Vector3.one*10);
 
             _time.SetTime(3);
-            _rotation = new AngleAxisData {Angle = 720, Axis = Vector3.up};
+            _rotation = new AngleAxisData (720, Vector3.up);
 
 	    }
 
