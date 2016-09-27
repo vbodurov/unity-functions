@@ -4468,6 +4468,34 @@ namespace UnityFunctions
 
         internal static class vector
         {
+        
+            internal static void ToLocal(ref Vector3 worldVector, ref Quaternion worldRotation, out Vector3 localVector)
+            {
+                localVector = Quaternion.Inverse(worldRotation)*worldVector;
+            }
+            internal static Vector3 ToLocal(ref Vector3 worldVector, ref Quaternion worldRotation)
+            {
+                return Quaternion.Inverse(worldRotation)*worldVector;
+            }
+            internal static Vector3 ToLocal(Vector3 worldVector, Quaternion worldRotation)
+            {
+                return Quaternion.Inverse(worldRotation)*worldVector;
+            }
+
+
+            internal static void ToWorld(ref Vector3 localVector, ref Quaternion worldRotation, out Vector3 worldPoint)
+            {
+                worldPoint = worldRotation * localVector;
+            }
+            internal static Vector3 ToWorld(ref Vector3 localVector, ref Quaternion worldRotation)
+            {
+                return worldRotation * localVector;
+            }
+            internal static Vector3 ToWorld(Vector3 localVector, Quaternion worldRotation)
+            {
+                return worldRotation * localVector;
+            }
+        
             internal static bool IsAbovePlane(ref Vector3 vectorToPlane, ref Vector3 planeNormal)
             {
                 var distance = -dot.Product(ref vectorToPlane, ref planeNormal);
