@@ -610,8 +610,8 @@ namespace UnityFunctions
             {
                 var radiusSquared = sphereRadius*sphereRadius;
                 var rayToSphere = sphereCenter - rayOr; 
-                var tca = fun.dot.Product(ref rayToSphere, ref rayFw); 
-                var d2 = fun.dot.Product(ref rayToSphere, ref rayToSphere) - tca * tca;
+                var tca = dot.Product(ref rayToSphere, ref rayFw); 
+                var d2 = dot.Product(ref rayToSphere, ref rayToSphere) - tca * tca;
                 if (d2 > radiusSquared)
                 {
                     collision = Vector3.zero;
@@ -643,6 +643,39 @@ namespace UnityFunctions
                 collision = rayOr + rayFw*t;
  
                 return true;
+            }
+
+            internal static bool BetweenRayAndCapsule(
+                ref Vector3 rayFw, ref Vector3 rayOr, 
+                ref Vector3 cpu, ref Vector3 cpd, float capsuleRadius, 
+                out Vector3 collision)
+            {
+                var capDir = (cpu - cpd);
+                if (capDir.sqrMagnitude < 0.00001f)
+                {
+                    // the two capsule ends are so close so it is esencially a sphere
+                    return BetweenRayAndSphere(ref rayFw, ref rayOr, ref cpu, capsuleRadius, out collision);
+                }
+                capDir.Normalize();
+                Vector3 pl1,pl2;
+                point.ClosestOnTwoLines(ref rayOr, ref rayFw, ref cpd, ref capDir, out pl1, out pl2);
+                if (!point.IsOnSegment(ref cpu, ref pl2, ref cpd))
+                {
+                    if (BetweenRayAndSphere(ref rayFw, ref rayOr, ref cpu, capsuleRadius, out collision)) return true;
+                    if (BetweenRayAndSphere(ref rayFw, ref rayOr, ref cpd, capsuleRadius, out collision)) return true;
+                    return false;
+                }
+
+                var d = distance.Between(ref pl1, ref pl2);
+                var hasCollision = d <= capsuleRadius;
+                if (hasCollision)
+                {
+                    var n = Math.Sqrt(capsuleRadius*capsuleRadius - d*d);
+                    point.MoveAbs(ref pl1, ref rayOr, (float)n, out collision);
+                    return true;
+                }
+                collision = Vector3.zero;
+                return false;
             }
 
             /// <summary>
@@ -3668,6 +3701,26 @@ namespace UnityFunctions
                 dir = dir.normalized;
 
                 return from + dir*distance;
+            }
+            internal static void MoveAbs(ref Vector3 from, ref Vector3 to, float distance, out Vector3 result)
+            {
+                if (distance < 0.0000001 && distance > -0.0000001)
+                {
+                    result = from;
+                    return;
+                }
+
+                var dir = (to - from);
+
+                if (dir.magnitude < 0.00001)
+                {
+                    result = to;
+                    return;
+                }
+
+                dir = dir.normalized;
+
+                result = from + dir*distance;
             }
 
             internal static Vector2 Middle(Vector2 a, Vector2 b)
