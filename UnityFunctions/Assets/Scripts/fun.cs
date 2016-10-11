@@ -604,13 +604,13 @@ namespace UnityFunctions
             }
 
             internal static bool BetweenRayAndSphere(
-                ref Vector3 rayFw, ref Vector3 rayOr, 
+                ref Vector3 rayDirection, ref Vector3 rayOrigin, 
                 ref Vector3 sphereCenter, float sphereRadius,
                 out Vector3 collision)
             {
                 var radiusSquared = sphereRadius*sphereRadius;
-                var rayToSphere = sphereCenter - rayOr; 
-                var tca = dot.Product(ref rayToSphere, ref rayFw); 
+                var rayToSphere = sphereCenter - rayOrigin; 
+                var tca = dot.Product(ref rayToSphere, ref rayDirection); 
                 var d2 = dot.Product(ref rayToSphere, ref rayToSphere) - tca * tca;
                 if (d2 > radiusSquared)
                 {
@@ -640,7 +640,7 @@ namespace UnityFunctions
  
                 var t = t0;
 
-                collision = rayOr + rayFw*t;
+                collision = rayOrigin + rayDirection*t;
  
                 return true;
             }
@@ -2094,6 +2094,152 @@ namespace UnityFunctions
                 collision = Vector3.zero;
                 return false;
             }
+
+            internal static bool BetweenRayAndDisk(
+                ref Vector3 rayDirection,
+                ref Vector3 rayOrigin,
+                ref Vector3 diskNormal,
+                ref Vector3 diskCenter,
+                float diskRadius,
+                out Vector3 crossPoint)
+            {
+                Vector3 intersectPlane;
+                var hasIntersection = 
+                    BetweenPlaneAndRay(
+                        ref diskNormal, ref diskCenter, 
+                        ref rayDirection, ref rayOrigin, out intersectPlane);
+
+                // if ray lies in the disk plane, then turn it into 2d problem
+                if (abs(dot.Product(ref diskNormal, ref rayDirection)) < 0.0001f)
+                {
+                    Vector3 x2d,y2d;
+                    vector.ComputeRandomXYAxesForPlane(ref diskNormal, out x2d, out y2d);
+
+                    var line1 = rayOrigin.As2d(ref diskCenter, ref x2d, ref y2d);
+                    var line2 = (rayOrigin+rayDirection).As2d(ref diskCenter, ref x2d, ref y2d);
+
+                    var cirCen = Vector2.zero;
+                    Vector2 int1,int2;
+
+                    var found = BetweenLineAndCircle(ref cirCen, diskRadius, ref line1, ref line2, out int1, out int2) > 0;
+
+                    if (found)
+                    {
+                        var ds1 = distanceSquared.Between(ref int1, ref line1);
+                        var ds2 = distanceSquared.Between(ref int2, ref line1);
+                        crossPoint = (ds1 > ds2 ? int1 : int2).As3d(ref diskCenter, ref x2d, ref y2d);
+                    }
+                    else
+                    {
+                        crossPoint = Vector3.zero;
+                    }
+
+                    return found;
+                }
+
+                if (!hasIntersection)
+                {
+                    crossPoint = Vector3.zero;
+                    return false;
+                }
+
+                // the ray is intersecting disk plane in a point outside the disk
+                if (distance.Between(ref intersectPlane, ref diskCenter) > diskRadius)
+                {
+                    crossPoint = Vector3.zero;
+                    return false;
+                }
+
+                crossPoint = intersectPlane;
+                return true;
+            }
+
+            internal static bool BetweenLineSegmentAndDisk(
+                ref Vector3 lineEnd1,
+                ref Vector3 lineEnd2,
+                ref Vector3 diskNormal, 
+                ref Vector3 diskCenter,
+                float diskRadius,
+                out Vector3 crossPoint)
+            {
+                Vector3 rayDiskIntersection;
+                var rayDirection = (lineEnd1 - lineEnd2);
+                // if 2 ends of a line are the same point, then check if that point lies on the disk
+                if (rayDirection.sqrMagnitude < 0.00001)
+                {
+                    Vector3 projection;
+                    point.ProjectOnPlane(ref lineEnd1, ref diskNormal, ref diskCenter, out projection);
+                    if (distanceSquared.Between(ref projection, ref lineEnd1) < 0.0001)
+                    {
+                        crossPoint = lineEnd1;
+                        return true;
+                    }
+                    crossPoint = Vector3.zero;
+                    return false;
+                }
+                var hasIntersection = 
+                    BetweenRayAndDisk(
+                        ref rayDirection,
+                        ref lineEnd2,
+                        ref diskNormal,
+                        ref diskCenter,
+                        diskRadius,
+                        out rayDiskIntersection);
+                if (!hasIntersection)
+                {
+                    crossPoint = Vector3.zero;
+                    return false;
+                }
+                // the ray is intersecting disk within that line segment
+                if (point.IsOnSegment(ref lineEnd1, ref rayDiskIntersection, ref lineEnd2))
+                {
+                    crossPoint = rayDiskIntersection;
+                    return true;
+                }
+                crossPoint = Vector3.zero;
+                return false;
+            }
+
+            internal static bool BetweenLineSegmentAndDisk(
+                ref Vector3 lineEnd1,
+                ref Vector3 lineEnd2,
+                ref Vector3 diskNormal, 
+                ref Vector3 diskCenter,
+                float diskRadius)
+            {
+                Vector3 rayDiskIntersection;
+                var rayDirection = (lineEnd1 - lineEnd2);
+                // if 2 ends of a line are the same point, then check if that point lies on the disk
+                if (rayDirection.sqrMagnitude < 0.00001)
+                {
+                    Vector3 projection;
+                    point.ProjectOnPlane(ref lineEnd1, ref diskNormal, ref diskCenter, out projection);
+                    if (distanceSquared.Between(ref projection, ref lineEnd1) < 0.0001)
+                    {
+                        return true;
+                    }
+                    return false;
+                }
+                var hasIntersection = 
+                    BetweenRayAndDisk(
+                        ref rayDirection,
+                        ref lineEnd2,
+                        ref diskNormal,
+                        ref diskCenter,
+                        diskRadius,
+                        out rayDiskIntersection);
+                if (!hasIntersection)
+                {
+                    return false;
+                }
+                // the ray is intersecting disk within that line segment
+                if (point.IsOnSegment(ref lineEnd1, ref rayDiskIntersection, ref lineEnd2))
+                {
+                    return true;
+                }
+                return false;
+            }
+
         }
 
 
