@@ -833,6 +833,7 @@ namespace UnityFunctions
                 // none
                 else
                 {
+                    var minNorm1 = -norm1;
                     // is above
                     if (point.IsAbovePlane(ref c2sb, ref norm1, ref c1sa))
                     {
@@ -840,19 +841,34 @@ namespace UnityFunctions
                         aboveB = c2sa;
                         hasAbove = true;
                     }
-                    else
+                    else if (point.IsAbovePlane(ref c2sb, ref minNorm1, ref c1sb))
                     {
                         belowA = c2sb;
                         belowB = c2sa;
                         hasBelow = true;
                     }
-
+                    else
+                    {
+                        middleA = c2sb;
+                        middleB = c2sa;
+                        hasMiddle = true;
+                    }
                 }
 
                 var maxDist = radius1 + radius2;
 
                 Vector3 normX, normY;
                 // check each segment in isolation
+                if (hasMiddle)
+                {
+                    vector.ComputeRandomXYAxesForPlane(ref norm1, out normX, out normY);
+                    var middleA2D = (middleA-c1sb).As2d(ref normX, ref normY);
+                    var middleB2D = (middleB-c1sb).As2d(ref normX, ref normY);
+                    if (IsLineSegmentGettingCloserToOriginThan(ref middleA2D, ref middleB2D, maxDist))
+                    {
+                        return true;
+                    }
+                }
                 if (hasBelow)
                 {
                     var vecA = belowA - c1sb;
@@ -862,14 +878,10 @@ namespace UnityFunctions
                     vector.ComputeRandomXYAxesForPlane(ref belowNorm, out normX, out normY);
                     var belowA2D = vecA.As2d(ref normX, ref normY);
                     var belowB2D = vecB.As2d(ref normX, ref normY);
-                    if (IsLineSegmentGettingCloserToOriginThan(ref belowA2D, ref belowB2D, maxDist)) return true;
-                }
-                if (hasMiddle)
-                {
-                    vector.ComputeRandomXYAxesForPlane(ref norm1, out normX, out normY);
-                    var middleA2D = (middleA-c1sb).As2d(ref normX, ref normY);
-                    var middleB2D = (middleB-c1sb).As2d(ref normX, ref normY);
-                    if (IsLineSegmentGettingCloserToOriginThan(ref middleA2D, ref middleB2D, maxDist)) return true;
+                    if (IsLineSegmentGettingCloserToOriginThan(ref belowA2D, ref belowB2D, maxDist))
+                    {
+                        return true;
+                    }
                 }
                 if (hasAbove)
                 {
@@ -880,7 +892,10 @@ namespace UnityFunctions
                     vector.ComputeRandomXYAxesForPlane(ref aboveNorm, out normX, out normY);
                     var aboveA2D = vecA.As2d(ref normX, ref normY);
                     var aboveB2D = vecB.As2d(ref normX, ref normY);
-                    if (IsLineSegmentGettingCloserToOriginThan(ref aboveA2D, ref aboveB2D, maxDist)) return true;
+                    if (IsLineSegmentGettingCloserToOriginThan(ref aboveA2D, ref aboveB2D, maxDist))
+                    {
+                        return true;
+                    }
                 }
                 return false;
             }
