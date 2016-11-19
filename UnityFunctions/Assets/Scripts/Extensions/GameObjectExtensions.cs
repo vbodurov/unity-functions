@@ -18,5 +18,10 @@ namespace Extensions
             }
             return go;
         }
+        internal static GameObject SetName(this GameObject go, string name)
+        {
+            go.name = name;
+            return go;
+        }
     }
 }

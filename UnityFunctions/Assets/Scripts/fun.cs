@@ -1177,6 +1177,35 @@ namespace UnityFunctions
                 return false;
             }
 
+            internal static bool BetweenPlaneAndLine(
+                ref Vector3 planeNormal, ref Vector3 planePoint,
+                ref Vector3 lineA, ref Vector3 lineB, out Vector3 intersection)
+            {
+                planeNormal.Normalize();// that changes state but plane normal should always be normal
+                var rayOrigin = lineA;
+                var rayNormal = lineB - lineA;
+                // if line points are the same
+                if (rayNormal.sqrMagnitude < 0.00001)
+                {
+                    point.ProjectOnPlane(ref lineA, ref planeNormal, ref planePoint, out intersection);
+                    return true;
+                }
+                rayNormal.Normalize();
+                var planeDistance = -dot.Product(ref planeNormal, ref planePoint);
+                var a = dot.Product(ref rayNormal, ref planeNormal);
+                var num = -dot.Product(ref rayOrigin, ref planeNormal) - planeDistance;
+                // if line is parallel to the plane
+                if (a < 0.000001 && a > -0.000001)
+                {
+                    intersection = Vector3.zero;
+                    return false;
+                }
+                var distanceToCollision = num / a;
+                intersection = lineA + rayNormal*distanceToCollision;
+                return true;
+            }
+
+
             internal static bool BetweenPlaneAndRay(
                 ref Vector3 planeNormal, ref Vector3 planePoint,
                 ref Vector3 rayNormal, ref Vector3 rayOrigin, out float distanceToCollision)
