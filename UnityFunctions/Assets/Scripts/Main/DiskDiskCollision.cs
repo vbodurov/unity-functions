@@ -47,13 +47,11 @@ namespace Main
             var disk1Up = _disk1.up;
             var disk2Center = _disk2.position;
             var disk2Up = _disk2.up;
-
-            
             // test code STARTS here -----------------------------------------------
             Vector3 collision;
             var hasCollision = 
                 fun.intersection.BetweenDiskAndDisk(
-                    ref disk1Center, ref disk1Up, Disk1Radius, ref disk2Center, ref disk2Up, Disk2Radius, out collision);
+                    ref disk1Up, ref disk1Center, Disk1Radius, ref disk2Up, ref disk2Center, Disk2Radius, out collision);
             // test code ENDS here -------------------------------------------------
 
             _collision.position = hasCollision ? collision : new Vector3(0,999,0);

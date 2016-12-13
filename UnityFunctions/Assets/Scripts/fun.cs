@@ -297,19 +297,86 @@ namespace UnityFunctions
         internal static class intersection
         {
             /// <summary>
+            /// Check if disk and plane cross each other
+            /// </summary>
+            /// <param name="planeNormal">the normal of the plane</param>
+            /// <param name="planePoint">any point on the plane</param>
+            /// <param name="sphereCenter">the center of the sphere</param>
+            /// <param name="sphereRadius">sphere radius</param>
+            /// <param name="collision">collision point</param>
+            /// <returns></returns>
+            internal static bool BetweenPlaneAndSphere(ref Vector3 planeNormal, ref Vector3 planePoint, ref Vector3 sphereCenter, float sphereRadius, out Vector3 collision)
+            {
+                Vector3 sphereCenterProj;
+                point.ProjectOnPlane(ref sphereCenter, ref planeNormal, ref planePoint, out sphereCenterProj);
+                var h = distance.Between(ref sphereCenter, ref sphereCenterProj);
+                if (h > sphereRadius)
+                {
+                    // sphere does not intersect the plane
+                    collision = Vector3.zero;
+                    return false;
+                }
+                collision = sphereCenterProj;
+                return true;
+            }
+
+
+            /// <summary>
+            /// Check if disk and sphere cross each other
+            /// </summary>
+            /// <param name="diskPlaneNormal">the normal of the disk 1 plane</param>
+            /// <param name="diskCenter">the center of the disk</param>
+            /// <param name="diskRadius">disk radius</param>
+            /// <param name="sphereCenter">the center of the sphere</param>
+            /// <param name="sphereRadius">sphere radius</param>
+            /// <param name="collision">collision point</param>
+            /// <returns></returns>
+            internal static bool BetweenDiskAndSphere(ref Vector3 diskPlaneNormal, ref Vector3 diskCenter, float diskRadius, ref Vector3 sphereCenter, float sphereRadius, out Vector3 collision)
+            {
+                Vector3 sphereCenterProj;
+                point.ProjectOnPlane(ref sphereCenter, ref diskPlaneNormal, ref diskCenter, out sphereCenterProj);
+                var h = distance.Between(ref sphereCenter, ref sphereCenterProj);
+                if (h > sphereRadius)
+                {
+                    // sphere does not intersect disk plane
+                    collision = Vector3.zero;
+                    return false;
+                }
+                var projCirCenDist = distance.Between(ref sphereCenterProj, ref diskCenter);
+                if (projCirCenDist > (diskRadius + sphereRadius))
+                {
+                    // maximum extent sphere circle interection with disk plane cannot reach disk plane
+                    collision = Vector3.zero;
+                    return false;
+                }
+
+                var projCirRad = (float)Math.Sqrt(sphereRadius*sphereRadius - h*h);
+                if (projCirCenDist > (diskRadius + projCirRad))
+                {
+                    // real extent sphere circle interection with disk plane cannot reach disk plane
+                    collision = Vector3.zero;
+                    return false;
+                }
+                var overlap = diskRadius + projCirRad - projCirCenDist;
+                point.MoveAbs(ref sphereCenterProj, ref diskCenter, projCirRad - overlap*0.5f, out collision);
+                return true;
+            }
+
+
+            /// <summary>
             /// Check if two disks cross each other
             /// </summary>
-            /// <param name="disk1Center">the center of disk 1</param>
-            /// <param name="disk1Up">the up direction of disk 1</param>
+            /// <param name="disk1PlaneNormal">the normal of the disk 1 plane</param>
+            /// <param name="disk1Center">the center of disk 1</param> 
             /// <param name="disk1Radius">the radius of disk 1</param>
-            /// <param name="disk2Center">the center of disk 2</param>
-            /// <param name="disk2Up">the up direction of disk 2</param>
+            /// <param name="disk2PlaneNormal">the normal of the disk 2 plane</param>
+            /// <param name="disk2Center">the center of disk 2</param> 
             /// <param name="disk2Radius">the radius of disk 2</param>
             /// <param name="collision">returns the collision point</param>
             /// <returns></returns>
             internal static bool BetweenDiskAndDisk(
-                ref Vector3 disk1Center, ref Vector3 disk1Up, float disk1Radius, 
-                ref Vector3 disk2Center, ref Vector3 disk2Up, float disk2Radius, 
+                ref Vector3 disk1PlaneNormal, ref Vector3 disk1Center, float disk1Radius, 
+                ref Vector3 disk2PlaneNormal, ref Vector3 disk2Center, float disk2Radius, 
                 out Vector3 collision)
             {
                 var max = disk1Radius + disk2Radius;
@@ -321,7 +388,7 @@ namespace UnityFunctions
                     return false;
                 }
 
-                var dpOfDir = dot.Product(ref disk1Up, ref disk2Up);
+                var dpOfDir = dot.Product(ref disk1PlaneNormal, ref disk2PlaneNormal);
                 // if disks point up same or opposite direction
                 if (dpOfDir > 0.99999 || dpOfDir < -0.99999)
                 {
@@ -333,7 +400,7 @@ namespace UnityFunctions
                         return true;
                     }
                     centerToCenter = centerToCenter.normalized;
-                    var dpOf2 = dot.Product(ref disk1Up, ref centerToCenter);
+                    var dpOf2 = dot.Product(ref disk1PlaneNormal, ref centerToCenter);
                     // if the vector between centers and the up vectors are orthogonal (90 degrees) or dot product = 0
                     if (dpOf2 < 0.000001f && dpOf2 > -0.000001f)
                     {
@@ -346,12 +413,12 @@ namespace UnityFunctions
                 }
 
                 Vector3 normal;
-                BetweenPlanes(ref disk1Up, ref disk1Center, ref disk2Up, ref disk2Center, out collision, out normal);
+                BetweenPlanes(ref disk1PlaneNormal, ref disk1Center, ref disk2PlaneNormal, ref disk2Center, out collision, out normal);
 
                 var collisionPlusNorm = collision + normal;
 
                 Vector3 norm1X, norm1Y;
-                vector.ComputeRandomXYAxesForPlane(ref disk1Up, out norm1X, out norm1Y);
+                vector.ComputeRandomXYAxesForPlane(ref disk1PlaneNormal, out norm1X, out norm1Y);
                 var a = (collision - disk1Center).As2d(ref norm1X, ref norm1Y);
                 var b = (collisionPlusNorm - disk1Center).As2d(ref norm1X, ref norm1Y);
                 Vector2 projection1;
@@ -362,7 +429,7 @@ namespace UnityFunctions
                     return false;
                 }
                 Vector3 norm2X, norm2Y;
-                vector.ComputeRandomXYAxesForPlane(ref disk2Up, out norm2X, out norm2Y);
+                vector.ComputeRandomXYAxesForPlane(ref disk2PlaneNormal, out norm2X, out norm2Y);
                 a = (collision - disk2Center).As2d(ref norm2X, ref norm2Y);
                 b = (collisionPlusNorm - disk2Center).As2d(ref norm2X, ref norm2Y);
                 Vector2 projection2;
@@ -402,6 +469,7 @@ namespace UnityFunctions
                 collision = Vector3.zero;
                 return false;
             }
+
 
             /// <summary>
             /// The points of the capsule are the centers of the spheres at the end of capsules
@@ -2283,7 +2351,6 @@ namespace UnityFunctions
                 }
                 return false;
             }
-
         }
 
 
@@ -2444,7 +2511,7 @@ namespace UnityFunctions
                 m.triangles = triangles;
  
                 m.RecalculateBounds();
-                m.Optimize();
+                ;
                 return gameObject;
             }
             #endregion
@@ -2502,7 +2569,7 @@ namespace UnityFunctions
                 m.triangles = triangles;
  
                 m.RecalculateBounds();
-                m.Optimize();
+                ;
                 return gameObject;
             }
             #endregion
@@ -2571,7 +2638,7 @@ namespace UnityFunctions
                 m.triangles = triangles;
  
                 m.RecalculateBounds();
-                m.Optimize();
+                ;
                 return gameObject;
             }
             internal static GameObject CreateSquarePlane()
@@ -2629,7 +2696,7 @@ namespace UnityFunctions
                 m.triangles = triangles;
  
                 m.RecalculateBounds();
-                m.Optimize();
+                ;
                 return gameObject;
             }
             #endregion
@@ -2825,7 +2892,7 @@ namespace UnityFunctions
                 m.triangles = triangles;
  
                 m.RecalculateBounds();
-                m.Optimize();
+                ;
                 return gameObject;
             }
             internal static GameObject CreatePointyCone()
@@ -3026,7 +3093,7 @@ namespace UnityFunctions
                 m.triangles = triangles;
  
                 m.RecalculateBounds();
-                m.Optimize();
+                ;
                 return gameObject;
             }
             #endregion
@@ -3164,7 +3231,7 @@ namespace UnityFunctions
                 m.triangles = triangles;
  
                 m.RecalculateBounds();
-                m.Optimize();
+                ;
                 return gameObject;
             }
             #endregion
@@ -3274,7 +3341,7 @@ namespace UnityFunctions
                 m.triangles = triangles;
  
                 m.RecalculateBounds();
-                m.Optimize();
+                ;
 
                 return gameObject;
             }
@@ -3386,7 +3453,7 @@ namespace UnityFunctions
                 m.triangles = triangles;
  
                 m.RecalculateBounds();
-                m.Optimize();
+                ;
 
                 return gameObject;
             }
