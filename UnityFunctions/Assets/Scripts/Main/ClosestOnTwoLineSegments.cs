@@ -29,11 +29,11 @@ namespace Main
             _lineEndB1 = 
                 fun.meshes.CreateSphere(new DtSphere {radius = 0.03, name = "lineB1"})
                     .SetStandardShaderTransparentColor(0,0,1,0.9).transform;
-            _lineEndB1.position = Vector3.up*-0.5f;
+            _lineEndB1.position = Vector3.forward*-0.5f + Vector3.right*0.2f;
             _lineEndB2 = 
                 fun.meshes.CreateSphere(new DtSphere {radius = 0.03, name = "lineB2"})
                     .SetStandardShaderTransparentColor(0,0,1,0.9).transform;
-            _lineEndB2.position = Vector3.up*0.5f;
+            _lineEndB2.position = Vector3.forward*0.5f + Vector3.right*0.2f;
 
 
             _collisionA = 
@@ -55,13 +55,12 @@ namespace Main
 
             // test code STARTS here -----------------------------------------------
             Vector3 cpA,cpB;
-            var hasCollision = 
-                fun.point.ClosestOnTwoLineSegments(ref lA1, ref lA2, ref lB1, ref lB2, out cpA, out cpB);
+            fun.point.ClosestOnTwoLineSegments(ref lA1, ref lA2, ref lB1, ref lB2, out cpA, out cpB);
             // test code ENDS here -------------------------------------------------
             Debug.DrawLine(lA1,lA2,Color.green,0,false);
             Debug.DrawLine(lB1,lB2,Color.blue,0,false);
 
-            Debug.DrawLine(cpA,cpB,hasCollision?Color.red:Color.black,0,false);
+            Debug.DrawLine(cpA,cpB,Color.black,0,false);
             _collisionA.position = cpA;
             _collisionB.position = cpB; 
         }
