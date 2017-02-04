@@ -10,72 +10,72 @@ namespace UnityFunctions
 
 
 
-    internal static class fun
+    public static  class fun
     {
         internal const float RTD = (float)(180 / Math.PI);
         internal const float DTR = (float)(Math.PI / 180);
         internal const float PI = (float)Math.PI;
 
-        internal static int abs(int n) { return n < 0 ? n*-1 : n; }
-        internal static float abs(float n) { return n < 0 ? n*-1 : n; }
-        internal static float abs(double n) { return n < 0 ? (float)n*-1 : (float)n; }
-        internal static int sign(double n) { return n < 0 ? -1 : 1; }
-        internal static int min(int a, int b) { return a > b ? b : a; }
-        internal static int max(int a, int b) { return a < b ? b : a; }
-        internal static float min(double a, double b) { return a > b ? (float)b : (float)a; }
-        internal static float max(double a, double b) { return a < b ? (float)b : (float)a; }
-        internal static float sqrt(double n) { return (float)Math.Sqrt(n); }
-        internal static float sin(double n) { return (float)Math.Sin(n); }
-        internal static float cos(double n) { return (float)Math.Cos(n); }
-        internal static float atan2(double a, double b) { return (float)Math.Atan2(a, b); }
-        internal static float pow(double n, double p) { return (float)Math.Pow(n, p); }
-        internal static float tan(double n) { return (float)Math.Tan(n); }
+        public static  int abs(int n) { return n < 0 ? n*-1 : n; }
+        public static  float abs(float n) { return n < 0 ? n*-1 : n; }
+        public static  float abs(double n) { return n < 0 ? (float)n*-1 : (float)n; }
+        public static  int sign(double n) { return n < 0 ? -1 : 1; }
+        public static  int min(int a, int b) { return a > b ? b : a; }
+        public static  int max(int a, int b) { return a < b ? b : a; }
+        public static  float min(double a, double b) { return a > b ? (float)b : (float)a; }
+        public static  float max(double a, double b) { return a < b ? (float)b : (float)a; }
+        public static  float sqrt(double n) { return (float)Math.Sqrt(n); }
+        public static  float sin(double n) { return (float)Math.Sin(n); }
+        public static  float cos(double n) { return (float)Math.Cos(n); }
+        public static  float atan2(double a, double b) { return (float)Math.Atan2(a, b); }
+        public static  float pow(double n, double p) { return (float)Math.Pow(n, p); }
+        public static  float tan(double n) { return (float)Math.Tan(n); }
 
-        internal static class angle
+        public static  class angle
         {
             private const double TwiseRadiansToDegrees = 2.0*57.2957801818848;
-            internal static float Between(Quaternion a, Quaternion b)
+            public static  float Between(Quaternion a, Quaternion b)
             {
                 return (float) ((double) Math.Acos(Math.Min(Math.Abs(fun.dot.Product(ref a, ref b)), 1f)) * TwiseRadiansToDegrees);
             }
-            internal static float Between(ref Quaternion a, ref Quaternion b)
+            public static  float Between(ref Quaternion a, ref Quaternion b)
             {
                 return (float) ((double) Math.Acos(Math.Min(Math.Abs(fun.dot.Product(ref a, ref b)), 1f)) * TwiseRadiansToDegrees);
             }
-            internal static float BetweenVectorsUnSignedInRadians(ref Vector3 from, ref Vector3 to)
+            public static  float BetweenVectorsUnSignedInRadians(ref Vector3 from, ref Vector3 to)
             {
                 return Mathf.Acos(Mathf.Clamp(Vector3.Dot(from.normalized, to.normalized), -1f, 1f));
             }
-            internal static float BetweenVectorsSigned(ref Vector2 lhs, ref Vector2 rhs)
+            public static  float BetweenVectorsSigned(ref Vector2 lhs, ref Vector2 rhs)
             {
                 var perpDot = lhs.x * rhs.y - lhs.y * rhs.x;
  
                 return -RTD * (float)Math.Atan2(perpDot, fun.dot.Product(ref lhs, ref rhs));
             }
-            internal static float BetweenVectorsSigned(double v1x, double v1y, double v2x, double v2y)
+            public static  float BetweenVectorsSigned(double v1x, double v1y, double v2x, double v2y)
             {
                 var perpDot = v1x * v2y - v1y * v2x;
  
                 return -RTD * (float)Math.Atan2(perpDot, fun.dot.Product(v1x, v1y, v2x, v2y));
             }
-            internal static float ShortestBetweenVectorsSigned(ref Vector3 lhs, ref Vector3 rhs)
+            public static  float ShortestBetweenVectorsSigned(ref Vector3 lhs, ref Vector3 rhs)
             {
                 Vector3 normal;
                 fun.vector.GetNormal(ref lhs, ref rhs, out normal);
                 var x = fun.cross.Product(ref lhs, ref rhs);
                 return (float)Math.Atan2(fun.dot.Product(ref normal, ref x), fun.dot.Product(ref lhs, ref rhs)) * RTD;
             }
-            internal static float BetweenVectorsSigned(ref Vector3 lhs, ref Vector3 rhs, ref Vector3 normal)
+            public static  float BetweenVectorsSigned(ref Vector3 lhs, ref Vector3 rhs, ref Vector3 normal)
             {
                 var x = fun.cross.Product(ref lhs, ref rhs);
                 return (float)Math.Atan2(fun.dot.Product(ref normal, ref x), fun.dot.Product(ref lhs, ref rhs)) * RTD;
             }
-            internal static float BetweenVectorsSigned(Vector3 lhs, Vector3 rhs, Vector3 normal)
+            public static  float BetweenVectorsSigned(Vector3 lhs, Vector3 rhs, Vector3 normal)
             {
                 var x = fun.cross.Product(ref lhs, ref rhs);
                 return (float)Math.Atan2(fun.dot.Product(ref normal, ref x), fun.dot.Product(ref lhs, ref rhs)) * RTD;
             }
-            internal static float BetweenPointsSigned(ref Vector3 lhsPoint, ref Vector3 centerPoint, ref Vector3 rhsPoint)
+            public static  float BetweenPointsSigned(ref Vector3 lhsPoint, ref Vector3 centerPoint, ref Vector3 rhsPoint)
             {
                 Vector3 normal;
                 fun.point.GetNormal(ref lhsPoint, ref centerPoint, ref rhsPoint, out normal);
@@ -83,7 +83,7 @@ namespace UnityFunctions
                 var rhs = rhsPoint - centerPoint;
                 return BetweenVectorsSigned(ref lhs, ref rhs, ref normal);
             }
-            internal static float BetweenPointsSigned(Vector3 lhsPoint, Vector3 centerPoint, Vector3 rhsPoint)
+            public static  float BetweenPointsSigned(Vector3 lhsPoint, Vector3 centerPoint, Vector3 rhsPoint)
             {
                 Vector3 normal;
                 fun.point.GetNormal(ref lhsPoint, ref centerPoint, ref rhsPoint, out normal);
@@ -91,13 +91,13 @@ namespace UnityFunctions
                 var rhs = rhsPoint - centerPoint;
                 return BetweenVectorsSigned(ref lhs, ref rhs, ref normal);
             }
-            internal static float BetweenPointsSigned(ref Vector3 lhsPoint, ref Vector3 centerPoint, ref Vector3 rhsPoint, ref Vector3 normal)
+            public static  float BetweenPointsSigned(ref Vector3 lhsPoint, ref Vector3 centerPoint, ref Vector3 rhsPoint, ref Vector3 normal)
             {
                 var lhs = lhsPoint - centerPoint;
                 var rhs = rhsPoint - centerPoint;
                 return BetweenVectorsSigned(ref lhs, ref rhs, ref normal);
             }
-            internal static float BetweenPointsSigned(Vector3 lhsPoint, Vector3 centerPoint, Vector3 rhsPoint, Vector3 normal)
+            public static  float BetweenPointsSigned(Vector3 lhsPoint, Vector3 centerPoint, Vector3 rhsPoint, Vector3 normal)
             {
                 var lhs = lhsPoint - centerPoint;
                 var rhs = rhsPoint - centerPoint;
@@ -105,9 +105,9 @@ namespace UnityFunctions
             }
         }
 
-        internal static class color
+        public static  class color
         {
-            internal static Color Parse(uint color)
+            public static  Color Parse(uint color)
             {
                 byte r = (byte)(color >> 24);
                 byte g = (byte)(color >> 16);
@@ -117,74 +117,74 @@ namespace UnityFunctions
             }
         }
 
-        internal static class cross
+        public static  class cross
         {
-            internal static Vector3 Product(ref Vector3 leftVector, ref Vector3 rightVector)
+            public static  Vector3 Product(ref Vector3 leftVector, ref Vector3 rightVector)
             {
                 return new Vector3(leftVector.y * rightVector.z - leftVector.z * rightVector.y, leftVector.z * rightVector.x - leftVector.x * rightVector.z, leftVector.x * rightVector.y - leftVector.y * rightVector.x);
             }
-            internal static Vector3 Product(Vector3 leftVector, Vector3 rightVector)
+            public static  Vector3 Product(Vector3 leftVector, Vector3 rightVector)
             {
                 return new Vector3(leftVector.y * rightVector.z - leftVector.z * rightVector.y, leftVector.z * rightVector.x - leftVector.x * rightVector.z, leftVector.x * rightVector.y - leftVector.y * rightVector.x);
             }
-            internal static void Product(ref Vector3 leftVector, ref Vector3 rightVector, out Vector3 result)
+            public static  void Product(ref Vector3 leftVector, ref Vector3 rightVector, out Vector3 result)
             {
                 result = new Vector3(leftVector.y * rightVector.z - leftVector.z * rightVector.y, leftVector.z * rightVector.x - leftVector.x * rightVector.z, leftVector.x * rightVector.y - leftVector.y * rightVector.x);
             }
         }
 
-        internal static class distance
+        public static  class distance
         {
-            internal static float Between(Vector2 a, Vector2 b)
+            public static  float Between(Vector2 a, Vector2 b)
             {
                 var vectorX = a.x - b.x;
                 var vectorY = a.y - b.y;
                 return (float)Math.Sqrt((((double)vectorX * (double)vectorX) + ((double)vectorY * (double)vectorY)));
             }
-            internal static float Between(ref Vector2 a, ref Vector2 b)
+            public static  float Between(ref Vector2 a, ref Vector2 b)
             {
                 var vectorX = a.x - b.x;
                 var vectorY = a.y - b.y;
                 return (float)Math.Sqrt((((double)vectorX * (double)vectorX) + ((double)vectorY * (double)vectorY)));
             }
-            internal static float Between(ref Vector2 a, float bx, float by)
+            public static  float Between(ref Vector2 a, float bx, float by)
             {
                 var vector = new Vector2(a.x - bx, a.y - by);
                 return (float)Math.Sqrt((((double)vector.x * (double)vector.x) + ((double)vector.y * (double)vector.y)));
             }
-            internal static float Between(ref Vector3 a, ref Vector3 b)
+            public static  float Between(ref Vector3 a, ref Vector3 b)
             {
                 var vectorX = a.x - b.x;
                 var vectorY = a.y - b.y;
                 var vectorZ = a.z - b.z;
                 return (float)Math.Sqrt((((double)vectorX * (double)vectorX) + ((double)vectorY * (double)vectorY)) + ((double)vectorZ * (double)vectorZ));
             }
-            internal static float Between(Vector3 a, Vector3 b)
+            public static  float Between(Vector3 a, Vector3 b)
             {
                 var vectorX = a.x - b.x;
                 var vectorY = a.y - b.y;
                 var vectorZ = a.z - b.z;
                 return (float)Math.Sqrt((((double)vectorX * (double)vectorX) + ((double)vectorY * (double)vectorY)) + ((double)vectorZ * (double)vectorZ));
             }
-            internal static float BetweenIgnoreY(Vector3 a, Vector3 b)
+            public static  float BetweenIgnoreY(Vector3 a, Vector3 b)
             {
                 var vectorX = a.x - b.x;
                 var vectorZ = a.z - b.z;
                 return (float)Math.Sqrt(((double)vectorX * (double)vectorX) + ((double)vectorZ * (double)vectorZ));
             }
-            internal static float BetweenIgnoreY(ref Vector3 a, ref Vector3 b)
+            public static  float BetweenIgnoreY(ref Vector3 a, ref Vector3 b)
             {
                 var vectorX = a.x - b.x;
                 var vectorZ = a.z - b.z;
                 return (float)Math.Sqrt(((double)vectorX * (double)vectorX) + ((double)vectorZ * (double)vectorZ));
             }
-            internal static float Between(float ax, float ay, float bx, float by)
+            public static  float Between(float ax, float ay, float bx, float by)
             {
                 var vx = ax - bx;
                 var vy = ay - by;
                 return (float)Math.Sqrt(((vx * vx) + (vy * vy)));
             }
-            internal static float Between(float ax, float ay, float az, float bx, float by, float bz)
+            public static  float Between(float ax, float ay, float az, float bx, float by, float bz)
             {
                 var vx = ax - bx;
                 var vy = ay - by;
@@ -193,58 +193,58 @@ namespace UnityFunctions
             }
         }
 
-        internal static class distanceSquared
+        public static  class distanceSquared
         {
-            internal static float Between(Vector2 a, Vector2 b)
+            public static  float Between(Vector2 a, Vector2 b)
             {
                 var vectorX = (double)(a.x - b.x);
                 var vectorY = (double)(a.y - b.y);
                 return (float)((vectorX * vectorX) + (vectorY * vectorY));
             }
-            internal static float Between(ref Vector2 a, ref Vector2 b)
+            public static  float Between(ref Vector2 a, ref Vector2 b)
             {
                 var vectorX = (double)(a.x - b.x);
                 var vectorY = (double)(a.y - b.y);
                 return (float)((vectorX * vectorX) + (vectorY * vectorY));
             }
-            internal static float Between(ref Vector2 a, float bx, float by)
+            public static  float Between(ref Vector2 a, float bx, float by)
             {
                 var vector = new Vector2(a.x - bx, a.y - by);
                 return (float)(((double)vector.x * (double)vector.x) + ((double)vector.y * (double)vector.y));
             }
-            internal static float Between(ref Vector3 a, ref Vector3 b)
+            public static  float Between(ref Vector3 a, ref Vector3 b)
             {
                 var vectorX = (double)(a.x - b.x);
                 var vectorY = (double)(a.y - b.y);
                 var vectorZ = (double)(a.z - b.z);
                 return (float)(((vectorX * vectorX) + (vectorY * vectorY)) + (vectorZ * vectorZ));
             }
-            internal static float Between(Vector3 a, Vector3 b)
+            public static  float Between(Vector3 a, Vector3 b)
             {
                 var vectorX = (double)(a.x - b.x);
                 var vectorY = (double)(a.y - b.y);
                 var vectorZ = (double)(a.z - b.z);
                 return (float)(((vectorX * vectorX) + (vectorY * vectorY)) + (vectorZ * vectorZ));
             }
-            internal static float BetweenIgnoreY(Vector3 a, Vector3 b)
+            public static  float BetweenIgnoreY(Vector3 a, Vector3 b)
             {
                 var vectorX = (double)(a.x - b.x);
                 var vectorZ = (double)(a.z - b.z);
                 return (float)((vectorX * vectorX) + (vectorZ * vectorZ));
             }
-            internal static float BetweenIgnoreY(ref Vector3 a, ref Vector3 b)
+            public static  float BetweenIgnoreY(ref Vector3 a, ref Vector3 b)
             {
                 var vectorX = (double)(a.x - b.x);
                 var vectorZ = (double)(a.z - b.z);
                 return (float)((vectorX * vectorX) + (vectorZ * vectorZ));
             }
-            internal static float Between(float ax, float ay, float bx, float by)
+            public static  float Between(float ax, float ay, float bx, float by)
             {
                 var vx = ax - bx;
                 var vy = ay - by;
                 return (vx * vx) + (vy * vy);
             }
-            internal static float Between(float ax, float ay, float az, float bx, float by, float bz)
+            public static  float Between(float ax, float ay, float az, float bx, float by, float bz)
             {
                 var vx = ax - bx;
                 var vy = ay - by;
@@ -253,48 +253,48 @@ namespace UnityFunctions
             }
         }
         
-        internal static class dot
+        public static  class dot
         {
-            internal static float Product(double lhsX, double lhsY, double rhsX, double rhsY)
+            public static  float Product(double lhsX, double lhsY, double rhsX, double rhsY)
             {
                 return (float)(lhsX * rhsX + lhsY * rhsY);
             }
-            internal static float Product(ref Vector2 lhs, ref Vector2 rhs)
+            public static  float Product(ref Vector2 lhs, ref Vector2 rhs)
             {
                 return (float)((double)lhs.x * (double)rhs.x + (double)lhs.y * (double)rhs.y);
             }
-            internal static float Product(Vector2 lhs, Vector2 rhs)
+            public static  float Product(Vector2 lhs, Vector2 rhs)
             {
                 return (float)((double)lhs.x * (double)rhs.x + (double)lhs.y * (double)rhs.y);
             }
-            internal static float Product(ref Vector3 lhs, ref Vector3 rhs)
+            public static  float Product(ref Vector3 lhs, ref Vector3 rhs)
             {
                 return (float)((double)lhs.x * (double)rhs.x + (double)lhs.y * (double)rhs.y + (double)lhs.z * (double)rhs.z);
             }
-            internal static float Product(Vector3 lhs, Vector3 rhs)
+            public static  float Product(Vector3 lhs, Vector3 rhs)
             {
                 return (float)((double)lhs.x * (double)rhs.x + (double)lhs.y * (double)rhs.y + (double)lhs.z * (double)rhs.z);
             }
-            internal static float Product(Quaternion a, Quaternion b)
+            public static  float Product(Quaternion a, Quaternion b)
             {
                 return (float) ((double) a.x * (double) b.x + (double) a.y * (double) b.y + (double) a.z * (double) b.z + (double) a.w * (double) b.w);
             }
-            internal static float Product(ref Quaternion a, ref Quaternion b)
+            public static  float Product(ref Quaternion a, ref Quaternion b)
             {
                 return (float) ((double) a.x * (double) b.x + (double) a.y * (double) b.y + (double) a.z * (double) b.z + (double) a.w * (double) b.w);
             }
         }
 
-        internal static class ellipse
+        public static  class ellipse
         {
-            internal static float RadiusByAngle(double horzRadius, double vertRadius, double degrees)
+            public static  float RadiusByAngle(double horzRadius, double vertRadius, double degrees)
             {
                 var angleRadians = DTR*degrees;
                 return (float)((horzRadius*vertRadius)/Math.Sqrt(horzRadius*horzRadius*Math.Pow(Math.Sin(angleRadians),2) + vertRadius*vertRadius*Math.Pow(Math.Cos(angleRadians),2)));
             }
         }
 
-        internal static class intersection
+        public static  class intersection
         {
             /// <summary>
             /// Check if disk and plane cross each other
@@ -305,7 +305,7 @@ namespace UnityFunctions
             /// <param name="sphereRadius">sphere radius</param>
             /// <param name="collision">collision point</param>
             /// <returns></returns>
-            internal static bool BetweenPlaneAndSphere(ref Vector3 planeNormal, ref Vector3 planePoint, ref Vector3 sphereCenter, float sphereRadius, out Vector3 collision)
+            public static  bool BetweenPlaneAndSphere(ref Vector3 planeNormal, ref Vector3 planePoint, ref Vector3 sphereCenter, float sphereRadius, out Vector3 collision)
             {
                 Vector3 sphereCenterProj;
                 point.ProjectOnPlane(ref sphereCenter, ref planeNormal, ref planePoint, out sphereCenterProj);
@@ -331,7 +331,7 @@ namespace UnityFunctions
             /// <param name="sphereRadius">sphere radius</param>
             /// <param name="collision">collision point</param>
             /// <returns></returns>
-            internal static bool BetweenDiskAndSphere(ref Vector3 diskPlaneNormal, ref Vector3 diskCenter, float diskRadius, ref Vector3 sphereCenter, float sphereRadius, out Vector3 collision)
+            public static  bool BetweenDiskAndSphere(ref Vector3 diskPlaneNormal, ref Vector3 diskCenter, float diskRadius, ref Vector3 sphereCenter, float sphereRadius, out Vector3 collision)
             {
                 Vector3 sphereCenterProj;
                 point.ProjectOnPlane(ref sphereCenter, ref diskPlaneNormal, ref diskCenter, out sphereCenterProj);
@@ -374,7 +374,7 @@ namespace UnityFunctions
             /// <param name="disk2Radius">the radius of disk 2</param>
             /// <param name="collision">returns the collision point</param>
             /// <returns></returns>
-            internal static bool BetweenDiskAndDisk(
+            public static  bool BetweenDiskAndDisk(
                 ref Vector3 disk1PlaneNormal, ref Vector3 disk1Center, float disk1Radius, 
                 ref Vector3 disk2PlaneNormal, ref Vector3 disk2Center, float disk2Radius, 
                 out Vector3 collision)
@@ -481,12 +481,12 @@ namespace UnityFunctions
             /// <param name="diskNormal">disk up normal</param>
             /// <param name="diskRadius">disk radius</param>
             /// <returns></returns>
-            internal static bool BetweenCapsuleAndDisk(
+            public static  bool BetweenCapsuleAndDisk(
                 ref Vector3 csb, ref Vector3 csa, float capsuleRadius, 
                 ref Vector3 diskNormal, ref Vector3 diskCenter, float diskRadius)
             {
                 // see if disk center is within the capsule cylinder
-                Vector3 diskCenterOnAxis;
+                 Vector3 diskCenterOnAxis;
                 var diskCenIsWithinCylPl = 
                     point.TryProjectOnLineSegment(ref diskCenter, ref csb, ref csa, out diskCenterOnAxis);
                 if (diskCenIsWithinCylPl && 
@@ -494,30 +494,31 @@ namespace UnityFunctions
                 {
                     return true;
                 }
-                
                 var capsuleUp = (csa - csb).normalized;
-                Vector3 collision;
+                var maxDistance = capsuleRadius + diskRadius;
+
                 // middle part
                 Vector3 diskCenOnCapPl;
                 point.ProjectOnPlane(ref diskCenter, ref capsuleUp, ref csb, out diskCenOnCapPl);
                 var capToDisk = (diskCenOnCapPl - csb).normalized*capsuleRadius;
                 var csaShifted = csa + capToDisk;
                 var csbShifted = csb + capToDisk;
-                if (BetweenPlaneAndLineSegment(ref diskNormal, ref diskCenter, ref csaShifted, ref csbShifted, out collision))
+                Vector3 c1;
+                if (BetweenPlaneAndLineSegment(ref diskNormal, ref diskCenter, ref csaShifted, ref csbShifted, out c1))
                 {
-                    if (distance.Between(ref collision, ref diskCenter) <= diskRadius)
+                    if (distance.Between(ref c1, ref diskCenter) <= diskRadius)
                     {
                         return true;
                     }
                 }
 
-                var maxDistance = capsuleRadius + diskRadius;
-                
+
                 // test collision with below sphere
                 Vector3 capEndOnDiskPl;
                 point.ProjectOnPlane(ref csb, ref diskNormal, ref diskCenter, out capEndOnDiskPl);
                 var diskToSph = capEndOnDiskPl - diskCenter;
-                if (diskToSph.sqrMagnitude < 0.000001f)
+                var diskToSphMag = vector.Magnitude(ref diskToSph);
+                if (diskToSphMag < 0.00001f)
                 {
                     if (distance.Between(ref csb, ref diskCenter) < maxDistance)
                     {
@@ -525,11 +526,12 @@ namespace UnityFunctions
                     }
                 }
                 else
-                {             
-                    diskToSph = diskToSph.normalized;
-                    if (BetweenRayAndSphere(ref diskToSph, ref diskCenter, ref csb, capsuleRadius, out collision))
+                {
+                    diskToSph = diskToSph/diskToSphMag;//normalize
+                    Vector3 c2;
+                    if (BetweenRayAndSphere(ref diskToSph, ref diskCenter, ref csb, capsuleRadius, out c2))
                     {
-                        if (distance.Between(ref collision, ref diskCenter) <= diskRadius)
+                        if (distance.Between(ref c2, ref diskCenter) <= diskRadius)
                         {
                             return true;
                         }
@@ -538,7 +540,8 @@ namespace UnityFunctions
                 // test collision with above sphere
                 point.ProjectOnPlane(ref csa, ref diskNormal, ref diskCenter, out capEndOnDiskPl);
                 diskToSph = capEndOnDiskPl - diskCenter;
-                if (diskToSph.sqrMagnitude < 0.000001f)
+                diskToSphMag = vector.Magnitude(ref diskToSph);
+                if (diskToSphMag < 0.00001f)
                 {
                     if (distance.Between(ref csa, ref diskCenter) < maxDistance)
                     {
@@ -547,16 +550,16 @@ namespace UnityFunctions
                 }
                 else
                 {
-                    diskToSph = diskToSph.normalized;
-                    if (BetweenRayAndSphere(ref diskToSph, ref diskCenter, ref csa, capsuleRadius, out collision))
+                    diskToSph = diskToSph/diskToSphMag;//normalize
+                    Vector3 c3;
+                    if (BetweenRayAndSphere(ref diskToSph, ref diskCenter, ref csa, capsuleRadius, out c3))
                     {
-                        if (distance.Between(ref collision, ref diskCenter) <= diskRadius)
+                        if (distance.Between(ref c3, ref diskCenter) <= diskRadius)
                         {
                             return true;
                         }
                     }
                 }
-
                 
                 return false;
             }
@@ -572,7 +575,7 @@ namespace UnityFunctions
             /// <param name="diskRadius">disk radius</param>
             /// <param name="collision">the point best describing the collision point - might not be precise!</param>
             /// <returns></returns>
-            internal static bool BetweenCapsuleAndDisk(
+            public static  bool BetweenCapsuleAndDisk(
                 ref Vector3 csb, ref Vector3 csa, float capsuleRadius, 
                 ref Vector3 diskNormal, ref Vector3 diskCenter, float diskRadius, out Vector3 collision)
             {
@@ -608,18 +611,20 @@ namespace UnityFunctions
                 Vector3 capEndOnDiskPl;
                 point.ProjectOnPlane(ref csb, ref diskNormal, ref diskCenter, out capEndOnDiskPl);
                 var diskToSph = capEndOnDiskPl - diskCenter;
-                if (diskToSph.sqrMagnitude < 0.000001f)
+                var diskToSphMag = vector.Magnitude(ref diskToSph);
+                if (diskToSphMag < 0.00001f)
                 {
                     if (distance.Between(ref csb, ref diskCenter) < maxDistance)
                     {
                         var diff = (csb - diskCenter);
-                        collision = diskCenter + diff.normalized*min(diff.magnitude/2, diskRadius);
+                        var diffMag = vector.Magnitude(ref diff);
+                        collision = (diffMag < 0.00001) ? diskCenter : diskCenter + (diff/diffMag)*min(diffMag/2, diskRadius);
                         return true;
                     }
                 }
                 else
                 {
-                    diskToSph = diskToSph.normalized;
+                    diskToSph = diskToSph/diskToSphMag;//normalize
                     if (BetweenRayAndSphere(ref diskToSph, ref diskCenter, ref csb, capsuleRadius, out collision))
                     {
                         if (distance.Between(ref collision, ref diskCenter) <= diskRadius)
@@ -638,18 +643,20 @@ namespace UnityFunctions
                 // test collision with above sphere
                 point.ProjectOnPlane(ref csa, ref diskNormal, ref diskCenter, out capEndOnDiskPl);
                 diskToSph = capEndOnDiskPl - diskCenter;
-                if (diskToSph.sqrMagnitude < 0.000001f)
+                diskToSphMag = vector.Magnitude(ref diskToSph);
+                if (diskToSphMag < 0.00001f)
                 {
                     if (distance.Between(ref csa, ref diskCenter) < maxDistance)
                     {
                         var diff = (csa - diskCenter);
-                        collision = diskCenter + diff.normalized*min(diff.magnitude/2, diskRadius);
+                        var diffMag = vector.Magnitude(ref diff);
+                        collision = diffMag < 0.00001 ? diskCenter : diskCenter + (diff/diffMag)*min(diffMag/2, diskRadius);
                         return true;
                     }
                 }
                 else
                 {
-                    diskToSph = diskToSph.normalized;
+                    diskToSph = diskToSph/diskToSphMag;//normalize
                     if (BetweenRayAndSphere(ref diskToSph, ref diskCenter, ref csa, capsuleRadius, out collision))
                     {
                         if (distance.Between(ref collision, ref diskCenter) <= diskRadius)
@@ -665,13 +672,12 @@ namespace UnityFunctions
                         }
                     }
                 }
-
                 
                 collision = Vector3.zero;
                 return false;
             }
 
-            internal static bool BetweenRayAndSphere(
+            public static  bool BetweenRayAndSphere(
                 ref Vector3 rayDirection, ref Vector3 rayOrigin, 
                 ref Vector3 sphereCenter, float sphereRadius,
                 out Vector3 collision)
@@ -713,7 +719,7 @@ namespace UnityFunctions
                 return true;
             }
 
-            internal static bool BetweenRayAndCapsule(
+            public static  bool BetweenRayAndCapsule(
                 ref Vector3 rayFw, ref Vector3 rayOr, 
                 ref Vector3 cpu, ref Vector3 cpd, float capsuleRadius, 
                 out Vector3 collision)
@@ -755,7 +761,7 @@ namespace UnityFunctions
             /// <param name="sphereCenter">sphere center point</param>
             /// <param name="sphereRadius">sphere radius</param>
             /// <returns></returns>
-            internal static bool BetweenCapsuleAndSphere(
+            public static  bool BetweenCapsuleAndSphere(
                 ref Vector3 csb, ref Vector3 csa, float capsuleRadius, 
                 ref Vector3 sphereCenter, float sphereRadius)
             {
@@ -791,7 +797,7 @@ namespace UnityFunctions
             /// <param name="sphereRadius">sphere radius</param>
             /// <param name="collision">the point of collision</param>
             /// <returns></returns>
-            internal static bool BetweenCapsuleAndSphere(
+            public static  bool BetweenCapsuleAndSphere(
                 ref Vector3 csb, ref Vector3 csa, float capsuleRadius, 
                 ref Vector3 sphereCenter, float sphereRadius, out Vector3 collision)
             {
@@ -847,7 +853,7 @@ namespace UnityFunctions
             /// <param name="c2sa">capsule 2 sphere above center</param>
             /// <param name="radius2">radius of capsule 2 sphere</param>
             /// <returns>true if there is overlap false otherwise</returns>
-            internal static bool BetweenCapsules(
+            public static  bool BetweenCapsules(
                 ref Vector3 c1sb, ref Vector3 c1sa, float radius1, 
                 ref Vector3 c2sb, ref Vector3 c2sa, float radius2)
             {
@@ -872,7 +878,7 @@ namespace UnityFunctions
             /// <param name="radius2">radius of capsule 2 sphere</param>
             /// <param name="collision">The point of collision</param>
             /// <returns>true if there is overlap false otherwise</returns>
-            internal static bool BetweenCapsules(
+            public static  bool BetweenCapsules(
                 ref Vector3 c1sb, ref Vector3 c1sa, float radius1, 
                 ref Vector3 c2sb, ref Vector3 c2sa, float radius2, out Vector3 collision)
             {
@@ -922,7 +928,7 @@ namespace UnityFunctions
 
 
 
-            internal static bool BetweenLines(ref Vector3 ray1Origin, ref Vector3 ray1Dir, ref Vector3 ray2Origin, ref Vector3 ray2Dir, out Vector3 intersection)
+            public static  bool BetweenLines(ref Vector3 ray1Origin, ref Vector3 ray1Dir, ref Vector3 ray2Origin, ref Vector3 ray2Dir, out Vector3 intersection)
             {
                 var lineVec3 = ray2Origin - ray1Origin;
 		        var crossVec1and2 = cross.Product(ref ray1Dir, ref ray2Dir);
@@ -941,7 +947,7 @@ namespace UnityFunctions
 			    return false;
             }
 
-            internal static bool BetweenTriangleAndLine(
+            public static  bool BetweenTriangleAndLine(
                 ref Vector3 p1, ref Vector3 p2, ref Vector3 p3, 
                 ref Vector3 line1, ref Vector3 line2)
             {
@@ -962,7 +968,7 @@ namespace UnityFunctions
                 return false;
             }
 
-            internal static bool BetweenTriangleAndRay(ref Vector3 p1, ref Vector3 p2, ref Vector3 p3, ref Vector3 rayForward, ref Vector3 rayOrigin)
+            public static  bool BetweenTriangleAndRay(ref Vector3 p1, ref Vector3 p2, ref Vector3 p3, ref Vector3 rayForward, ref Vector3 rayOrigin)
             {
                 //Find vectors for two edges sharing vertex/point p1
                 var e1 = p2 - p1;
@@ -1006,7 +1012,7 @@ namespace UnityFunctions
                 return false;
             }
 
-            internal static bool BetweenPlaneAndLine(
+            public static  bool BetweenPlaneAndLine(
                 ref Vector3 planeNormal, ref Vector3 planePoint,
                 ref Vector3 lineA, ref Vector3 lineB, out Vector3 intersection)
             {
@@ -1035,7 +1041,7 @@ namespace UnityFunctions
             }
 
 
-            internal static bool BetweenPlaneAndRay(
+            public static  bool BetweenPlaneAndRay(
                 ref Vector3 planeNormal, ref Vector3 planePoint,
                 ref Vector3 rayNormal, ref Vector3 rayOrigin, out float distanceToCollision)
             {
@@ -1052,7 +1058,7 @@ namespace UnityFunctions
                 return distanceToCollision > 0.0;
             }
 
-            internal static bool BetweenPlaneAndRay(
+            public static  bool BetweenPlaneAndRay(
                 ref Vector3 planeNormal, ref Vector3 planePoint,
                 ref Vector3 rayNormal, ref Vector3 rayOrigin, 
                 out Vector3 collisionPoint)
@@ -1076,7 +1082,7 @@ namespace UnityFunctions
                 return false;
             }
 
-            internal static bool BetweenPlaneAndRay(
+            public static  bool BetweenPlaneAndRay(
                 ref Vector3 planeNormal, ref Vector3 planePoint,
                 ref Vector3 rayNormal, ref Vector3 rayOrigin, 
                 out float distanceToCollision, out Vector3 collisionPoint)
@@ -1102,7 +1108,7 @@ namespace UnityFunctions
                 return false;
             }
 
-            internal static bool BetweenPlaneAndLineSegment(
+            public static  bool BetweenPlaneAndLineSegment(
                 ref Vector3 planeNormal, ref Vector3 planePoint,
                 ref Vector3 line1, ref Vector3 line2, out Vector3 collisionPoint)
             {
@@ -1112,7 +1118,7 @@ namespace UnityFunctions
                         ref line1, ref line2, 
                         out distanceToCollision, out collisionPoint);
             }
-            internal static bool BetweenPlaneAndLineSegment(
+            public static  bool BetweenPlaneAndLineSegment(
                 ref Vector3 planeNormal, ref Vector3 planePoint,
                 ref Vector3 line1, ref Vector3 line2, out float distanceToCollision, out Vector3 collisionPoint)
             {
@@ -1145,7 +1151,7 @@ namespace UnityFunctions
                 return false;
             }
 
-            internal static int BetweenLineAndUnitCircle(
+            public static  int BetweenLineAndUnitCircle(
                 Vector2 point1, Vector2 point2, 
                 out Vector2 intersection1, out Vector2 intersection2)
             {
@@ -1185,7 +1191,7 @@ namespace UnityFunctions
             /// <summary>
             /// returns the number of intersections
             /// </summary>
-            internal static int BetweenLineAndCircle(
+            public static  int BetweenLineAndCircle(
                 Vector2 circleCenter, float circleRadius, 
                 Vector2 point1, Vector2 point2, 
                 out Vector2 intersection1, out Vector2 intersection2)
@@ -1225,7 +1231,7 @@ namespace UnityFunctions
                 return 2;
             }
             
-            internal static int BetweenLineAndCircle(
+            public static  int BetweenLineAndCircle(
                 ref Vector2 circleCenter, float circleRadius, 
                 ref Vector2 point1, ref Vector2 point2, 
                 out Vector2 intersection1, out Vector2 intersection2)
@@ -1264,7 +1270,7 @@ namespace UnityFunctions
                 return 2;
             }
 
-            internal static int BetweenLineSegmentAndCircle2D(
+            public static  int BetweenLineSegmentAndCircle2D(
                 ref Vector2 circleCenter, float circleRadius, 
                 ref Vector2 point1, ref Vector2 point2, 
                 out Vector2 intersection1, out Vector2 intersection2)
@@ -1319,7 +1325,7 @@ namespace UnityFunctions
                 return 2;
             }
 
-            internal static bool BetweenLinesIgnoreY(
+            public static  bool BetweenLinesIgnoreY(
                    ref Vector3 line1point1, ref Vector3 line1point2,
                    ref Vector3 line2point1, ref Vector3 line2point2,
                    out Vector3? intersection)
@@ -1361,14 +1367,14 @@ namespace UnityFunctions
                        z >= minZ2 && z <= maxZ2;
             }
 
-            internal static bool BetweenPlanes(ref Vector3 plane1Normal, ref Vector3 plane2Normal, out Vector3 intersectionNormal)
+            public static  bool BetweenPlanes(ref Vector3 plane1Normal, ref Vector3 plane2Normal, out Vector3 intersectionNormal)
             {
                 var zero = Vector3.zero;
                 Vector3 intersectionPoint;
                 return BetweenPlanes(ref plane1Normal, ref zero, ref plane2Normal, ref zero, out intersectionPoint, out intersectionNormal);
             }
 
-            internal static bool BetweenPlanes(
+            public static  bool BetweenPlanes(
                 ref Vector3 plane1Normal, ref Vector3 plane1Position, 
                 ref Vector3 plane2Normal, ref Vector3 plane2Position, 
                 out Vector3 intersectionPoint, out Vector3 intersectionNormal)
@@ -1401,14 +1407,14 @@ namespace UnityFunctions
 			    return false;
             }
 
-            internal static bool BetweenPlanes(Vector3 plane1Normal, Vector3 plane2Normal, out Vector3 intersectionNormal)
+            public static  bool BetweenPlanes(Vector3 plane1Normal, Vector3 plane2Normal, out Vector3 intersectionNormal)
             {
                 var zero = Vector3.zero;
                 Vector3 intersectionPoint;
                 return BetweenPlanes(plane1Normal, zero, plane1Normal, zero, out intersectionPoint, out intersectionNormal);
             }
 
-            internal static bool BetweenPlanes(
+            public static  bool BetweenPlanes(
                 Vector3 plane1Normal, Vector3 plane1Position, 
                 Vector3 plane2Normal, Vector3 plane2Position, 
                 out Vector3 intersectionPoint, out Vector3 intersectionNormal)
@@ -1441,7 +1447,7 @@ namespace UnityFunctions
 			    return false;
             }
 
-            internal static float BetweenRayAndSphere(
+            public static  float BetweenRayAndSphere(
                 ref Vector3 rayOrigin, 
                 ref Vector3 rayDirection, 
                 ref Vector3 sphereCenter, 
@@ -1469,11 +1475,11 @@ namespace UnityFunctions
                 return num - (float)Math.Sqrt(squareOfRadius - sqDiff);
             }
 
-            internal static bool Between2DLines(Vector2 line1p1, Vector2 line1p2, Vector2 line2p1, Vector2 line2p2)
+            public static  bool Between2DLines(Vector2 line1p1, Vector2 line1p2, Vector2 line2p1, Vector2 line2p2)
             {
                 return Between2DLines(ref line1p1, ref line1p2, ref line2p1, ref line2p2);
             }
-            internal static bool Between2DLines(ref Vector2 line1p1, ref Vector2 line1p2, ref Vector2 line2p1, ref Vector2 line2p2)
+            public static  bool Between2DLines(ref Vector2 line1p1, ref Vector2 line1p2, ref Vector2 line2p1, ref Vector2 line2p2)
             {
                 // Find the four orientations needed for general and
                 // special cases
@@ -1497,7 +1503,7 @@ namespace UnityFunctions
  
                 return false; // Doesn't fall in any of the above cases
             }
-            internal static bool Between2DLines(Vector2 lineA1, Vector2 lineA2, Vector2 lineB1, Vector2 lineB2, out Vector2 intersect)
+            public static  bool Between2DLines(Vector2 lineA1, Vector2 lineA2, Vector2 lineB1, Vector2 lineB2, out Vector2 intersect)
             {
                 var a1 = (double)lineA2.y - (double)lineA1.y;
                 var b1 = (double)lineA1.x - (double)lineA2.x;
@@ -1528,7 +1534,7 @@ namespace UnityFunctions
                     intersect.y >= Mathf.Min(lineB1.y, lineB2.y) &&
                     intersect.y <= Mathf.Max(lineB1.y, lineB2.y);
             }
-            internal static bool Between2DLines(ref Vector2 lineA1, ref Vector2 lineA2, ref Vector2 lineB1, ref Vector2 lineB2, out Vector2 intersect)
+            public static  bool Between2DLines(ref Vector2 lineA1, ref Vector2 lineA2, ref Vector2 lineB1, ref Vector2 lineB2, out Vector2 intersect)
             {
                 var a1 = (double)lineA2.y - (double)lineA1.y;
                 var b1 = (double)lineA1.x - (double)lineA2.x;
@@ -1574,7 +1580,7 @@ namespace UnityFunctions
                 return (val > 0)? 1: 2; // clock or counterclock wise
             }
 
-            internal static bool BetweenTriangleAndSphere(
+            public static  bool BetweenTriangleAndSphere(
                 ref Vector3 t1, ref Vector3 t2, ref Vector3 t3, 
                 ref Vector3 sphereCenter, float sphereRadius,
                 out Vector3 collision)
@@ -1673,7 +1679,7 @@ namespace UnityFunctions
                 return num;
             }
 
-            internal static bool BetweenTriangleAndSphere(ref Vector3 t1, ref Vector3 t2, ref Vector3 t3, ref Vector3 sphereCenter, float sphereRadius)
+            public static  bool BetweenTriangleAndSphere(ref Vector3 t1, ref Vector3 t2, ref Vector3 t3, ref Vector3 sphereCenter, float sphereRadius)
             {
                 Vector3 triangleNormal;
                 point.GetNormal(ref t1, ref t2, ref t3, out triangleNormal);
@@ -1789,7 +1795,7 @@ namespace UnityFunctions
                 // We're done, no intersection
                 return false;
             }
-            internal static bool BetweenTriangleAndDisk(
+            public static  bool BetweenTriangleAndDisk(
                 ref Vector3 t1, ref Vector3 t2, ref Vector3 t3, 
                 ref Vector3 diskNormal, ref Vector3 diskCenter, float diskRadius, 
                 out Vector3 intersect)
@@ -1861,7 +1867,7 @@ namespace UnityFunctions
                 return false;
             }
 
-            internal static bool Between2DTriangleAndLineSegment(
+            public static  bool Between2DTriangleAndLineSegment(
                 ref Vector2 t1, ref Vector2 t2, ref Vector2 t3,
                 ref Vector2 line1, ref Vector2 line2,
                 out Vector2 intersect)
@@ -1907,7 +1913,7 @@ namespace UnityFunctions
             /// <summary>
             /// note the collision point returned is not precise, but is good enough for my needs
             /// </summary>
-            internal static bool BetweenTriangles(
+            public static  bool BetweenTriangles(
                 ref Vector3 t1p1, ref Vector3 t1p2, ref Vector3 t1p3, 
                 ref Vector3 t2p1, ref Vector3 t2p2, ref Vector3 t2p3, 
                 out Vector3 collision)
@@ -1968,7 +1974,7 @@ namespace UnityFunctions
                 return false;
             }
 
-            internal static bool BetweenRayAndDisk(
+            public static  bool BetweenRayAndDisk(
                 ref Vector3 rayDirection,
                 ref Vector3 rayOrigin,
                 ref Vector3 diskNormal,
@@ -2027,7 +2033,7 @@ namespace UnityFunctions
                 return true;
             }
 
-            internal static bool BetweenLineSegmentAndDisk(
+            public static  bool BetweenLineSegmentAndDisk(
                 ref Vector3 lineEnd1,
                 ref Vector3 lineEnd2,
                 ref Vector3 diskNormal, 
@@ -2073,7 +2079,7 @@ namespace UnityFunctions
                 return false;
             }
 
-            internal static bool BetweenLineSegmentAndDisk(
+            public static  bool BetweenLineSegmentAndDisk(
                 ref Vector3 lineEnd1,
                 ref Vector3 lineEnd2,
                 ref Vector3 diskNormal, 
@@ -2115,9 +2121,9 @@ namespace UnityFunctions
         }
 
 
-        internal static class meshes
+        public static  class meshes
         {
-            internal static GameObject CreateGameObject(string prefix, DtBase data, out Mesh mesh)
+            public static  GameObject CreateGameObject(string prefix, DtBase data, out Mesh mesh)
             {
                 var gameObject = new GameObject(data.name ?? prefix+"_"+DateTime.UtcNow.Ticks);
                 var renderer = gameObject.AddComponent<MeshRenderer>();
@@ -2132,11 +2138,11 @@ namespace UnityFunctions
                 return gameObject;
             }
             #region Box
-            internal static GameObject CreateBox()
+            public static  GameObject CreateBox()
             {
                 return CreateBox(new DtBox());
             }
-            internal static GameObject CreateBox(DtBox dt)
+            public static  GameObject CreateBox(DtBox dt)
             {
                 Mesh m;
                 var gameObject = CreateGameObject("Box", dt, out m);
@@ -2278,11 +2284,11 @@ namespace UnityFunctions
             #endregion
 
             #region Triangle Plane
-            internal static GameObject CreateTwoSidedTrianglePlane()
+            public static  GameObject CreateTwoSidedTrianglePlane()
             {
                 return CreateTwoSidedTrianglePlane(new DtTrianglePlane());
             }
-            internal static GameObject CreateTwoSidedTrianglePlane(DtTrianglePlane dt)
+            public static  GameObject CreateTwoSidedTrianglePlane(DtTrianglePlane dt)
             {
                 Mesh m;
                 var gameObject = CreateGameObject("TwoSidedTrianglePlane", dt, out m);
@@ -2336,11 +2342,11 @@ namespace UnityFunctions
             #endregion
 
             #region Square Plane
-            internal static GameObject CreateTwoSidedSquarePlane()
+            public static  GameObject CreateTwoSidedSquarePlane()
             {
                 return CreateTwoSidedSquarePlane(new DtSquarePlane());
             }
-            internal static GameObject CreateTwoSidedSquarePlane(DtSquarePlane dt)
+            public static  GameObject CreateTwoSidedSquarePlane(DtSquarePlane dt)
             {
                 Mesh m;
                 var gameObject = CreateGameObject("TwoSidedSquarePlane", dt, out m);
@@ -2402,11 +2408,11 @@ namespace UnityFunctions
                 ;
                 return gameObject;
             }
-            internal static GameObject CreateSquarePlane()
+            public static  GameObject CreateSquarePlane()
             {
                 return CreateSquarePlane(new DtSquarePlane());
             }
-            internal static GameObject CreateSquarePlane(DtSquarePlane dt)
+            public static  GameObject CreateSquarePlane(DtSquarePlane dt)
             {
                 Mesh m;
                 var gameObject = CreateGameObject("SquarePlane", dt, out m);
@@ -2463,11 +2469,11 @@ namespace UnityFunctions
             #endregion
 
             #region Cone
-            internal static GameObject CreateCone()
+            public static  GameObject CreateCone()
             {
                 return CreateCone(new DtCone());
             }
-            internal static GameObject CreateCone(DtCone dt)
+            public static  GameObject CreateCone(DtCone dt)
             {
                 Mesh m;
                 var gameObject = CreateGameObject("Cone", dt, out m);
@@ -2656,11 +2662,11 @@ namespace UnityFunctions
                 ;
                 return gameObject;
             }
-            internal static GameObject CreatePointyCone()
+            public static  GameObject CreatePointyCone()
             {
                 return CreateCone(new DtCone());
             }
-            internal static GameObject CreatePointyCone(DtCone dt)
+            public static  GameObject CreatePointyCone(DtCone dt)
             {
                 Mesh m;
                 var gameObject = CreateGameObject("PointyCone", dt, out m);
@@ -2860,12 +2866,12 @@ namespace UnityFunctions
             #endregion
 
             #region Capsule
-            internal static GameObject CreateCapsule()
+            public static  GameObject CreateCapsule()
             {
                 return CreateCapsule(new DtCapsule());
             }
 
-            internal static GameObject CreateCapsule(DtCapsule dt)
+            public static  GameObject CreateCapsule(DtCapsule dt)
             {
                 Mesh m;
                 var gameObject = CreateGameObject("Capsule", dt, out m);
@@ -2998,12 +3004,12 @@ namespace UnityFunctions
             #endregion
 
             #region Sphere
-            internal static GameObject CreateSphere()
+            public static  GameObject CreateSphere()
             {
                 return CreateSphere(new DtSphere());
             }
 
-            internal static GameObject CreateSphere(DtSphere dt)
+            public static  GameObject CreateSphere(DtSphere dt)
             {
                 Mesh m;
                 var gameObject = CreateGameObject("Sphere", dt, out m);
@@ -3108,12 +3114,12 @@ namespace UnityFunctions
             }
 
 
-            internal static GameObject CreateHalfSphere()
+            public static  GameObject CreateHalfSphere()
             {
                 return CreateHalfSphere(new DtSphere());
             }
 
-            internal static GameObject CreateHalfSphere(DtSphere dt)
+            public static  GameObject CreateHalfSphere(DtSphere dt)
             {
                 Mesh m;
                 var gameObject = CreateGameObject("HalfSphere", dt, out m);
@@ -3222,38 +3228,38 @@ namespace UnityFunctions
             #endregion
         }
 
-        internal static class point
+        public static  class point
         {
             const float epsilon = 0.0000001f;
 
-            internal static void ToLocal(ref Vector3 worldPoint, ref Quaternion worldRotation, ref Vector3 worldPosition, out Vector3 localPoint)
+            public static  void ToLocal(ref Vector3 worldPoint, ref Quaternion worldRotation, ref Vector3 worldPosition, out Vector3 localPoint)
             {
                 localPoint = Quaternion.Inverse(worldRotation)*(worldPoint - worldPosition);
             }
-            internal static Vector3 ToLocal(ref Vector3 worldPoint, ref Quaternion worldRotation, ref Vector3 worldPosition)
+            public static  Vector3 ToLocal(ref Vector3 worldPoint, ref Quaternion worldRotation, ref Vector3 worldPosition)
             {
                 return Quaternion.Inverse(worldRotation)*(worldPoint - worldPosition);
             }
-            internal static Vector3 ToLocal(Vector3 worldPoint, Quaternion worldRotation, Vector3 worldPosition)
+            public static  Vector3 ToLocal(Vector3 worldPoint, Quaternion worldRotation, Vector3 worldPosition)
             {
                 return Quaternion.Inverse(worldRotation)*(worldPoint - worldPosition);
             }
 
 
-            internal static void ToWorld(ref Vector3 localPoint, ref Quaternion worldRotation, ref Vector3 worldPosition, out Vector3 worldPoint)
+            public static  void ToWorld(ref Vector3 localPoint, ref Quaternion worldRotation, ref Vector3 worldPosition, out Vector3 worldPoint)
             {
                 worldPoint = worldRotation * localPoint + worldPosition;
             }
-            internal static Vector3 ToWorld(ref Vector3 localPoint, ref Quaternion worldRotation, ref Vector3 worldPosition)
+            public static  Vector3 ToWorld(ref Vector3 localPoint, ref Quaternion worldRotation, ref Vector3 worldPosition)
             {
                 return worldRotation * localPoint + worldPosition;
             }
-            internal static Vector3 ToWorld(Vector3 localPoint, Quaternion worldRotation, Vector3 worldPosition)
+            public static  Vector3 ToWorld(Vector3 localPoint, Quaternion worldRotation, Vector3 worldPosition)
             {
                 return worldRotation * localPoint + worldPosition;
             }
 
-            internal static bool IsOn2DSegment(ref Vector2 segStart, ref Vector2 point, ref Vector2 segEnd)
+            public static  bool IsOn2DSegment(ref Vector2 segStart, ref Vector2 point, ref Vector2 segEnd)
             {
                 if (point.x <= max(segStart.x, segEnd.x)+epsilon && 
                     point.x >= min(segStart.x, segEnd.x)-epsilon && 
@@ -3264,7 +3270,7 @@ namespace UnityFunctions
                 return false;
             }
 
-            internal static bool IsOnSegment(ref Vector3 segStart, ref Vector3 point, ref Vector3 segEnd)
+            public static  bool IsOnSegment(ref Vector3 segStart, ref Vector3 point, ref Vector3 segEnd)
             {
                 if (point.x <= max(segStart.x, segEnd.x)+epsilon && 
                     point.x >= min(segStart.x, segEnd.x)-epsilon && 
@@ -3277,7 +3283,7 @@ namespace UnityFunctions
                 return false;
             }
 
-            internal static bool ClosestOnLineSegment(ref Vector3 p, ref Vector3 line1, ref Vector3 line2, out Vector3 closest)
+            public static  bool ClosestOnLineSegment(ref Vector3 p, ref Vector3 line1, ref Vector3 line2, out Vector3 closest)
             {
                 point.ProjectOnLine(ref p, ref line1, ref line2, out closest);
                 if (!IsOnSegment(ref line1, ref closest, ref line2))
@@ -3289,7 +3295,7 @@ namespace UnityFunctions
                 }
                 return true;
             }
-            internal static void ClosestOnTwoLineSegments(
+            public static  void ClosestOnTwoLineSegments(
                 ref Vector3 line1p1, ref Vector3 line1p2, 
                 ref Vector3 line2p1, ref Vector3 line2p2, 
                 out Vector3 closestPointLine1, out Vector3 closestPointLine2)
@@ -3367,7 +3373,7 @@ namespace UnityFunctions
                 }
             }
             // if the lines are parallel then any point is closest so we return false
-	        internal static bool ClosestOnTwoLines(ref Vector3 line1p1, ref Vector3 line1Direction, ref Vector3 line2p1, ref Vector3 line2Direction, out Vector3 closestPointLine1, out Vector3 closestPointLine2)
+	        public static  bool ClosestOnTwoLines(ref Vector3 line1p1, ref Vector3 line1Direction, ref Vector3 line2p1, ref Vector3 line2Direction, out Vector3 closestPointLine1, out Vector3 closestPointLine2)
 	        {
 
                 var a = dot.Product(ref line1Direction, ref line1Direction);
@@ -3395,58 +3401,58 @@ namespace UnityFunctions
 	            point.ProjectOnLine(ref line1p1, ref line2p1, ref line2p2, out closestPointLine2);
                 return false;
 	        }
-            internal static bool IsLeftOfLine2D(ref Vector2 point, ref Vector2 linePoint1, ref Vector2 linePoint2)
+            public static  bool IsLeftOfLine2D(ref Vector2 point, ref Vector2 linePoint1, ref Vector2 linePoint2)
             {
                 return ((linePoint2.x - linePoint1.x)*(point.y - linePoint1.y) - (linePoint2.y - linePoint1.y)*(point.x - linePoint1.x)) > 0;
             }
-            internal static bool IsLeftOfLine2D(Vector2 point, Vector2 linePoint1, Vector2 linePoint2)
+            public static  bool IsLeftOfLine2D(Vector2 point, Vector2 linePoint1, Vector2 linePoint2)
             {
                 return ((linePoint2.x - linePoint1.x)*(point.y - linePoint1.y) - (linePoint2.y - linePoint1.y)*(point.x - linePoint1.x)) > 0;
             }
-            internal static bool IsAbovePlane(ref Vector3 point, ref Vector3 planeNormal, ref Vector3 planePoint)
+            public static  bool IsAbovePlane(ref Vector3 point, ref Vector3 planeNormal, ref Vector3 planePoint)
             {
                 var vectorToPlane = point - planePoint;
                 var distance = -dot.Product(ref vectorToPlane, ref planeNormal);
                 return distance < 0;
             }
-            internal static bool IsAbovePlane(Vector3 point, Vector3 planeNormal, Vector3 planePoint)
+            public static  bool IsAbovePlane(Vector3 point, Vector3 planeNormal, Vector3 planePoint)
             {
                 var vectorToPlane = point - planePoint;
                 var distance = -dot.Product(ref vectorToPlane, ref planeNormal);
                 return distance < 0;
             }
-            internal static bool IsAbovePlane(ref Vector3 point, ref Vector3 planeNormal)
+            public static  bool IsAbovePlane(ref Vector3 point, ref Vector3 planeNormal)
             {
                 var zero = Vector3.zero;
                 return IsAbovePlane(ref point, ref planeNormal, ref zero);
             }
-            internal static bool IsAbovePlane(Vector3 point, Vector3 planeNormal)
+            public static  bool IsAbovePlane(Vector3 point, Vector3 planeNormal)
             {
                 var zero = Vector3.zero;
                 return IsAbovePlane(ref point, ref planeNormal, ref zero);
             }
-            internal static Vector3 ProjectOnPlane(ref Vector3 point, ref Vector3 planeNormal, ref Vector3 planePoint)
+            public static  Vector3 ProjectOnPlane(ref Vector3 point, ref Vector3 planeNormal, ref Vector3 planePoint)
             {
                 planeNormal = planeNormal.normalized;
                 var vectorToPlane = point - planePoint;
                 var distance = -dot.Product(ref planeNormal, ref vectorToPlane);
                 return point + planeNormal * distance;
             }
-            internal static void ProjectOnPlane(ref Vector3 point, ref Vector3 planeNormal, ref Vector3 planePoint, out Vector3 projection)
+            public static  void ProjectOnPlane(ref Vector3 point, ref Vector3 planeNormal, ref Vector3 planePoint, out Vector3 projection)
             {
                 planeNormal = planeNormal.normalized;
                 var vectorToPlane = point - planePoint;
                 var distance = -dot.Product(ref planeNormal, ref vectorToPlane);
                 projection = point + planeNormal * distance;
             }
-            internal static Vector3 ProjectOnPlane(Vector3 point, Vector3 planeNormal, Vector3 planePoint)
+            public static  Vector3 ProjectOnPlane(Vector3 point, Vector3 planeNormal, Vector3 planePoint)
             {
                 planeNormal = planeNormal.normalized;
                 var vectorToPlane = point - planePoint;
                 var distance = -dot.Product(ref planeNormal, ref vectorToPlane);
                 return point + planeNormal * distance;
             }
-            internal static Vector3 ProjectOnLine(Vector3 point, Vector3 line1, Vector3 line2)
+            public static  Vector3 ProjectOnLine(Vector3 point, Vector3 line1, Vector3 line2)
             {
                 var pointToLine = point - line1;
                 var lineVector = line2 - line1;
@@ -3454,7 +3460,7 @@ namespace UnityFunctions
                 vector.ProjectOnNormal(ref pointToLine, ref lineVector, out onNormal);
                 return onNormal + line1;
             }
-            internal static Vector3 ProjectOnLine(ref Vector3 point, ref Vector3 line1, ref Vector3 line2)
+            public static  Vector3 ProjectOnLine(ref Vector3 point, ref Vector3 line1, ref Vector3 line2)
             {
                 var pointToLine = point - line1;
                 var lineVector = line2 - line1;
@@ -3462,7 +3468,7 @@ namespace UnityFunctions
                 vector.ProjectOnNormal(ref pointToLine, ref lineVector, out onNormal);
                 return onNormal + line1;
             }
-            internal static void ProjectOnLine(ref Vector3 point, ref Vector3 line1, ref Vector3 line2, out Vector3 projection)
+            public static  void ProjectOnLine(ref Vector3 point, ref Vector3 line1, ref Vector3 line2, out Vector3 projection)
             {
                 var pointToLine = point - line1;
                 var lineVector = line2 - line1;
@@ -3470,7 +3476,7 @@ namespace UnityFunctions
                 vector.ProjectOnNormal(ref pointToLine, ref lineVector, out onNormal);
                 projection = onNormal + line1;
             }
-            internal static bool TryProjectOnLineSegment(ref Vector3 point, ref Vector3 line1, ref Vector3 line2, out Vector3 projection)
+            public static  bool TryProjectOnLineSegment(ref Vector3 point, ref Vector3 line1, ref Vector3 line2, out Vector3 projection)
             {
                 var pointToLine = point - line1;
                 var lineVector = line2 - line1;
@@ -3498,7 +3504,7 @@ namespace UnityFunctions
                     projection = d1 < d2 ? line1 : line2;
                 }
             }
-            internal static void ProjectOnLine2D(ref Vector2 point, ref Vector2 linePoint1, ref Vector2 linePoint2, out Vector2 result)
+            public static  void ProjectOnLine2D(ref Vector2 point, ref Vector2 linePoint1, ref Vector2 linePoint2, out Vector2 result)
             {
                 var line = linePoint1 - linePoint2;
                 var newPoint = point - linePoint2;
@@ -3506,7 +3512,7 @@ namespace UnityFunctions
                 result = ((dot.Product(ref newPoint, ref line)/dot.Product(ref line, ref line))*line)  + linePoint2;
 
             }
-            internal static Vector3 ReflectOfPlane(Vector3 point, Vector3 planeNormal, Vector3 planePoint)
+            public static  Vector3 ReflectOfPlane(Vector3 point, Vector3 planeNormal, Vector3 planePoint)
             {
                 Vector3 projection;
                 ProjectOnPlane(ref point, ref planeNormal, ref planePoint, out projection);
@@ -3515,7 +3521,7 @@ namespace UnityFunctions
                 fun.point.TryMoveAbs(ref point, ref projection, distance*2, out mirrorPoint);
                 return mirrorPoint;
             }
-            internal static Vector3 ReflectOfPlane(ref Vector3 point, ref Vector3 planeNormal, ref Vector3 planePoint)
+            public static  Vector3 ReflectOfPlane(ref Vector3 point, ref Vector3 planeNormal, ref Vector3 planePoint)
             {
                 Vector3 projection;
                 ProjectOnPlane(ref point, ref planeNormal, ref planePoint, out projection);
@@ -3524,7 +3530,7 @@ namespace UnityFunctions
                 fun.point.TryMoveAbs(ref point, ref projection, distance*2, out mirrorPoint);
                 return mirrorPoint;
             }
-            internal static void ReflectOfPlane(ref Vector3 point, ref Vector3 planeNormal, ref Vector3 planePoint, out Vector3 mirrorPoint)
+            public static  void ReflectOfPlane(ref Vector3 point, ref Vector3 planeNormal, ref Vector3 planePoint, out Vector3 mirrorPoint)
             {
                 Vector3 projection;
                 ProjectOnPlane(ref point, ref planeNormal, ref planePoint, out projection);
@@ -3532,7 +3538,7 @@ namespace UnityFunctions
                 fun.point.TryMoveAbs(ref point, ref projection, distance*2, out mirrorPoint);
             }
 
-            internal static Vector3 GetNormal(Vector3 p1, Vector3 p2,  Vector3 p3)
+            public static  Vector3 GetNormal(Vector3 p1, Vector3 p2,  Vector3 p3)
             {
                 var lhs = p1 - p2;
                 var rhs = p3 - p2;
@@ -3540,13 +3546,13 @@ namespace UnityFunctions
                 vector.GetNormal(ref lhs, ref rhs, out r);
                 return r;
             }
-            internal static void GetNormal(ref Vector3 p1, ref Vector3 p2, ref Vector3 p3, out Vector3 r)
+            public static  void GetNormal(ref Vector3 p1, ref Vector3 p2, ref Vector3 p3, out Vector3 r)
             {
                 var lhs = p1 - p2;
                 var rhs = p3 - p2;
                 vector.GetNormal(ref lhs, ref rhs, out r);
             }
-            internal static Vector2 MoveRel2D(Vector2 from, Vector2 to, double ratio)
+            public static  Vector2 MoveRel2D(Vector2 from, Vector2 to, double ratio)
             {
                 var r = (float) ratio;
                 if (r < 0.0000001 && r > -0.0000001)
@@ -3559,7 +3565,7 @@ namespace UnityFunctions
                                 y = from.y + (to.y - from.y) * r
                             };
             }
-            internal static Vector2 MoveRel2D(ref Vector2 from, ref Vector2 to, double ratio)
+            public static  Vector2 MoveRel2D(ref Vector2 from, ref Vector2 to, double ratio)
             {
                 var r = (float) ratio;
                 if (r < 0.0000001 && r > -0.0000001)
@@ -3572,7 +3578,7 @@ namespace UnityFunctions
                                 y = from.y + (to.y - from.y) * r
                             };
             }
-            internal static Vector3 MoveRel(ref Vector3 from, ref Vector3 to, double ratio)
+            public static  Vector3 MoveRel(ref Vector3 from, ref Vector3 to, double ratio)
             {
                 var r = (float) ratio;
                 if (r < 0.0000001 && r > -0.0000001)
@@ -3586,7 +3592,7 @@ namespace UnityFunctions
                     z = from.z + (to.z - from.z) * r
                 };
             }
-            internal static void MoveRel(ref Vector3 from, ref Vector3 to, double ratio, out Vector3 result)
+            public static  void MoveRel(ref Vector3 from, ref Vector3 to, double ratio, out Vector3 result)
             {
                 var r = (float) ratio;
                 if (r < 0.0000001 && r > -0.0000001)
@@ -3601,7 +3607,7 @@ namespace UnityFunctions
                     z = from.z + (to.z - from.z) * r
                 };
             }
-            internal static Vector3 MoveRel(Vector3 from, Vector3 to, double ratio)
+            public static  Vector3 MoveRel(Vector3 from, Vector3 to, double ratio)
             {
                 var r = (float) ratio;
                 if (r < 0.0000001 && r > -0.0000001)
@@ -3616,7 +3622,7 @@ namespace UnityFunctions
                 };
             }
 
-            internal static Vector3 MoveRel(Vector3 from, Vector3 to, double ratio, 
+            public static  Vector3 MoveRel(Vector3 from, Vector3 to, double ratio, 
                 Func<float,float> xFunc, Func<float,float> yFunc, Func<float,float> zFunc )
             {
                 var r = (float) ratio;
@@ -3635,7 +3641,7 @@ namespace UnityFunctions
                 };
             }
 
-            internal static bool TryMoveRel2D(ref Vector2 from, ref Vector2 to, double ratio, out Vector2 result)
+            public static  bool TryMoveRel2D(ref Vector2 from, ref Vector2 to, double ratio, out Vector2 result)
             {
                 var r = (float) ratio;
                 if (r < 0.0000001 && r > -0.0000001)
@@ -3650,7 +3656,7 @@ namespace UnityFunctions
                 };
                 return true;
             }
-            internal static bool TryMoveRel(ref Vector3 from, ref Vector3 to, double ratio, out Vector3 result)
+            public static  bool TryMoveRel(ref Vector3 from, ref Vector3 to, double ratio, out Vector3 result)
             {
                 var r = (float) ratio;
                 if (r < 0.0000001 && r > -0.0000001)
@@ -3666,7 +3672,7 @@ namespace UnityFunctions
                 };
                 return true;
             }
-            internal static bool TryMoveAbs(float fromX, float fromY, float toX, float toY, double distance, out float x, out float y)
+            public static  bool TryMoveAbs(float fromX, float fromY, float toX, float toY, double distance, out float x, out float y)
             {
                 if (distance < 0.0000001 && distance > -0.0000001)
                 {
@@ -3689,7 +3695,7 @@ namespace UnityFunctions
                 y = fromY + (toY - fromY)*amount;
                 return true;
             }
-            internal static bool TryMoveAbs2D(ref Vector2 from, ref Vector2 to, double distance, out Vector2 result)
+            public static  bool TryMoveAbs2D(ref Vector2 from, ref Vector2 to, double distance, out Vector2 result)
             {
                 if (distance < 0.0000001 && distance > -0.0000001)
                 {
@@ -3713,7 +3719,7 @@ namespace UnityFunctions
                 };
                 return true;
             }
-            internal static bool TryMoveAbs(ref Vector3 from, ref Vector3 to, double distance, out Vector3 result)
+            public static  bool TryMoveAbs(ref Vector3 from, ref Vector3 to, double distance, out Vector3 result)
             {
                 if (distance < 0.0000001 && distance > -0.0000001)
                 {
@@ -3734,7 +3740,7 @@ namespace UnityFunctions
                 result = from + dir*(float)distance;
                 return true;
             }
-            internal static Vector2 MoveAbs2D(Vector2 from, Vector2 to, double distance)
+            public static  Vector2 MoveAbs2D(Vector2 from, Vector2 to, double distance)
             {
                 if (distance < 0.0000001 && distance > -0.0000001)
                 {
@@ -3749,7 +3755,7 @@ namespace UnityFunctions
 
                 return from + dir*(float)distance;
             }
-            internal static Vector3 MoveAbs(Vector3 from, Vector3 to, double distance)
+            public static  Vector3 MoveAbs(Vector3 from, Vector3 to, double distance)
             {
                 if (distance < 0.0000001 && distance > -0.0000001)
                 {
@@ -3764,7 +3770,7 @@ namespace UnityFunctions
 
                 return from + dir*(float)distance;
             }
-            internal static Vector3 MoveAbs(ref Vector3 from, ref Vector3 to, float distance)
+            public static  Vector3 MoveAbs(ref Vector3 from, ref Vector3 to, float distance)
             {
                 if (distance < 0.0000001 && distance > -0.0000001)
                 {
@@ -3779,7 +3785,7 @@ namespace UnityFunctions
 
                 return from + dir*distance;
             }
-            internal static void MoveAbs(ref Vector3 from, ref Vector3 to, float distance, out Vector3 result)
+            public static  void MoveAbs(ref Vector3 from, ref Vector3 to, float distance, out Vector3 result)
             {
                 if (distance < 0.0000001 && distance > -0.0000001)
                 {
@@ -3800,20 +3806,20 @@ namespace UnityFunctions
                 result = from + dir*distance;
             }
 
-            internal static Vector2 Middle(Vector2 a, Vector2 b)
+            public static  Vector2 Middle(Vector2 a, Vector2 b)
             {
                 return new Vector2((b.x - a.x)*0.5f+a.x, (b.y - a.y)*0.5f+a.y);
             }
-            internal static void Middle(ref Vector2 a, ref Vector2 b, out Vector2 output)
+            public static  void Middle(ref Vector2 a, ref Vector2 b, out Vector2 output)
             {
                 output = new Vector2((b.x - a.x)*0.5f+a.x, (b.y - a.y)*0.5f+a.y);
             }
-            internal static void Middle(ref Vector3 a, ref Vector3 b, out Vector3 output)
+            public static  void Middle(ref Vector3 a, ref Vector3 b, out Vector3 output)
             {
                 output = new Vector3((b.x - a.x)*0.5f+a.x, (b.y - a.y)*0.5f+a.y, (b.z - a.z)*0.5f+a.z);
             }
 
-            internal static void EnforceWithin(ref Vector2 current, ref Vector2 start, ref Vector2 end)
+            public static  void EnforceWithin(ref Vector2 current, ref Vector2 start, ref Vector2 end)
             {
                 var isWithin =
                     current.x <= max(start.x, end.x) + epsilon && current.x >= min(start.x, end.x) - epsilon &&
@@ -3829,9 +3835,9 @@ namespace UnityFunctions
             }
         }
 
-        internal static class polygon
+        public static  class polygon
         {
-            internal static bool IsPointWithin(Vector2 point, Vector2[] points)
+            public static  bool IsPointWithin(Vector2 point, Vector2[] points)
             {
                 var result = false;
                 int curr;
@@ -3851,30 +3857,30 @@ namespace UnityFunctions
             }
         }
 
-        internal static class random
+        public static  class random
         {
             private static readonly System.Random _rnd = new System.Random((int)(DateTime.UtcNow.Ticks%1000000000));
-            internal static float Between(double min, double max)
+            public static  float Between(double min, double max)
             {
                 return Between((float)min, (float)max);
             }
             // probabilityDistribFunc => 0; would mean non altered probability, func [0-1]
-            internal static float Between(double min, double max, Func<double, double> probabilityDistribFunc)
+            public static  float Between(double min, double max, Func<double, double> probabilityDistribFunc)
             {
                 return Between((float)min, (float)max, probabilityDistribFunc);
             }
-            internal static int Between(int min, int max)
+            public static  int Between(int min, int max)
             {
                 return _rnd.Next(min, max + 1);
             }
-            internal static float Between(float min, float max)
+            public static  float Between(float min, float max)
             {
                 var n = (float)_rnd.NextDouble();
                 return (max - min) * n + min;
             }
 
             // probabilityDistribFunc => 0; would mean non altered probability, func [0-1]
-            internal static float Between(float min, float max, Func<double, double> probabilityDistribFunc)
+            public static  float Between(float min, float max, Func<double, double> probabilityDistribFunc)
             {
                 var nd = _rnd.NextDouble();
                 var n = (float)probabilityDistribFunc(nd);
@@ -3882,24 +3888,24 @@ namespace UnityFunctions
                 var candidate = range * n + min;
                 return Mathf.Clamp(candidate, min, max);
             }
-            internal static T Of<T>(IList<T> arr)
+            public static  T Of<T>(IList<T> arr)
             {
                 return arr[Index(arr.Count)];
             }
-            internal static T Of<T>(Func<double, double> probabilityDistribFunc, IList<T> arr)
+            public static  T Of<T>(Func<double, double> probabilityDistribFunc, IList<T> arr)
             {
                 return arr[Index(arr.Count, probabilityDistribFunc)];
             }
-            internal static T Of<T>(params T[] arr)
+            public static  T Of<T>(params T[] arr)
             {
                 return arr[Index(arr.Length)];
             }
-            internal static T Of<T>(Func<double, double> probabilityDistribFunc, params T[] arr)
+            public static  T Of<T>(Func<double, double> probabilityDistribFunc, params T[] arr)
             {
                 return arr[Index(arr.Length)];
             }
 
-            internal static T OfExcept<T>(T[] arr, T except)
+            public static  T OfExcept<T>(T[] arr, T except)
             {
                 T curr;
                 var i = 0;
@@ -3911,41 +3917,41 @@ namespace UnityFunctions
                 while (curr.Equals(except));
                 return curr;
             }
-            internal static T Between<T>(IList<T> arr, int exceptIndex)
+            public static  T Between<T>(IList<T> arr, int exceptIndex)
             {
                 return arr[Index(arr.Count, exceptIndex)];
             }
-            internal static int Index(int count)
+            public static  int Index(int count)
             {
                 return _rnd.Next(0, count);
             }
-            internal static int Index(int count, int exceptIndex)
+            public static  int Index(int count, int exceptIndex)
             {
                 if (exceptIndex < 0 || exceptIndex >= count) return Index(count);
                 var i = Index(count - 1);
                 if (i >= exceptIndex) ++i;
                 return i;
             }
-            internal static int Index(int count, Func<double, double> probabilityDistribFunc)
+            public static  int Index(int count, Func<double, double> probabilityDistribFunc)
             {
                 var nd = _rnd.NextDouble();
                 var n = (float)probabilityDistribFunc(nd);
                 var index = (int)Math.Round(count * n);
                 return Mathf.Clamp(index,0, count - 1);
             }
-            internal static bool Bool(double probability)
+            public static  bool Bool(double probability)
             {
                 if (probability < 0.000001) return false;
                 if (probability > 0.999999) return true;
                 var n = (float)_rnd.NextDouble();
                 return n <= probability;
             }
-            internal static Vector2 V2(float x1, float y1, float x2, float y2)
+            public static  Vector2 V2(float x1, float y1, float x2, float y2)
             {
                 return new Vector2(Between(x1, x2), Between(y1, y2));
             }
 
-            internal static Vector3 PointOnPlane(Vector3 position, Vector3 normal, float radius)
+            public static  Vector3 PointOnPlane(Vector3 position, Vector3 normal, float radius)
             {
                 Vector3 randomPoint;
  
@@ -3961,7 +3967,7 @@ namespace UnityFunctions
                 return randomPoint;
             }
 
-            internal static void PointOnPlane(ref Vector3 position, ref Vector3 normal, float radius, out Vector3 result)
+            public static  void PointOnPlane(ref Vector3 position, ref Vector3 normal, float radius, out Vector3 result)
             {
                 Vector3 randomPoint;
  
@@ -3978,9 +3984,9 @@ namespace UnityFunctions
             }
         }
 
-        internal static class rotate
+        public static  class rotate
         {
-            internal static void AngleAndAxisToQuaternion(float degrees, ref Vector3 axis, out Quaternion quaternion)
+            public static  void AngleAndAxisToQuaternion(float degrees, ref Vector3 axis, out Quaternion quaternion)
             {
                 var radians = degrees*DTR;
                 var s = (float)Math.Sin(radians/2f);
@@ -3991,7 +3997,7 @@ namespace UnityFunctions
                 quaternion = new Quaternion(x, y, z, w);
             }
 
-            internal static void Vector(ref Vector3 vector, ref Vector3 aboutAxis, double degrees, out Vector3 result)
+            public static  void Vector(ref Vector3 vector, ref Vector3 aboutAxis, double degrees, out Vector3 result)
             {
                 //var rotation = Quaternion.AngleAxis(degrees, aboutAxis);
                 Quaternion rotation;
@@ -4016,7 +4022,7 @@ namespace UnityFunctions
                 result = vector3;
             }
 
-            internal static void PointAbout(ref Vector3 rotatePoint, ref Vector3 pivot, ref Vector3 aboutAxis, double degrees, out Vector3 result)
+            public static  void PointAbout(ref Vector3 rotatePoint, ref Vector3 pivot, ref Vector3 aboutAxis, double degrees, out Vector3 result)
             {
                 var rotation = Quaternion.AngleAxis((float)degrees, aboutAxis);
 
@@ -4041,7 +4047,7 @@ namespace UnityFunctions
                 result = vector3 + pivot;
             }
 
-            internal static Vector3 PointAbout(ref Vector3 rotatePoint, ref Vector3 pivot, ref Vector3 aboutAxis, double degrees)
+            public static  Vector3 PointAbout(ref Vector3 rotatePoint, ref Vector3 pivot, ref Vector3 aboutAxis, double degrees)
             {
                 var rotation = Quaternion.AngleAxis((float)degrees, aboutAxis);
 
@@ -4066,7 +4072,7 @@ namespace UnityFunctions
                 return vector3 + pivot;
             }
 
-            internal static void Vector(ref Vector3 vector, ref Vector3 aboutAxis, ref Quaternion rotation, out Vector3 result)
+            public static  void Vector(ref Vector3 vector, ref Vector3 aboutAxis, ref Quaternion rotation, out Vector3 result)
             {
                 var num1 = rotation.x * 2f;
                 var num2 = rotation.y * 2f;
@@ -4087,7 +4093,7 @@ namespace UnityFunctions
                 result = vector3;
             }
 
-            internal static void PointAbout(ref Vector3 rotatePoint, ref Vector3 pivot, ref Vector3 aboutAxis, ref Quaternion rotation, out Vector3 result)
+            public static  void PointAbout(ref Vector3 rotatePoint, ref Vector3 pivot, ref Vector3 aboutAxis, ref Quaternion rotation, out Vector3 result)
             {
                 var point = rotatePoint - pivot;
 
@@ -4111,26 +4117,26 @@ namespace UnityFunctions
             }
         }
 
-        internal static class statistics
+        public static  class statistics
         {
             private const float epsilon = 0.00001f;
-            internal static Vector2 LerpAverageV2(Vector2 lastAverage, Vector2 current, int count)
+            public static  Vector2 LerpAverageV2(Vector2 lastAverage, Vector2 current, int count)
             {
                 return (count <= 1) ? current : new Vector2(Average(lastAverage.x, current.x, count), Average(lastAverage.y, current.y, count));
             }
-            internal static Vector2 LerpAverageV2(ref Vector2 lastAverage, ref Vector2 current, int count)
+            public static  Vector2 LerpAverageV2(ref Vector2 lastAverage, ref Vector2 current, int count)
             {
                 return (count <= 1) ? current : new Vector2(Average(lastAverage.x, current.x, count), Average(lastAverage.y, current.y, count));
             }
-            internal static Vector3 LerpAverage(Vector3 lastAverage, Vector3 current, int count)
+            public static  Vector3 LerpAverage(Vector3 lastAverage, Vector3 current, int count)
             {
                 return (count <= 1) ? current : new Vector3(Average(lastAverage.x, current.x, count), Average(lastAverage.y, current.y, count), Average(lastAverage.z, current.z, count));
             }
-            internal static Vector3 LerpAverage(ref Vector3 lastAverage, ref Vector3 current, int count)
+            public static  Vector3 LerpAverage(ref Vector3 lastAverage, ref Vector3 current, int count)
             {
                 return (count <= 1) ? current : new Vector3(Average(lastAverage.x, current.x, count), Average(lastAverage.y, current.y, count), Average(lastAverage.z, current.z, count));
             }
-            internal static Vector3 SlerpAverage(Vector3 lastAverage, Vector3 current, int count)
+            public static  Vector3 SlerpAverage(Vector3 lastAverage, Vector3 current, int count)
             {
                 if (count <= 1) return current;
                 var lastAverageMag = lastAverage.magnitude;
@@ -4142,7 +4148,7 @@ namespace UnityFunctions
                 return Vector3.Slerp(lastAverage, current, 1/(float) count).normalized*
                        Average(lastAverageMag, currentMag, count);
             }
-            internal static Vector3 SlerpAverage(ref Vector3 lastAverage, ref Vector3 current, int count)
+            public static  Vector3 SlerpAverage(ref Vector3 lastAverage, ref Vector3 current, int count)
             {
                 if (count <= 1) return current;
                 var lastAverageMag = lastAverage.magnitude;
@@ -4154,7 +4160,7 @@ namespace UnityFunctions
                 return Vector3.Slerp(lastAverage, current, 1/(float) count).normalized*
                        Average(lastAverageMag, currentMag, count);
             }
-            internal static Vector3 SlerpAverageFavorSameDirection(Vector3 lastAverage, Vector3 current, int count)
+            public static  Vector3 SlerpAverageFavorSameDirection(Vector3 lastAverage, Vector3 current, int count)
             {
                 if (count <= 1) return current;
                 var lastAverageMag = lastAverage.magnitude;
@@ -4167,7 +4173,7 @@ namespace UnityFunctions
                 return Vector3.Slerp(lastAverage, current, 1/(float) count).normalized*
                        Average(lastAverageMag, currentMag, count);
             }
-            internal static Vector3 SlerpAverageFavorSameDirection(ref Vector3 lastAverage, ref Vector3 current, int count)
+            public static  Vector3 SlerpAverageFavorSameDirection(ref Vector3 lastAverage, ref Vector3 current, int count)
             {
                 if (count <= 1) return current;
                 var lastAverageMag = lastAverage.magnitude;
@@ -4181,7 +4187,7 @@ namespace UnityFunctions
                        Average(lastAverageMag, currentMag, count);
             }
 
-            internal static Quaternion QuaternionAverageFavorSameDirection(Quaternion lastAverage, Quaternion current, int count)
+            public static  Quaternion QuaternionAverageFavorSameDirection(Quaternion lastAverage, Quaternion current, int count)
             {
                 if (count <= 1) return current;
                 float aAngle, bAngle;
@@ -4191,7 +4197,7 @@ namespace UnityFunctions
                 var axis = SlerpAverageFavorSameDirection(ref aAxis, ref bAxis, count);
                 return Quaternion.AngleAxis(Average(aAngle,bAngle,count), axis);
             }
-            internal static Quaternion QuaternionAverageFavorSameDirection(ref Quaternion lastAverage, ref Quaternion current, int count)
+            public static  Quaternion QuaternionAverageFavorSameDirection(ref Quaternion lastAverage, ref Quaternion current, int count)
             {
                 if (count <= 1) return current;
                 float aAngle, bAngle;
@@ -4201,20 +4207,20 @@ namespace UnityFunctions
                 var axis = SlerpAverageFavorSameDirection(ref aAxis, ref bAxis, count);
                 return Quaternion.AngleAxis(Average(aAngle,bAngle,count), axis);
             }
-            internal static float Average(double lastAverage, double current, int count)
+            public static  float Average(double lastAverage, double current, int count)
             {
                 return (count <= 1.0f) ? (float)current : ((float)lastAverage * (count - 1.0f) + (float)current) / count;
             }
-            internal static float Average(float lastAverage, float current, int count)
+            public static  float Average(float lastAverage, float current, int count)
             {
                 return (count <= 1.0f) ? current : (lastAverage * (count - 1.0f) + current) / count;
             }
-            internal static float PopulationVariance(double sumOfSquared, double sum, int count)
+            public static  float PopulationVariance(double sumOfSquared, double sum, int count)
             {
                 if (count <= 0) return 0;
                 return ((float)sumOfSquared - (((float)sum * (float)sum) / count)) / count;
             }
-            internal static float PopulationStandardDeviation(double sumOfSquared, double sum, int count)
+            public static  float PopulationStandardDeviation(double sumOfSquared, double sum, int count)
             {
                 return (count <= 1)
                         ? 0.0f
@@ -4222,29 +4228,29 @@ namespace UnityFunctions
             }
         }
 
-        internal static class triangle
+        public static  class triangle
         {
-            internal static Vector3 GetCentroid(Vector3 a, Vector3 b, Vector3 c)
+            public static  Vector3 GetCentroid(Vector3 a, Vector3 b, Vector3 c)
             {
                 return new Vector3((a.x+b.x+c.x)/3f,(a.y+b.y+c.y)/3f,(a.z+b.z+c.z)/3f);
             }
-            internal static Vector3 GetCentroid(ref Vector3 a, ref Vector3 b, ref Vector3 c)
+            public static  Vector3 GetCentroid(ref Vector3 a, ref Vector3 b, ref Vector3 c)
             {
                 return new Vector3((a.x+b.x+c.x)/3f,(a.y+b.y+c.y)/3f,(a.z+b.z+c.z)/3f);
             }
-            internal static void GetCentroid(ref Vector3 a, ref Vector3 b, ref Vector3 c, out Vector3 output)
+            public static  void GetCentroid(ref Vector3 a, ref Vector3 b, ref Vector3 c, out Vector3 output)
             {
                 output = new Vector3((a.x+b.x+c.x)/3f,(a.y+b.y+c.y)/3f,(a.z+b.z+c.z)/3f);
             }
-            internal static Vector2 GetCentroid2D(Vector2 a, Vector2 b, Vector2 c)
+            public static  Vector2 GetCentroid2D(Vector2 a, Vector2 b, Vector2 c)
             {
                 return new Vector2((a.x+b.x+c.x)/3f,(a.y+b.y+c.y)/3f);
             }
-            internal static Vector2 GetCentroid2D(ref Vector2 a, ref Vector2 b, ref Vector2 c)
+            public static  Vector2 GetCentroid2D(ref Vector2 a, ref Vector2 b, ref Vector2 c)
             {
                 return new Vector2((a.x+b.x+c.x)/3f,(a.y+b.y+c.y)/3f);
             }
-            internal static void GetCentroid2D(ref Vector2 a, ref Vector2 b, ref Vector2 c, out Vector2 centroid)
+            public static  void GetCentroid2D(ref Vector2 a, ref Vector2 b, ref Vector2 c, out Vector2 centroid)
             {
                 centroid = new Vector2((a.x+b.x+c.x)/3f,(a.y+b.y+c.y)/3f);
             }
@@ -4257,7 +4263,7 @@ namespace UnityFunctions
                c
             height starts between sides a and b and falls info side c
             */
-            internal static float GetHeight(double a, double b, double c)
+            public static  float GetHeight(double a, double b, double c)
             {
                 if (abs(c) < 0.000001) return (float)((a+b)/2);
                 var s = (a + b + c) / 2f;
@@ -4276,7 +4282,7 @@ namespace UnityFunctions
             ac^2 + h^2 = a^2
             bc^2 + h^2 = b^2
             */
-            internal static void GetBaseSubSides(double a, double b, double c, out float ac, out float bc)
+            public static  void GetBaseSubSides(double a, double b, double c, out float ac, out float bc)
             {
                 var h = GetHeight(a, b, c);
                 ac = sqrt(a*a - h*h);
@@ -4293,12 +4299,12 @@ namespace UnityFunctions
             ac^2 + h^2 = a^2
             bc^2 + h^2 = b^2
             */
-            internal static float GetBaseSubSideAc(double a, double b, double c)
+            public static  float GetBaseSubSideAc(double a, double b, double c)
             {
                 var h = GetHeight(a, b, c);
                 return sqrt(a*a - h*h);
             }
-            internal static bool IsPointInside(Vector2 point, Vector2 t1, Vector2 t2, Vector2 t3)
+            public static  bool IsPointInside(Vector2 point, Vector2 t1, Vector2 t2, Vector2 t3)
             {
                 var b1 = Sign3(ref point, ref t1, ref t2) < 0.0f;
                 var b2 = Sign3(ref point, ref t2, ref t3) < 0.0f;
@@ -4306,7 +4312,7 @@ namespace UnityFunctions
 
                 return (b1 == b2) && (b2 == b3);
             }
-            internal static bool IsPointInside(ref Vector2 point, ref Vector2 t1, ref Vector2 t2, ref Vector2 t3)
+            public static  bool IsPointInside(ref Vector2 point, ref Vector2 t1, ref Vector2 t2, ref Vector2 t3)
             {
                 var b1 = Sign3(ref point, ref t1, ref t2) < 0.0f;
                 var b2 = Sign3(ref point, ref t2, ref t3) < 0.0f;
@@ -4320,11 +4326,11 @@ namespace UnityFunctions
             }
 
 
-            internal static bool Overlap(Vector3 t1p1, Vector3 t1p2, Vector3 t1p3, Vector3 t2p1, Vector3 t2p2, Vector3 t2p3)
+            public static  bool Overlap(Vector3 t1p1, Vector3 t1p2, Vector3 t1p3, Vector3 t2p1, Vector3 t2p2, Vector3 t2p3)
             {
                 return Overlap(ref t1p1, ref t1p2, ref t1p3, ref t2p1, ref t2p2, ref t2p3);
             }
-            internal static bool Overlap(ref Vector3 t1p1, ref Vector3 t1p2, ref Vector3 t1p3, ref Vector3 t2p1, ref Vector3 t2p2, ref Vector3 t2p3)
+            public static  bool Overlap(ref Vector3 t1p1, ref Vector3 t1p2, ref Vector3 t1p3, ref Vector3 t2p1, ref Vector3 t2p2, ref Vector3 t2p3)
             {
                 Vector2 isect1 = Vector2.zero, isect2 = Vector2.zero;
 
@@ -4596,71 +4602,87 @@ namespace UnityFunctions
             }
         }
 
-        internal static class vector
+        public static class vector
         {
         
-            internal static void ToLocal(ref Vector3 worldVector, ref Quaternion worldRotation, out Vector3 localVector)
+            public static  void ToLocal(ref Vector3 worldVector, ref Quaternion worldRotation, out Vector3 localVector)
             {
                 localVector = Quaternion.Inverse(worldRotation)*worldVector;
             }
-            internal static Vector3 ToLocal(ref Vector3 worldVector, ref Quaternion worldRotation)
+            public static  Vector3 ToLocal(ref Vector3 worldVector, ref Quaternion worldRotation)
             {
                 return Quaternion.Inverse(worldRotation)*worldVector;
             }
-            internal static Vector3 ToLocal(Vector3 worldVector, Quaternion worldRotation)
+            public static  Vector3 ToLocal(Vector3 worldVector, Quaternion worldRotation)
             {
                 return Quaternion.Inverse(worldRotation)*worldVector;
             }
 
+            public static float Magnitude(ref Vector3 a)
+            {
+                return (float)Math.Sqrt(((double) a.x * (double) a.x + (double) a.y * (double) a.y + (double) a.z * (double) a.z));
+            }
+            public static float SqrMagnitude(ref Vector3 a)
+            {
+                return (float)((double) a.x * (double) a.x + (double) a.y * (double) a.y + (double) a.z * (double) a.z);
+            }
+            public static float Magnitude2D(ref Vector2 a)
+            {
+                return (float)Math.Sqrt((double) a.x * (double) a.x + (double) a.y * (double) a.y);
+            }
+            public static float SqrMagnitude2D(ref Vector2 a)
+            {
+                return (float)((double) a.x * (double) a.x + (double) a.y * (double) a.y);
+            }
 
-            internal static void ToWorld(ref Vector3 localVector, ref Quaternion worldRotation, out Vector3 worldPoint)
+            public static  void ToWorld(ref Vector3 localVector, ref Quaternion worldRotation, out Vector3 worldPoint)
             {
                 worldPoint = worldRotation * localVector;
             }
-            internal static Vector3 ToWorld(ref Vector3 localVector, ref Quaternion worldRotation)
+            public static  Vector3 ToWorld(ref Vector3 localVector, ref Quaternion worldRotation)
             {
                 return worldRotation * localVector;
             }
-            internal static Vector3 ToWorld(Vector3 localVector, Quaternion worldRotation)
+            public static  Vector3 ToWorld(Vector3 localVector, Quaternion worldRotation)
             {
                 return worldRotation * localVector;
             }
         
-            internal static bool IsAbovePlane(ref Vector3 vectorToPlane, ref Vector3 planeNormal)
+            public static  bool IsAbovePlane(ref Vector3 vectorToPlane, ref Vector3 planeNormal)
             {
                 var distance = -dot.Product(ref vectorToPlane, ref planeNormal);
                 return distance < 0;
             }
-            internal static bool IsAbovePlane(Vector3 vectorToPlane, Vector3 planeNormal)
+            public static  bool IsAbovePlane(Vector3 vectorToPlane, Vector3 planeNormal)
             {
                 var distance = -dot.Product(ref vectorToPlane, ref planeNormal);
                 return distance < 0;
             }
-            internal static float ProjectionLength(ref Vector3 ofVector, ref Vector3 ontoVector)
+            public static  float ProjectionLength(ref Vector3 ofVector, ref Vector3 ontoVector)
             {
                 var unitOntoVector = ontoVector.normalized;
                 return dot.Product(ref ofVector, ref unitOntoVector);
             }
-            internal static float ProjectionLength(Vector3 ofVector, Vector3 ontoVector)
+            public static  float ProjectionLength(Vector3 ofVector, Vector3 ontoVector)
             {
                 var unitOntoVector = ontoVector.normalized;
                 return dot.Product(ref ofVector, ref unitOntoVector);
             }
-            internal static Vector3 ProjectOnNormal(Vector3 vector, Vector3 onNormal)
+            public static  Vector3 ProjectOnNormal(Vector3 vector, Vector3 onNormal)
             {
                 var dotProduct = ((double) onNormal.x * (double) onNormal.x + (double) onNormal.y * (double) onNormal.y + (double) onNormal.z * (double) onNormal.z);
                 if (dotProduct < (double) Mathf.Epsilon)
                     return Vector3.zero;
                 return onNormal * dot.Product(ref vector, ref onNormal) / (float)dotProduct;
             }
-            internal static Vector3 ProjectOnNormal(ref Vector3 vector, ref Vector3 onNormal)
+            public static  Vector3 ProjectOnNormal(ref Vector3 vector, ref Vector3 onNormal)
             {
                 var dotProduct = ((double) onNormal.x * (double) onNormal.x + (double) onNormal.y * (double) onNormal.y + (double) onNormal.z * (double) onNormal.z);
                 if (dotProduct < (double) Mathf.Epsilon)
                     return Vector3.zero;
                 return onNormal * dot.Product(ref vector, ref onNormal) / (float)dotProduct;
             }
-            internal static void ProjectOnNormal(ref Vector3 vector, ref Vector3 onNormal, out Vector3 projection)
+            public static  void ProjectOnNormal(ref Vector3 vector, ref Vector3 onNormal, out Vector3 projection)
             {
                 var dotProduct = (float)((double) onNormal.x * (double) onNormal.x + (double) onNormal.y * (double) onNormal.y + (double) onNormal.z * (double) onNormal.z);;
                 if ((double)dotProduct < (double) Mathf.Epsilon)
@@ -4668,37 +4690,37 @@ namespace UnityFunctions
                 else
                     projection = onNormal * dot.Product(ref vector, ref onNormal) / (float)dotProduct;
             }
-            internal static Vector3 ProjectOnPlane(ref Vector3 vector, ref Vector3 planeNormal)
+            public static  Vector3 ProjectOnPlane(ref Vector3 vector, ref Vector3 planeNormal)
             {
                 var normPlaneNormal = planeNormal.normalized;
                 var distance = -dot.Product(ref normPlaneNormal, ref vector);
                 return vector + normPlaneNormal * distance;
             }
-            internal static void ProjectOnPlane(ref Vector3 vector, ref Vector3 planeNormal, out Vector3 projection)
+            public static  void ProjectOnPlane(ref Vector3 vector, ref Vector3 planeNormal, out Vector3 projection)
             {
                 var normPlaneNormal = planeNormal.normalized;
                 var distance = -dot.Product(ref normPlaneNormal, ref vector);
                 projection = vector + normPlaneNormal * distance;
             }
-            internal static Vector3 ProjectOnPlane(Vector3 vector, Vector3 planeNormal)
+            public static  Vector3 ProjectOnPlane(Vector3 vector, Vector3 planeNormal)
             {
                 var normPlaneNormal = planeNormal.normalized;
                 var distance = -dot.Product(ref normPlaneNormal, ref vector);
                 return vector + normPlaneNormal * distance;
             }
-            internal static Vector3 ReflectOfPlane(ref Vector3 vector, ref Vector3 planeNormal)
+            public static  Vector3 ReflectOfPlane(ref Vector3 vector, ref Vector3 planeNormal)
             {
                 Vector3 projection;
                 ProjectOnPlane(ref vector, ref planeNormal, out projection);
                 return Vector3.SlerpUnclamped(vector, projection.normalized, 2);
             }
-            internal static void ReflectOfPlane(ref Vector3 vector, ref Vector3 planeNormal, out Vector3 reflection)
+            public static  void ReflectOfPlane(ref Vector3 vector, ref Vector3 planeNormal, out Vector3 reflection)
             {
                 Vector3 projection;
                 ProjectOnPlane(ref vector, ref planeNormal, out projection);
                 reflection = Vector3.SlerpUnclamped(vector, projection.normalized, 2);
             }
-            internal static Vector3 GetNormal(Vector3 lhs, Vector3 rhs)
+            public static  Vector3 GetNormal(Vector3 lhs, Vector3 rhs)
             {
                 var normal = new Vector3((lhs.y * rhs.z - lhs.z * rhs.y), (lhs.z * rhs.x - lhs.x * rhs.z), (lhs.x * rhs.y - lhs.y * rhs.x));
 
@@ -4710,7 +4732,7 @@ namespace UnityFunctions
                     normal = new Vector3(0, 0, 0);
                 return normal;
             }
-            internal static void GetNormal(ref Vector3 lhs, ref Vector3 rhs, out Vector3 normal)
+            public static  void GetNormal(ref Vector3 lhs, ref Vector3 rhs, out Vector3 normal)
             {
                 normal = new Vector3((lhs.y * rhs.z - lhs.z * rhs.y), (lhs.z * rhs.x - lhs.x * rhs.z), (lhs.x * rhs.y - lhs.y * rhs.x));
 
@@ -4722,7 +4744,7 @@ namespace UnityFunctions
                     normal = new Vector3(0, 0, 0);
             }
 
-            internal static void GetRealUp(ref Vector3 forward, ref Vector3 rawUp, out Vector3 realUp)
+            public static  void GetRealUp(ref Vector3 forward, ref Vector3 rawUp, out Vector3 realUp)
             {
                 Vector3 right;
                 cross.Product(ref rawUp, ref forward, out right);
@@ -4730,7 +4752,7 @@ namespace UnityFunctions
                 cross.Product(ref forward, ref right, out realUp);
                 realUp.Normalize();
             }
-            internal static Vector3 GetRealUp(Vector3 forward, Vector3 rawUp)
+            public static  Vector3 GetRealUp(Vector3 forward, Vector3 rawUp)
             {
                 Vector3 right, realUp;
                 cross.Product(ref rawUp, ref forward, out right);
@@ -4738,7 +4760,7 @@ namespace UnityFunctions
                 cross.Product(ref forward, ref right, out realUp);
                return realUp.normalized;
             }
-            internal static void ComputeRandomXYAxesForPlane(ref Vector3 planeNormal, out Vector3 normX, out Vector3 normY)
+            public static  void ComputeRandomXYAxesForPlane(ref Vector3 planeNormal, out Vector3 normX, out Vector3 normY)
             {
                 var fw = Vector3.right;
                 cross.Product(ref planeNormal, ref fw, out normX);
@@ -4753,23 +4775,23 @@ namespace UnityFunctions
         }
     }
 
-    internal abstract class DtBase
+    public abstract class DtBase
     {
         internal string name;
         internal Mesh mesh;
         internal Action<Transform> set;
     }
-    internal class DtSquarePlane : DtBase
+    public class DtSquarePlane : DtBase
     {
         internal double length = 1f;
         internal double width = 1f;
     }
-    internal class DtTrianglePlane : DtBase
+    public class DtTrianglePlane : DtBase
     {
         internal double length = 1f;
         internal double width = 1f;
     }
-    internal class DtCone : DtBase
+    public class DtCone : DtBase
     {
         internal double height = 1f;
         internal double bottomRadius = .5f;
@@ -4778,7 +4800,7 @@ namespace UnityFunctions
         internal Vector3 localPos = Vector3.zero;
     }
 
-    internal class DtCapsule : DtBase
+    public class DtCapsule : DtBase
     {
         internal double height = 3f;
         internal double radius = 1f;
@@ -4786,7 +4808,7 @@ namespace UnityFunctions
         internal int latitude = 16;
         internal Vector3 localPos = Vector3.zero;
     }
-    internal class DtBox : DtBase
+    public class DtBox : DtBase
     {
         internal double x = 1;
         internal double y = 1;
@@ -4799,7 +4821,7 @@ namespace UnityFunctions
         }
     }
 
-    internal class DtSphere : DtBase
+    public class DtSphere : DtBase
     {
         internal double radius = 1;
         internal int longitude = 24;
