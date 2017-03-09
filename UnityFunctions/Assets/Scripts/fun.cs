@@ -2033,12 +2033,185 @@ namespace UnityFunctions
                 return true;
             }
 
-            public static  bool BetweenLineSegmentAndDisk(
+            // https://searchcode.com/codesearch/view/16225010/
+            public static bool BetweenLineSegmentAndCone(
+                ref Vector3 lineStart, ref Vector3 lineEnd, 
+                ref Vector3 coneBase, ref Vector3 coneUp, double coneRadius, double coneHeight, 
+                out Vector3 collision)
+            {
+                const float epsilon = 0.000001f;
+                if (coneHeight < epsilon)
+                {
+                    if (coneRadius < epsilon)
+                    {
+                        Vector3 coneBaseOnLine;
+                        point.ProjectOnLine(ref coneBase, ref lineEnd, ref lineStart, out coneBaseOnLine);
+
+                        var hasCollision = distance.Between(ref coneBaseOnLine, ref coneBase) < epsilon;
+                        collision = hasCollision ? coneBaseOnLine : Vector3.zero;
+                        return hasCollision;
+                    }
+
+                    return BetweenLineSegmentAndDisk(ref lineEnd, ref lineStart, ref coneUp, ref coneBase, coneRadius, out collision);
+                }
+                var coneNor = coneUp.normalized;
+                var coneTop = coneBase + coneNor*(float)coneHeight;
+                if (coneRadius < epsilon)
+                {
+                    Vector3 closest1, closest2;
+                    point.ClosestOnTwoLineSegments(ref lineEnd, ref lineStart, ref coneBase, ref coneTop, out closest1, out closest2);
+
+                    var hasCollision = distance.Between(ref closest1, ref closest2) < epsilon;
+                    collision = hasCollision ? closest1 : Vector3.zero;
+                    return hasCollision;
+                }
+
+                var coneRadiusSqr = coneRadius*coneRadius;
+                var coneHeightSqr = coneHeight*coneHeight;
+
+                var fac = coneRadiusSqr / coneHeightSqr;
+
+                var rayOr = lineStart;
+                var rayVec = lineEnd - lineStart;
+                var rayMag = vector.Magnitude(ref rayVec);
+                var rayFw = rayMag < 0.000001 ? Vector3.up : rayVec / rayMag;
+
+
+                // cylinder part
+                var yA = (fac) * rayFw.y * rayFw.y;
+                var yB = (2 * fac * rayOr.y * rayFw.y) - (2 * coneRadiusSqr / coneHeight) * rayFw.y;
+                var yC = (fac * rayOr.y * rayOr.y) - ((2 * coneRadiusSqr / coneHeight) * rayOr.y) + coneRadiusSqr;
+
+                var A = (rayFw.x * rayFw.x) + (rayFw.z * rayFw.z) - yA;
+                var B = (2 * rayOr.x * rayFw.x) + (2 * rayOr.z * rayFw.z) - yB;
+                var C = (rayOr.x * rayOr.x) + (rayOr.z * rayOr.z) - yC;
+
+                var d = (B * B) - (4 * A * C);
+
+                var t = new float[]{0.0f,0.0f};
+                var t_near = float.MaxValue;
+
+                var near = Vector3.zero;
+                var tempNear = Vector3.zero;
+
+                if (d >= 0)
+                {
+                    t[0] = (float)((-B - Math.Sqrt(d)) / (2 * A));
+                    t[1] = (float)((-B + Math.Sqrt(d)) / (2 * A));
+
+                    for (var i = 0; i < 2; ++i)
+                    {
+                        if (t[i] > epsilon)
+                        { 
+                            // So it doesn't cast shadows on itself
+                            // find intersection
+                            tempNear = rayOr + t[i] * rayFw;
+                            if (tempNear.y <= coneHeight && tempNear.y >= 0) // valid intersection point
+                            { 
+                                
+                                if (t[i] < t_near)
+                                {
+                                    t_near = t[i];
+                                    near = tempNear;
+                                    if (point.IsOnSegment(ref lineEnd, ref near, ref lineStart))
+                                    {
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // base
+                var capCen = new Vector3(0,0,0);
+                var capNor = new Vector3(0,-1,0);
+
+                Vector3 col;
+                var hit = BetweenRayAndCircle(ref rayFw, ref rayOr, ref capCen, coneRadius, ref capNor, out col);
+//if(hit) Debug.DrawLine(Vector3.one*999,col, Color.magenta);
+                var t_cap = distance.Between(ref rayOr, ref col);
+
+                if (hit)
+                {
+                    if (t_cap > t_near)
+                    {
+                        t_near = t_cap;
+                        near = tempNear;
+                    }
+                    else
+                    {
+                        t_near = t_cap;
+                        near = col;
+                    }
+                }
+//Debug.Log("t_near "+t_near+"|"+near);
+                if (t_near < float.MaxValue)
+                {
+//Debug.DrawLine(Vector3.one*999,near, Color.magenta,9999,false);
+                    if (point.IsOnSegment(ref lineEnd, ref near, ref lineStart))
+                    {
+                        collision = near;
+                        return true;
+                    }
+                }
+
+                if (BetweenPointAndCone(ref lineStart, ref coneBase, ref coneNor, coneRadius, coneHeight) &&
+                    BetweenPointAndCone(ref lineEnd, ref coneBase, ref coneNor, coneRadius, coneHeight))
+                {
+                    collision = lineStart;
+                    return true;
+                }
+
+                collision = Vector3.zero;
+                return false;
+            }
+
+            private static bool BetweenPointAndCone(ref Vector3 testPoint, ref Vector3 coneBase, ref Vector3 coneNor, double coneRadius, double coneHeight)
+            {
+                var coneTop = coneBase + coneNor*(float)coneHeight;
+                Vector3 testPointProj;
+                point.ProjectOnLine(ref testPoint, ref coneBase, ref coneTop, out testPointProj);
+
+                var ratio = (1f - (distance.Between(ref testPointProj, ref coneBase)/(float) coneHeight)).Clamp01();
+                var currRadius = coneRadius*ratio;
+
+                return distance.Between(ref testPoint, ref testPointProj) <= currRadius;
+            }
+
+            // https://searchcode.com/file/16224990/src/utils.cpp
+            public static bool BetweenRayAndCircle(
+                ref Vector3 rayDirection, ref Vector3 rayOrigin, 
+                ref Vector3 circleCenter, double circleRadius, ref Vector3 circleNormal, out Vector3 collision)
+            {
+                var denom = dot.Product(ref rayDirection, ref circleNormal);
+                var v1 = circleCenter - rayOrigin;
+                var num = dot.Product(ref v1, ref circleNormal);
+
+                const float epsilon = 0.00001f;
+
+                if ((denom <= -epsilon || denom >= epsilon) && (num <= -epsilon || num >= epsilon)) {
+                    var t = num / denom;
+                    if (t > epsilon) {
+                        // find intersection
+                        var near = rayOrigin + t * rayDirection;
+                        if ((near.x * near.x) + (near.z * near.z) <= (circleRadius * circleRadius)) {
+                            collision = near;
+                            return true;
+                        }
+
+                    }
+                }
+                collision = Vector3.zero;
+                return false;
+            }
+
+            public static bool BetweenLineSegmentAndDisk(
                 ref Vector3 lineEnd1,
                 ref Vector3 lineEnd2,
                 ref Vector3 diskNormal, 
                 ref Vector3 diskCenter,
-                float diskRadius,
+                double diskRadius,
                 out Vector3 crossPoint)
             {
                 Vector3 rayDiskIntersection;
@@ -2062,7 +2235,7 @@ namespace UnityFunctions
                         ref lineEnd2,
                         ref diskNormal,
                         ref diskCenter,
-                        diskRadius,
+                        (float)diskRadius,
                         out rayDiskIntersection);
                 if (!hasIntersection)
                 {
