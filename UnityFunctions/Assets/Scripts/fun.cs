@@ -1,113 +1,338 @@
 ﻿ 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Extensions;
 using Unianio.Extensions;
 using UnityEngine;
+using Utils;
 
 namespace UnityFunctions
 {
 
 
 
-    public static  class fun
+    public static class fun
     {
-        internal const float RTD = (float)(180 / Math.PI);
-        internal const float DTR = (float)(Math.PI / 180);
-        internal const float PI = (float)Math.PI;
+        public const float RTD = (float)(180 / Math.PI);
+        public const float DTR = (float)(Math.PI / 180);
 
-        public static  int abs(int n) { return n < 0 ? n*-1 : n; }
-        public static  float abs(float n) { return n < 0 ? n*-1 : n; }
-        public static  float abs(double n) { return n < 0 ? (float)n*-1 : (float)n; }
-        public static  int sign(double n) { return n < 0 ? -1 : 1; }
-        public static  int min(int a, int b) { return a > b ? b : a; }
-        public static  int max(int a, int b) { return a < b ? b : a; }
-        public static  float min(double a, double b) { return a > b ? (float)b : (float)a; }
-        public static  float max(double a, double b) { return a < b ? (float)b : (float)a; }
-        public static  float sqrt(double n) { return (float)Math.Sqrt(n); }
-        public static  float sin(double n) { return (float)Math.Sin(n); }
-        public static  float cos(double n) { return (float)Math.Cos(n); }
-        public static  float atan2(double a, double b) { return (float)Math.Atan2(a, b); }
-        public static  float pow(double n, double p) { return (float)Math.Pow(n, p); }
-        public static  float tan(double n) { return (float)Math.Tan(n); }
-
-        public static  class angle
+        public static float framesPerSec = 90f;
+        public static float smoothDeltaTime = 1/90f;
+        private static int _smoothDeltaTimeFrame = 0;
+        public static void frame()
         {
-            private const double TwiseRadiansToDegrees = 2.0*57.2957801818848;
-            public static  float Between(Quaternion a, Quaternion b)
+            if (_smoothDeltaTimeFrame < 20) ++_smoothDeltaTimeFrame;
+            smoothDeltaTime = statistics.Average(smoothDeltaTime, Time.deltaTime, _smoothDeltaTimeFrame);
+            framesPerSec = 1/smoothDeltaTime;
+        }
+        public static float framesIf90Fps(double f)
+        {
+            return (framesPerSec*(float)f)/90f;
+        }
+        public static int numFramesIf90Fps(double f)
+        {
+            return (int)Math.Round((framesPerSec*f)/90.0);
+        }
+        public static int abs(int n) { return n < 0 ? n*-1 : n; }
+        public static float abs(float n) { return n < 0 ? n*-1 : n; }
+        public static float abs(double n) { return n < 0 ? (float)n*-1 : (float)n; }
+        public static int sign(double n) { return n < 0 ? -1 : 1; }
+        public static int min(int a, int b) { return a > b ? b : a; }
+        public static int max(int a, int b) { return a < b ? b : a; }
+        public static float min(double a, double b) { return a > b ? (float)b : (float)a; }
+        public static float max(double a, double b) { return a < b ? (float)b : (float)a; }
+        public static float sqrt(double n) { return (float)Math.Sqrt(n); }
+        public static float sin(double n) { return (float)Math.Sin(n); }
+        public static float cos(double n) { return (float)Math.Cos(n); }
+        public static float atan2(double a, double b) { return (float)Math.Atan2(a, b); }
+        public static float pow(double n, double p) { return (float)Math.Pow(n, p); }
+        public static float tan(double n) { return (float)Math.Tan(n); }
+
+        public static class invserseKinematics
+        {
+            public static void ThreeJoinOnVertPlane(
+                Vector3 oriPo, Vector3 oriFw, Vector3 oriUp, Vector3 tarPo, 
+                double len0, double len1, out Vector3 join1, out Vector3 join2)
             {
-                return (float) ((double) Math.Acos(Math.Min(Math.Abs(fun.dot.Product(ref a, ref b)), 1f)) * TwiseRadiansToDegrees);
+                float distToTarg;
+                var toTargDir = (tarPo - oriPo).ToUnit(out distToTarg);
+
+                if(dot.Product(ref toTargDir, ref oriUp).Abs() < 0.999)
+                {
+                    Vector3 planeNormToBe;
+                    vector.GetNormal(ref toTargDir, ref oriUp, out planeNormToBe);
+                    vector.ProjectOnPlane(ref oriFw, ref planeNormToBe, out oriFw);
+                }
+
+                if(point.IsBelowPlane(ref tarPo, ref oriFw, ref oriPo))
+                {
+                    oriUp *= -1;
+                    oriFw *= -1;
+                }
+                
+                var lenAll = (float)(len0+len1+len0);
+                if(distToTarg >= lenAll)
+                {
+                    join1 = oriPo + toTargDir * (float)len0;
+                    join2 = join1 + toTargDir * (float)len1;
+                    return;
+                }
+
+                Vector3 realUp;
+                vector.GetRealUp(ref toTargDir, ref oriUp, ref oriFw, out realUp);
+
+                var halfRemaining = ((distToTarg - len1)/2f);
+
+                var deg = Math.Acos(halfRemaining/len0)*RTD;
+
+                var toJ0 = toTargDir.RotateTowardsCanOvershoot(ref realUp, deg);
+                join1 = oriPo + toJ0 * (float)len0;
+
+                var toJ1 = (-toTargDir).RotateTowardsCanOvershoot(ref realUp, deg);
+                join2 = tarPo + toJ1 * (float)len0;
             }
-            public static  float Between(ref Quaternion a, ref Quaternion b)
+
+            public static void TwoJoinsOnVertPlane(Vector3 oriPo, Vector3 oriFw, Vector3 oriUp, Vector3 tarPo, double len1, double len2, out Vector3 join)
             {
-                return (float) ((double) Math.Acos(Math.Min(Math.Abs(fun.dot.Product(ref a, ref b)), 1f)) * TwiseRadiansToDegrees);
-            }
-            public static  float BetweenVectorsUnSignedInRadians(ref Vector3 from, ref Vector3 to)
-            {
-                return Mathf.Acos(Mathf.Clamp(Vector3.Dot(from.normalized, to.normalized), -1f, 1f));
-            }
-            public static  float BetweenVectorsSigned(ref Vector2 lhs, ref Vector2 rhs)
-            {
-                var perpDot = lhs.x * rhs.y - lhs.y * rhs.x;
- 
-                return -RTD * (float)Math.Atan2(perpDot, fun.dot.Product(ref lhs, ref rhs));
-            }
-            public static  float BetweenVectorsSigned(double v1x, double v1y, double v2x, double v2y)
-            {
-                var perpDot = v1x * v2y - v1y * v2x;
- 
-                return -RTD * (float)Math.Atan2(perpDot, fun.dot.Product(v1x, v1y, v2x, v2y));
-            }
-            public static  float ShortestBetweenVectorsSigned(ref Vector3 lhs, ref Vector3 rhs)
-            {
-                Vector3 normal;
-                fun.vector.GetNormal(ref lhs, ref rhs, out normal);
-                var x = fun.cross.Product(ref lhs, ref rhs);
-                return (float)Math.Atan2(fun.dot.Product(ref normal, ref x), fun.dot.Product(ref lhs, ref rhs)) * RTD;
-            }
-            public static  float BetweenVectorsSigned(ref Vector3 lhs, ref Vector3 rhs, ref Vector3 normal)
-            {
-                var x = fun.cross.Product(ref lhs, ref rhs);
-                return (float)Math.Atan2(fun.dot.Product(ref normal, ref x), fun.dot.Product(ref lhs, ref rhs)) * RTD;
-            }
-            public static  float BetweenVectorsSigned(Vector3 lhs, Vector3 rhs, Vector3 normal)
-            {
-                var x = fun.cross.Product(ref lhs, ref rhs);
-                return (float)Math.Atan2(fun.dot.Product(ref normal, ref x), fun.dot.Product(ref lhs, ref rhs)) * RTD;
-            }
-            public static  float BetweenPointsSigned(ref Vector3 lhsPoint, ref Vector3 centerPoint, ref Vector3 rhsPoint)
-            {
-                Vector3 normal;
-                fun.point.GetNormal(ref lhsPoint, ref centerPoint, ref rhsPoint, out normal);
-                var lhs = lhsPoint - centerPoint;
-                var rhs = rhsPoint - centerPoint;
-                return BetweenVectorsSigned(ref lhs, ref rhs, ref normal);
-            }
-            public static  float BetweenPointsSigned(Vector3 lhsPoint, Vector3 centerPoint, Vector3 rhsPoint)
-            {
-                Vector3 normal;
-                fun.point.GetNormal(ref lhsPoint, ref centerPoint, ref rhsPoint, out normal);
-                var lhs = lhsPoint - centerPoint;
-                var rhs = rhsPoint - centerPoint;
-                return BetweenVectorsSigned(ref lhs, ref rhs, ref normal);
-            }
-            public static  float BetweenPointsSigned(ref Vector3 lhsPoint, ref Vector3 centerPoint, ref Vector3 rhsPoint, ref Vector3 normal)
-            {
-                var lhs = lhsPoint - centerPoint;
-                var rhs = rhsPoint - centerPoint;
-                return BetweenVectorsSigned(ref lhs, ref rhs, ref normal);
-            }
-            public static  float BetweenPointsSigned(Vector3 lhsPoint, Vector3 centerPoint, Vector3 rhsPoint, Vector3 normal)
-            {
-                var lhs = lhsPoint - centerPoint;
-                var rhs = rhsPoint - centerPoint;
-                return BetweenVectorsSigned(ref lhs, ref rhs, ref normal);
+                float distToTarg;
+                var toTargDir = (tarPo - oriPo).ToUnit(out distToTarg);
+                var lenAll = (float)(len1+len2);
+                if(distToTarg >= lenAll)
+                {
+                    join = oriPo + toTargDir * (float)len1;
+                    return;
+                }
+                Vector3 realUp;
+                toTargDir.GetRealUp(ref oriUp, ref oriFw, out realUp);
+                Vector3 planeNor;
+                vector.GetNormal(ref toTargDir, ref realUp, out planeNor);
+
+                var degNearLen1 = triangle.GetDegreesBySides(len1, distToTarg, len2);
+                var toJoin = toTargDir.RotateTowardsCanOvershoot(ref realUp, degNearLen1);
+                 join = oriPo + toJoin * (float)len1;
             }
         }
 
-        public static  class color
+        public static class angle
         {
-            public static  Color Parse(uint color)
+            private const double TwiseRadiansToDegrees = 2.0*57.2957801818848;
+
+            /// <summary>
+            /// Angle between rotations in degrees
+            /// </summary>
+            public static float Between(Quaternion a, Quaternion b)
+            {
+                return (float) ((double) Math.Acos(Math.Min(Math.Abs(dot.Product(ref a, ref b)), 1f)) * TwiseRadiansToDegrees);
+            }
+            /// <summary>
+            /// Angle between rotations in degrees
+            /// </summary>
+            public static float Between(ref Quaternion a, ref Quaternion b)
+            {
+                return (float) ((double) Math.Acos(Math.Min(Math.Abs(dot.Product(ref a, ref b)), 1f)) * TwiseRadiansToDegrees);
+            }
+            public static float BetweenVectorsUnSignedInRadians(ref Vector3 from, ref Vector3 to)
+            {
+                return Mathf.Acos(Mathf.Clamp(Vector3.Dot(from.normalized, to.normalized), -1f, 1f));
+            }
+            public static float BetweenVectorsUnSignedInDegrees(ref Vector3 from, ref Vector3 to)
+            {
+                return Mathf.Acos(Mathf.Clamp(Vector3.Dot(from.normalized, to.normalized), -1f, 1f))*RTD;
+            }
+            public static float BetweenVectorsSigned2D(ref Vector2 lhs, ref Vector2 rhs)
+            {
+                var perpDot = lhs.x * rhs.y - lhs.y * rhs.x;
+ 
+                return -RTD * (float)Math.Atan2(perpDot, dot.Product2D(ref lhs, ref rhs));
+            }
+            public static float BetweenVectorsSigned2D(Vector2 lhs, Vector2 rhs)
+            {
+                var perpDot = lhs.x * rhs.y - lhs.y * rhs.x;
+ 
+                return -RTD * (float)Math.Atan2(perpDot, dot.Product2D(ref lhs, ref rhs));
+            }
+            public static float BetweenVectorsSigned2D(double v1x, double v1y, double v2x, double v2y)
+            {
+                var perpDot = v1x * v2y - v1y * v2x;
+ 
+                return -RTD * (float)Math.Atan2(perpDot, dot.Product(v1x, v1y, v2x, v2y));
+            }
+            public static float ShortestBetweenVectorsSigned(ref Vector3 lhs, ref Vector3 rhs)
+            {
+                Vector3 normal;
+                fun.vector.GetNormal(ref lhs, ref rhs, out normal);
+                var x = cross.Product(ref lhs, ref rhs);
+                return (float)Math.Atan2(dot.Product(ref normal, ref x), dot.Product(ref lhs, ref rhs)) * RTD;
+            }
+            public static float BetweenPointsSignedIgnoreY(Vector3 lhsPoint, Vector3 centerPoint, Vector3 rhsPoint)
+            {
+                var lhs = lhsPoint - centerPoint;
+                var rhs = rhsPoint - centerPoint;
+                return BetweenVectorsSigned2D(lhs.x, lhs.z, rhs.x, rhs.z);
+            }
+            public static float BetweenPointsSignedIgnoreY(ref Vector3 lhsPoint, ref Vector3 centerPoint, ref Vector3 rhsPoint)
+            {
+                var lhs = lhsPoint - centerPoint;
+                var rhs = rhsPoint - centerPoint;
+                return BetweenVectorsSigned2D(lhs.x, lhs.z, rhs.x, rhs.z);
+            }
+
+            /// <summary>
+            /// angle in degrees, left to right angle will be positive, right to left negative
+            /// </summary>
+            public static float BetweenVectorsSigned(ref Vector3 lhs, ref Vector3 rhs, ref Vector3 normal)
+            {
+                var x = fun.cross.Product(ref lhs, ref rhs);
+                return (float)Math.Atan2(fun.dot.Product(ref normal, ref x), fun.dot.Product(ref lhs, ref rhs)) * RTD;
+            }
+            /// <summary>
+            /// angle in degrees, left to right angle will be positive, right to left negative
+            /// </summary>
+            public static float BetweenVectorsSigned(Vector3 lhs, Vector3 rhs, Vector3 normal)
+            {
+                var x = fun.cross.Product(ref lhs, ref rhs);
+                return (float)Math.Atan2(fun.dot.Product(ref normal, ref x), fun.dot.Product(ref lhs, ref rhs)) * RTD;
+            }
+            public static float BetweenPointsSigned(ref Vector3 lhsPoint, ref Vector3 centerPoint, ref Vector3 rhsPoint)
+            {
+                Vector3 normal;
+                fun.point.GetNormal(ref lhsPoint, ref centerPoint, ref rhsPoint, out normal);
+                var lhs = lhsPoint - centerPoint;
+                var rhs = rhsPoint - centerPoint;
+                return BetweenVectorsSigned(ref lhs, ref rhs, ref normal);
+            }
+            public static float BetweenPointsSigned(Vector3 lhsPoint, Vector3 centerPoint, Vector3 rhsPoint)
+            {
+                Vector3 normal;
+                fun.point.GetNormal(ref lhsPoint, ref centerPoint, ref rhsPoint, out normal);
+                var lhs = lhsPoint - centerPoint;
+                var rhs = rhsPoint - centerPoint;
+                return BetweenVectorsSigned(ref lhs, ref rhs, ref normal);
+            }
+            public static float BetweenPointsSigned(ref Vector3 lhsPoint, ref Vector3 centerPoint, ref Vector3 rhsPoint, ref Vector3 normal)
+            {
+                var lhs = lhsPoint - centerPoint;
+                var rhs = rhsPoint - centerPoint;
+                return BetweenVectorsSigned(ref lhs, ref rhs, ref normal);
+            }
+            public static float BetweenPointsSigned(Vector3 lhsPoint, Vector3 centerPoint, Vector3 rhsPoint, Vector3 normal)
+            {
+                var lhs = lhsPoint - centerPoint;
+                var rhs = rhsPoint - centerPoint;
+                return BetweenVectorsSigned(ref lhs, ref rhs, ref normal);
+            }
+            /// <summary>
+            /// signed degrees difference for each axis
+            /// </summary>
+            public static void DifferenceForEachAxis(ref Quaternion original, ref Quaternion changed, out Vector3 diffEuler)
+            {
+                var aFw = original * Vector3.forward;
+                var aUp = original * Vector3.up;
+                var aRt = original * Vector3.right;
+                var bFw = changed * Vector3.forward;
+                var bUp = changed * Vector3.up;
+                var bRt = changed * Vector3.right;
+                Vector3 bFwProj, bUpProj, bRtProj;
+
+                vector.ProjectOnPlane(ref bRt, ref aUp, out bRtProj);
+                vector.ProjectOnPlane(ref bUp, ref aFw, out bUpProj);
+                vector.ProjectOnPlane(ref bFw, ref aRt, out bFwProj);
+                var x = 0f;
+                var y = 0f;
+                var z = 0f;
+                if (bRtProj.sqrMagnitude > 0.000001)
+                {
+                    bRtProj.Normalize();
+                    x = BetweenVectorsSigned(ref bRtProj, ref aRt, ref aUp);
+                }
+                if (bUpProj.sqrMagnitude > 0.000001)
+                {
+                    bUpProj.Normalize();
+                    y = BetweenVectorsSigned(ref bUpProj, ref aUp, ref aFw);
+                }
+                if (bFwProj.sqrMagnitude > 0.000001)
+                {
+                    bFwProj.Normalize();
+                    z = BetweenVectorsSigned(ref bFwProj, ref aFw, ref aRt);
+                }
+                diffEuler = new Vector3(x,y,z);
+            }
+        }
+
+        public static class circle2d
+        {
+            public static bool Overlap(
+                ref Vector3 circleCenter1, double circleRadius1, 
+                ref Vector3 circleCenter2, double circleRadius2)
+            {
+                return distance.BetweenIgnoreY(ref circleCenter1, ref circleCenter2) <= (circleRadius1+circleRadius2);
+            }
+
+            public static void Join(
+                ref Vector3 circleCenter1, double circleRadius1, 
+                ref Vector3 circleCenter2, double circleRadius2,
+                out Vector3 combinedCirCen, out float combinedCirRad)
+            {
+                var dist = distance.BetweenIgnoreY(ref circleCenter1, ref circleCenter2);
+                // circle 2 is inside circle 1
+                if((dist + circleRadius2) <= circleRadius1)
+                {
+                    combinedCirRad = (float)circleRadius1;
+                    combinedCirCen = circleCenter1;
+                    return;
+                }
+                // circle 1 is inside circle 2
+                if((dist + circleRadius1) <= circleRadius2)
+                {
+                    combinedCirRad = (float)circleRadius2;
+                    combinedCirCen = circleCenter2;
+                    return;
+                }
+
+                combinedCirRad = (float)((circleRadius1 + circleRadius2 + dist) / 2.0);
+                var circ1to2 = (circleCenter2 - circleCenter1).HorizontalUnit();
+                combinedCirCen = circleCenter1 + circ1to2*(float)-circleRadius1 + circ1to2*combinedCirRad;
+            }
+
+            public static bool JoinIfOverlap(
+                ref Vector3 circleCenter1, double circleRadius1, 
+                ref Vector3 circleCenter2, double circleRadius2,
+                out Vector3 combinedCirCen, out float combinedCirRad)
+            {
+                var dist = distance.BetweenIgnoreY(ref circleCenter1, ref circleCenter2);
+                // they don't overlap
+                if(dist > (circleRadius1+circleRadius2))
+                {
+                    combinedCirCen = Vector3.zero;
+                    combinedCirRad = 0;
+                    return false;
+                }
+                // circle 2 is inside circle 1
+                if((dist + circleRadius2) <= circleRadius1)
+                {
+                    combinedCirRad = (float)circleRadius1;
+                    combinedCirCen = circleCenter1;
+                    return true;
+                }
+                // circle 1 is inside circle 2
+                if((dist + circleRadius1) <= circleRadius2)
+                {
+                    combinedCirRad = (float)circleRadius2;
+                    combinedCirCen = circleCenter2;
+                    return true;
+                }
+
+                combinedCirRad = (float)((circleRadius1 + circleRadius2 + dist) / 2.0);
+                var circ1to2 = (circleCenter2 - circleCenter1).HorizontalUnit();
+                combinedCirCen = circleCenter1 + circ1to2*(float)-circleRadius1 + circ1to2*combinedCirRad;
+                return true;
+            }
+        }
+
+        public static class color
+        {
+            public static Color Parse(uint color)
             {
                 byte r = (byte)(color >> 24);
                 byte g = (byte)(color >> 16);
@@ -117,134 +342,154 @@ namespace UnityFunctions
             }
         }
 
-        public static  class cross
+        public static class cross
         {
-            public static  Vector3 Product(ref Vector3 leftVector, ref Vector3 rightVector)
+            public static Vector3 Product(ref Vector3 leftVector, ref Vector3 rightVector)
             {
                 return new Vector3(leftVector.y * rightVector.z - leftVector.z * rightVector.y, leftVector.z * rightVector.x - leftVector.x * rightVector.z, leftVector.x * rightVector.y - leftVector.y * rightVector.x);
             }
-            public static  Vector3 Product(Vector3 leftVector, Vector3 rightVector)
+            public static Vector3 Product(Vector3 leftVector, Vector3 rightVector)
             {
                 return new Vector3(leftVector.y * rightVector.z - leftVector.z * rightVector.y, leftVector.z * rightVector.x - leftVector.x * rightVector.z, leftVector.x * rightVector.y - leftVector.y * rightVector.x);
             }
-            public static  void Product(ref Vector3 leftVector, ref Vector3 rightVector, out Vector3 result)
+            public static void Product(ref Vector3 leftVector, ref Vector3 rightVector, out Vector3 result)
             {
                 result = new Vector3(leftVector.y * rightVector.z - leftVector.z * rightVector.y, leftVector.z * rightVector.x - leftVector.x * rightVector.z, leftVector.x * rightVector.y - leftVector.y * rightVector.x);
             }
         }
 
-        public static  class distance
+        public static class distance
         {
-            public static  float Between(Vector2 a, Vector2 b)
+            public static float Between(Vector2 a, Vector2 b)
             {
                 var vectorX = a.x - b.x;
                 var vectorY = a.y - b.y;
                 return (float)Math.Sqrt((((double)vectorX * (double)vectorX) + ((double)vectorY * (double)vectorY)));
             }
-            public static  float Between(ref Vector2 a, ref Vector2 b)
+            public static float Between(ref Vector2 a, ref Vector2 b)
             {
                 var vectorX = a.x - b.x;
                 var vectorY = a.y - b.y;
                 return (float)Math.Sqrt((((double)vectorX * (double)vectorX) + ((double)vectorY * (double)vectorY)));
             }
-            public static  float Between(ref Vector2 a, float bx, float by)
+            public static float Between(ref Vector2 a, float bx, float by)
             {
                 var vector = new Vector2(a.x - bx, a.y - by);
                 return (float)Math.Sqrt((((double)vector.x * (double)vector.x) + ((double)vector.y * (double)vector.y)));
             }
-            public static  float Between(ref Vector3 a, ref Vector3 b)
+            public static float Between(ref Vector3 a, ref Vector3 b)
             {
                 var vectorX = a.x - b.x;
                 var vectorY = a.y - b.y;
                 var vectorZ = a.z - b.z;
                 return (float)Math.Sqrt((((double)vectorX * (double)vectorX) + ((double)vectorY * (double)vectorY)) + ((double)vectorZ * (double)vectorZ));
             }
-            public static  float Between(Vector3 a, Vector3 b)
+            public static float Between(Vector3 a, Vector3 b)
             {
                 var vectorX = a.x - b.x;
                 var vectorY = a.y - b.y;
                 var vectorZ = a.z - b.z;
                 return (float)Math.Sqrt((((double)vectorX * (double)vectorX) + ((double)vectorY * (double)vectorY)) + ((double)vectorZ * (double)vectorZ));
             }
-            public static  float BetweenIgnoreY(Vector3 a, Vector3 b)
+            public static float BetweenIgnoreY(Vector3 a, Vector3 b)
             {
                 var vectorX = a.x - b.x;
                 var vectorZ = a.z - b.z;
                 return (float)Math.Sqrt(((double)vectorX * (double)vectorX) + ((double)vectorZ * (double)vectorZ));
             }
-            public static  float BetweenIgnoreY(ref Vector3 a, ref Vector3 b)
+            public static float BetweenIgnoreY(ref Vector3 a, ref Vector3 b)
             {
                 var vectorX = a.x - b.x;
                 var vectorZ = a.z - b.z;
                 return (float)Math.Sqrt(((double)vectorX * (double)vectorX) + ((double)vectorZ * (double)vectorZ));
             }
-            public static  float Between(float ax, float ay, float bx, float by)
+            public static float Between(float ax, float ay, float bx, float by)
             {
                 var vx = ax - bx;
                 var vy = ay - by;
                 return (float)Math.Sqrt(((vx * vx) + (vy * vy)));
             }
-            public static  float Between(float ax, float ay, float az, float bx, float by, float bz)
+            public static float Between(float ax, float ay, float az, float bx, float by, float bz)
             {
                 var vx = ax - bx;
                 var vy = ay - by;
                 var vz = az - bz;
                 return (float)Math.Sqrt((((double)vx * (double)vx) + ((double)vy * (double)vy)) + ((double)vz * (double)vz));
             }
+
+            public static float FromPointToPlane(ref Vector3 point, ref Vector3 planeNormal, ref Vector3 planePoint)
+            {
+                var vectorToPlane = point - planePoint;
+                var distance = dot.Product(ref planeNormal, ref vectorToPlane);
+                return abs(distance);
+            }
+            public static float FromPointToPlane(Vector3 point, Vector3 planeNormal, Vector3 planePoint)
+            {
+                var vectorToPlane = point - planePoint;
+                var distance = dot.Product(ref planeNormal, ref vectorToPlane);
+                return abs(distance);
+            }
         }
 
-        public static  class distanceSquared
+        public static class distanceSquared
         {
-            public static  float Between(Vector2 a, Vector2 b)
+            public static float Between(Vector2 a, Vector2 b)
             {
                 var vectorX = (double)(a.x - b.x);
                 var vectorY = (double)(a.y - b.y);
                 return (float)((vectorX * vectorX) + (vectorY * vectorY));
             }
-            public static  float Between(ref Vector2 a, ref Vector2 b)
+            public static float Between(ref Vector2 a, ref Vector2 b)
             {
                 var vectorX = (double)(a.x - b.x);
                 var vectorY = (double)(a.y - b.y);
                 return (float)((vectorX * vectorX) + (vectorY * vectorY));
             }
-            public static  float Between(ref Vector2 a, float bx, float by)
+            public static float Between(ref Vector2 a, float bx, float by)
             {
                 var vector = new Vector2(a.x - bx, a.y - by);
                 return (float)(((double)vector.x * (double)vector.x) + ((double)vector.y * (double)vector.y));
             }
-            public static  float Between(ref Vector3 a, ref Vector3 b)
+            public static float Between(ref Vector3 a, ref Vector3 b)
             {
                 var vectorX = (double)(a.x - b.x);
                 var vectorY = (double)(a.y - b.y);
                 var vectorZ = (double)(a.z - b.z);
                 return (float)(((vectorX * vectorX) + (vectorY * vectorY)) + (vectorZ * vectorZ));
             }
-            public static  float Between(Vector3 a, Vector3 b)
+            public static double BetweenAsDouble(ref Vector3 a, ref Vector3 b)
+            {
+                var vectorX = (double)(a.x - b.x);
+                var vectorY = (double)(a.y - b.y);
+                var vectorZ = (double)(a.z - b.z);
+                return (((vectorX * vectorX) + (vectorY * vectorY)) + (vectorZ * vectorZ));
+            }
+            public static float Between(Vector3 a, Vector3 b)
             {
                 var vectorX = (double)(a.x - b.x);
                 var vectorY = (double)(a.y - b.y);
                 var vectorZ = (double)(a.z - b.z);
                 return (float)(((vectorX * vectorX) + (vectorY * vectorY)) + (vectorZ * vectorZ));
             }
-            public static  float BetweenIgnoreY(Vector3 a, Vector3 b)
+            public static float BetweenIgnoreY(Vector3 a, Vector3 b)
             {
                 var vectorX = (double)(a.x - b.x);
                 var vectorZ = (double)(a.z - b.z);
                 return (float)((vectorX * vectorX) + (vectorZ * vectorZ));
             }
-            public static  float BetweenIgnoreY(ref Vector3 a, ref Vector3 b)
+            public static float BetweenIgnoreY(ref Vector3 a, ref Vector3 b)
             {
                 var vectorX = (double)(a.x - b.x);
                 var vectorZ = (double)(a.z - b.z);
                 return (float)((vectorX * vectorX) + (vectorZ * vectorZ));
             }
-            public static  float Between(float ax, float ay, float bx, float by)
+            public static float Between(float ax, float ay, float bx, float by)
             {
                 var vx = ax - bx;
                 var vy = ay - by;
                 return (vx * vx) + (vy * vy);
             }
-            public static  float Between(float ax, float ay, float az, float bx, float by, float bz)
+            public static float Between(float ax, float ay, float az, float bx, float by, float bz)
             {
                 var vx = ax - bx;
                 var vy = ay - by;
@@ -253,48 +498,153 @@ namespace UnityFunctions
             }
         }
         
-        public static  class dot
+        public static class dot
         {
-            public static  float Product(double lhsX, double lhsY, double rhsX, double rhsY)
+            public static float Product(double lhsX, double lhsY, double rhsX, double rhsY)
             {
                 return (float)(lhsX * rhsX + lhsY * rhsY);
             }
-            public static  float Product(ref Vector2 lhs, ref Vector2 rhs)
+            public static float Product2D(ref Vector2 lhs, ref Vector2 rhs)
             {
                 return (float)((double)lhs.x * (double)rhs.x + (double)lhs.y * (double)rhs.y);
             }
-            public static  float Product(Vector2 lhs, Vector2 rhs)
+            public static float Product2D(Vector2 lhs, Vector2 rhs)
             {
                 return (float)((double)lhs.x * (double)rhs.x + (double)lhs.y * (double)rhs.y);
             }
-            public static  float Product(ref Vector3 lhs, ref Vector3 rhs)
+            public static float Product(ref Vector3 lhs, ref Vector3 rhs)
+            {
+                return (float) ((double) lhs.x * (double) rhs.x + (double) lhs.y * (double) rhs.y + (double) lhs.z * (double) rhs.z);
+            }
+            public static float Product(Vector3 lhs, Vector3 rhs)
             {
                 return (float)((double)lhs.x * (double)rhs.x + (double)lhs.y * (double)rhs.y + (double)lhs.z * (double)rhs.z);
             }
-            public static  float Product(Vector3 lhs, Vector3 rhs)
+            public static float ProductHorz(ref Vector3 lhs, ref Vector3 rhs)
             {
-                return (float)((double)lhs.x * (double)rhs.x + (double)lhs.y * (double)rhs.y + (double)lhs.z * (double)rhs.z);
+                return (float)((double)lhs.x * (double)rhs.x + (double)lhs.z * (double)rhs.z);
             }
-            public static  float Product(Quaternion a, Quaternion b)
+            public static float ProductHorz(Vector3 lhs, Vector3 rhs)
+            {
+                return (float)((double)lhs.x * (double)rhs.x + (double)lhs.z * (double)rhs.z);
+            }
+            public static float Product(Quaternion a, Quaternion b)
             {
                 return (float) ((double) a.x * (double) b.x + (double) a.y * (double) b.y + (double) a.z * (double) b.z + (double) a.w * (double) b.w);
             }
-            public static  float Product(ref Quaternion a, ref Quaternion b)
+            public static float Product(ref Quaternion a, ref Quaternion b)
             {
                 return (float) ((double) a.x * (double) b.x + (double) a.y * (double) b.y + (double) a.z * (double) b.z + (double) a.w * (double) b.w);
+            }
+            public static float ProductToDegrees(double dotProduct)
+            {
+                return (float)(Math.Acos(dotProduct)*(180/Math.PI));
             }
         }
 
-        public static  class ellipse
+        public static class ellipse
         {
-            public static  float RadiusByAngle(double horzRadius, double vertRadius, double degrees)
+            /// <summary>
+            /// 0 degrees is horizontal, 90 degrees is vertical
+            /// RadiusByAngle(10,20,0) == 10
+            /// RadiusByAngle(10,20,90) == 20
+            /// alse
+            /// RadiusByAngle(200, 50, 20)==RadiusByAngle(200, 50, -20)==RadiusByAngle(200, 50, 180-20)==RadiusByAngle(200, 50, 180+20)==120.5023                       
+            /// </summary>
+            public static float RadiusByAngle(double horzRadius, double vertRadius, double degrees)
             {
                 var angleRadians = DTR*degrees;
                 return (float)((horzRadius*vertRadius)/Math.Sqrt(horzRadius*horzRadius*Math.Pow(Math.Sin(angleRadians),2) + vertRadius*vertRadius*Math.Pow(Math.Cos(angleRadians),2)));
             }
         }
 
-        public static  class intersection
+        public static class resolution
+        {
+            /// <param name="staticP0">static capsule lower center</param>
+            /// <param name="staticP1">static capsule upper center</param>
+            /// <param name="staticRadius">static capsule radius</param>
+            /// <param name="prevP0">previous dynamic capsule lower center</param>
+            /// <param name="prevP1">previous dynamic capsule upper center</param>
+            /// <param name="nextP0">next dynamic capsule lower center</param>
+            /// <param name="nextP1">next dynamic capsule upper center</param>
+            /// <param name="nextUp">next dynamic capsule up vector</param>
+            /// <param name="dynamicRadius">dynamic capsule radius</param>
+            /// <param name="resolvedPos">resolved dynamic capsule lowest tip (not lowerst center!)</param>
+            /// <param name="resolvedRot"></param>
+            /// <returns></returns>
+            public static bool BetweenCapsules(
+                ref Vector3 staticP0, ref Vector3 staticP1, double staticRadius, 
+                ref Vector3 prevP0, ref Vector3 prevP1, 
+                ref Vector3 nextP0, ref Vector3 nextP1, ref Vector3 nextUp, double dynamicRadius, 
+                out Vector3 resolvedPos, out Quaternion resolvedRot)
+            {
+                var staRad = (float) staticRadius;
+                var dynRad = (float) dynamicRadius;
+                var minDist = staRad + dynRad;
+
+                var hasNext = intersection.BetweenCapsules(ref staticP0, ref staticP1, staRad, ref nextP0, ref nextP1, dynRad);
+                
+                var prevDir = (prevP1 - prevP0).normalized;
+                var prevRadVec = prevDir*dynRad;
+                var prevTip = prevP1 + prevRadVec;
+                var prevPos = prevP0 - prevRadVec;
+
+                var nextDir = (nextP1 - nextP0).normalized;
+                var nextRadVec = nextDir*dynRad;
+                var nextTip = nextP1 + nextRadVec;
+                var nextPos = nextP0 - nextRadVec;
+
+                var t1 = nextTip;
+                var t2 = nextPos;
+                var t3 = prevTip;
+                Vector3 triCol;
+                var hasTri = intersection.BetweenTriangleAndLineSegment(ref t1, ref t2, ref t3, ref staticP0, ref staticP1, out triCol);
+
+                if(!hasTri)
+                {
+                    t1 = nextPos;
+                    t2 = prevPos;
+                    t3 = prevTip;
+                    hasTri = intersection.BetweenTriangleAndLineSegment(ref t1, ref t2, ref t3, ref staticP0, ref staticP1, out triCol); 
+                }
+
+                if(!hasNext && !hasTri)
+                {
+                    // there is no collision so prev can become next
+                    resolvedPos = nextPos;
+                    resolvedRot = Quaternion.LookRotation(nextDir, nextUp);
+                    return false;
+                }
+
+                Vector3 onStat, onPrev;
+                point.ClosestOnTwoLineSegments(ref staticP0, ref staticP1, ref prevPos, ref prevTip, out onStat, out onPrev);
+                
+                resolvedPos = nextPos;
+                var statDir = (staticP1 - staticP0).normalized;
+                
+                Vector3 target;
+                if(point.IsAbovePlane(ref onPrev, ref statDir, ref staticP1))
+                {
+                    target = prevP1 + (onPrev-prevP1).normalized*minDist;
+                    resolvedRot = Quaternion.LookRotation((target - resolvedPos).normalized, nextUp);
+                    return true;
+                }
+                var minStatDir = -statDir;
+                if(point.IsAbovePlane(ref onPrev, ref minStatDir, ref staticP0))
+                {
+                    target = prevP0 + (onPrev-prevP0).normalized*minDist;
+                    resolvedRot = Quaternion.LookRotation((target - resolvedPos).normalized, nextUp);
+                    return true;
+                }
+                var backDir = (onPrev - onStat).normalized;                
+                var radians = angle.BetweenVectorsUnSignedInRadians(ref backDir, ref statDir);
+                target = onStat + backDir * abs(minDist/sin(radians));
+                resolvedRot = Quaternion.LookRotation((target - resolvedPos).normalized, nextUp);
+                return true;
+            }
+        }
+
+        public static class intersection
         {
             /// <summary>
             /// Check if disk and plane cross each other
@@ -305,7 +655,7 @@ namespace UnityFunctions
             /// <param name="sphereRadius">sphere radius</param>
             /// <param name="collision">collision point</param>
             /// <returns></returns>
-            public static  bool BetweenPlaneAndSphere(ref Vector3 planeNormal, ref Vector3 planePoint, ref Vector3 sphereCenter, float sphereRadius, out Vector3 collision)
+            public static bool BetweenPlaneAndSphere(ref Vector3 planeNormal, ref Vector3 planePoint, ref Vector3 sphereCenter, float sphereRadius, out Vector3 collision)
             {
                 Vector3 sphereCenterProj;
                 point.ProjectOnPlane(ref sphereCenter, ref planeNormal, ref planePoint, out sphereCenterProj);
@@ -322,6 +672,23 @@ namespace UnityFunctions
 
 
             /// <summary>
+            /// Check if disk and plane cross each other
+            /// </summary>
+            /// <param name="p1">point on the plane 1</param>
+            /// <param name="p2">point on the plane 2</param>
+            /// <param name="p3">point on the plane 3</param>
+            /// <param name="sphereCenter">the center of the sphere</param>
+            /// <param name="sphereRadius">sphere radius</param>
+            /// <param name="intersectPoint">collision point</param>
+            /// <returns></returns>
+            public static bool BetweenPlaneAndSphere(ref Vector3 p1, ref Vector3 p2, ref Vector3 p3, ref Vector3 sphereCenter, float sphereRadius, out Vector3 intersectPoint)
+            {
+                Vector3 planeNormal;
+                point.GetNormal(ref p1, ref p2, ref p3, out planeNormal);
+                return BetweenPlaneAndSphere(ref planeNormal, ref p1, ref sphereCenter, sphereRadius, out intersectPoint);
+            }
+
+            /// <summary>
             /// Check if disk and sphere cross each other
             /// </summary>
             /// <param name="diskPlaneNormal">the normal of the disk 1 plane</param>
@@ -331,7 +698,7 @@ namespace UnityFunctions
             /// <param name="sphereRadius">sphere radius</param>
             /// <param name="collision">collision point</param>
             /// <returns></returns>
-            public static  bool BetweenDiskAndSphere(ref Vector3 diskPlaneNormal, ref Vector3 diskCenter, float diskRadius, ref Vector3 sphereCenter, float sphereRadius, out Vector3 collision)
+            public static bool BetweenDiskAndSphere(ref Vector3 diskPlaneNormal, ref Vector3 diskCenter, float diskRadius, ref Vector3 sphereCenter, float sphereRadius, out Vector3 collision)
             {
                 Vector3 sphereCenterProj;
                 point.ProjectOnPlane(ref sphereCenter, ref diskPlaneNormal, ref diskCenter, out sphereCenterProj);
@@ -362,7 +729,6 @@ namespace UnityFunctions
                 return true;
             }
 
-
             /// <summary>
             /// Check if two disks cross each other
             /// </summary>
@@ -374,12 +740,12 @@ namespace UnityFunctions
             /// <param name="disk2Radius">the radius of disk 2</param>
             /// <param name="collision">returns the collision point</param>
             /// <returns></returns>
-            public static  bool BetweenDiskAndDisk(
-                ref Vector3 disk1PlaneNormal, ref Vector3 disk1Center, float disk1Radius, 
-                ref Vector3 disk2PlaneNormal, ref Vector3 disk2Center, float disk2Radius, 
+            public static bool BetweenDiskAndDisk(
+                ref Vector3 disk1PlaneNormal, ref Vector3 disk1Center, double disk1Radius, 
+                ref Vector3 disk2PlaneNormal, ref Vector3 disk2Center, double disk2Radius, 
                 out Vector3 collision)
             {
-                var max = disk1Radius + disk2Radius;
+                var max = (float)(disk1Radius + disk2Radius);
                 var distBetweenCenters = distance.Between(ref disk1Center, ref disk2Center);
                 // the centers are too far and the disks could not overlap
                 if (distBetweenCenters > max)
@@ -405,7 +771,7 @@ namespace UnityFunctions
                     if (dpOf2 < 0.000001f && dpOf2 > -0.000001f)
                     {
                         // check they are far enough to touch
-                        collision = disk1Center + (disk2Center - disk1Center).normalized*((disk1Radius/max)*distBetweenCenters);
+                        collision = disk1Center + (disk2Center - disk1Center).normalized*(((float)disk1Radius/max)*distBetweenCenters);
                         return true;
                     }
                     collision = Vector3.zero;
@@ -422,7 +788,7 @@ namespace UnityFunctions
                 var a = (collision - disk1Center).As2d(ref norm1X, ref norm1Y);
                 var b = (collisionPlusNorm - disk1Center).As2d(ref norm1X, ref norm1Y);
                 Vector2 projection1;
-                var has1 = IsLineGettingCloserToOriginThan(ref a, ref b, disk1Radius, out projection1);
+                var has1 = IsLineGettingCloserToOriginThan(ref a, ref b, (float)disk1Radius, out projection1);
                 if (!has1)
                 {
                     collision = Vector3.zero;
@@ -433,7 +799,7 @@ namespace UnityFunctions
                 a = (collision - disk2Center).As2d(ref norm2X, ref norm2Y);
                 b = (collisionPlusNorm - disk2Center).As2d(ref norm2X, ref norm2Y);
                 Vector2 projection2;
-                var has2 = IsLineGettingCloserToOriginThan(ref a, ref b, disk2Radius, out projection2);
+                var has2 = IsLineGettingCloserToOriginThan(ref a, ref b, (float)disk2Radius, out projection2);
                 if (!has2)
                 {
                     collision = Vector3.zero;
@@ -470,6 +836,75 @@ namespace UnityFunctions
                 return false;
             }
 
+            public static  bool BetweenTriangleAndSphere(
+                ref Vector3 t1, ref Vector3 t2, ref Vector3 t3, 
+                ref Vector3 sphereCenter, float sphereRadius,
+                out Vector3 collision)
+            {
+                Vector3 triangleNormal;
+                point.GetNormal(ref t1, ref t2, ref t3, out triangleNormal);
+
+                Vector3 proj;
+                point.ProjectOnPlane(ref sphereCenter, ref triangleNormal, ref t1, out proj);
+                var x2d = (t2 - t1).normalized;
+                Vector3 y2d;
+                vector.GetNormal(ref x2d, ref triangleNormal, out y2d);
+
+                var dist = distance.Between(ref sphereCenter, ref proj);
+                var ratio = dist/sphereRadius;
+                if (ratio <= 1.0)
+                {
+
+                    var t1in2d = Vector2.zero;
+                    var t2in2d = (t2 - t1).As2d(ref x2d, ref y2d);
+                    var t3in2d = (t3 - t1).As2d(ref x2d, ref y2d);
+                    var spin2d = (sphereCenter - t1).As2d(ref x2d, ref y2d);
+                    var radius2d = (float) Math.Sqrt(1.0 - ratio*ratio)*sphereRadius;
+                    if (HasCircleTriangleCollision2D(ref spin2d, radius2d, ref t1in2d, ref t2in2d, ref t3in2d))
+                    {
+                        Vector2 int2d;
+                        GetCircleTriangle2DIntersectionPoint(ref spin2d, radius2d, ref t1in2d, ref t2in2d, ref t3in2d, out int2d);
+//for (var a = 0; a < 360; a += 5)
+//{
+//Debug.DrawLine(
+//    spin2d+(Vector2)((Vector3)(Vector2.right*radius2d)).RotateAbout(Vector3.forward, a), 
+//    spin2d+(Vector2)((Vector3)(Vector2.right*radius2d)).RotateAbout(Vector3.forward, a+5), 
+//    Color.red,0, false);
+//}
+//Debug.DrawLine(t1in2d,t2in2d,Color.black,0, false);
+//Debug.DrawLine(t2in2d,t3in2d,Color.black,0, false);
+//Debug.DrawLine(t3in2d,t1in2d,Color.black,0, false);
+//Debug.DrawLine(Vector2.one*100,int2d,Color.magenta,0, false);
+                        int2d.As3d(ref t1, ref x2d, ref y2d, out collision);
+                        return true;
+                    }
+                }
+                collision = Vector3.zero;
+                return false;
+            }
+
+            public static  bool BetweenTriangleAndLine(
+                ref Vector3 p1, ref Vector3 p2, ref Vector3 p3, 
+                ref Vector3 line1, ref Vector3 line2)
+            {
+                var diff = line1 - line2;
+                var rayForward = diff.normalized;
+                var rayOrigin = line2;
+                var rayCollides = BetweenTriangleAndRay(ref p1, ref p2, ref p3, ref rayForward, ref rayOrigin);
+                if (rayCollides)
+                {
+                    Vector3 planeNormal;
+                    point.GetNormal(ref p1, ref p2, ref p3, out planeNormal);
+                    Vector3 collision;
+                    if (BetweenPlaneAndRay(ref planeNormal, ref p1, ref rayForward, ref rayOrigin, out collision))
+                    {
+                        return (collision - rayOrigin).sqrMagnitude <= diff.sqrMagnitude;
+                    }
+                }
+                return false;
+            }
+
+
 
             /// <summary>
             /// The points of the capsule are the centers of the spheres at the end of capsules
@@ -482,8 +917,8 @@ namespace UnityFunctions
             /// <param name="diskRadius">disk radius</param>
             /// <returns></returns>
             public static  bool BetweenCapsuleAndDisk(
-                ref Vector3 csb, ref Vector3 csa, float capsuleRadius, 
-                ref Vector3 diskNormal, ref Vector3 diskCenter, float diskRadius)
+                ref Vector3 csb, ref Vector3 csa, double capsuleRadius, 
+                ref Vector3 diskNormal, ref Vector3 diskCenter, double diskRadius)
             {
                 // see if disk center is within the capsule cylinder
                  Vector3 diskCenterOnAxis;
@@ -500,7 +935,7 @@ namespace UnityFunctions
                 // middle part
                 Vector3 diskCenOnCapPl;
                 point.ProjectOnPlane(ref diskCenter, ref capsuleUp, ref csb, out diskCenOnCapPl);
-                var capToDisk = (diskCenOnCapPl - csb).normalized*capsuleRadius;
+                var capToDisk = (diskCenOnCapPl - csb).normalized*(float)capsuleRadius;
                 var csaShifted = csa + capToDisk;
                 var csbShifted = csb + capToDisk;
                 Vector3 c1;
@@ -677,15 +1112,16 @@ namespace UnityFunctions
                 return false;
             }
 
-            public static  bool BetweenRayAndSphere(
-                ref Vector3 rayDirection, ref Vector3 rayOrigin, 
-                ref Vector3 sphereCenter, float sphereRadius,
+            
+            public static bool BetweenRayAndSphere(
+                ref Vector3 rayFw, ref Vector3 rayOr, 
+                ref Vector3 sphereCenter, double sphereRadius,
                 out Vector3 collision)
             {
                 var radiusSquared = sphereRadius*sphereRadius;
-                var rayToSphere = sphereCenter - rayOrigin; 
-                var tca = dot.Product(ref rayToSphere, ref rayDirection); 
-                var d2 = dot.Product(ref rayToSphere, ref rayToSphere) - tca * tca;
+                var rayToSphere = sphereCenter - rayOr; 
+                var tca = fun.dot.Product(ref rayToSphere, ref rayFw); 
+                var d2 = fun.dot.Product(ref rayToSphere, ref rayToSphere) - tca * tca;
                 if (d2 > radiusSquared)
                 {
                     collision = Vector3.zero;
@@ -714,12 +1150,11 @@ namespace UnityFunctions
  
                 var t = t0;
 
-                collision = rayOrigin + rayDirection*t;
+                collision = rayOr + rayFw*t;
  
                 return true;
             }
-
-            public static  bool BetweenRayAndCapsule(
+            public static bool BetweenRayAndCapsule(
                 ref Vector3 rayFw, ref Vector3 rayOr, 
                 ref Vector3 cpu, ref Vector3 cpd, float capsuleRadius, 
                 out Vector3 collision)
@@ -732,7 +1167,7 @@ namespace UnityFunctions
                 }
                 capDir.Normalize();
                 Vector3 pl1,pl2;
-                point.ClosestOnTwoLines(ref rayOr, ref rayFw, ref cpd, ref capDir, out pl1, out pl2);
+                point.ClosestOnTwoLinesByPointAndDirection(ref rayOr, ref rayFw, ref cpd, ref capDir, out pl1, out pl2);
                 if (!point.IsOnSegment(ref cpu, ref pl2, ref cpd))
                 {
                     if (BetweenRayAndSphere(ref rayFw, ref rayOr, ref cpu, capsuleRadius, out collision)) return true;
@@ -761,9 +1196,9 @@ namespace UnityFunctions
             /// <param name="sphereCenter">sphere center point</param>
             /// <param name="sphereRadius">sphere radius</param>
             /// <returns></returns>
-            public static  bool BetweenCapsuleAndSphere(
-                ref Vector3 csb, ref Vector3 csa, float capsuleRadius, 
-                ref Vector3 sphereCenter, float sphereRadius)
+            public static bool BetweenCapsuleAndSphere(
+                ref Vector3 csb, ref Vector3 csa, double capsuleRadius, 
+                ref Vector3 sphereCenter, double sphereRadius)
             {
                 var maxDistance = capsuleRadius + sphereRadius;
                 // is in the middle
@@ -797,9 +1232,9 @@ namespace UnityFunctions
             /// <param name="sphereRadius">sphere radius</param>
             /// <param name="collision">the point of collision</param>
             /// <returns></returns>
-            public static  bool BetweenCapsuleAndSphere(
-                ref Vector3 csb, ref Vector3 csa, float capsuleRadius, 
-                ref Vector3 sphereCenter, float sphereRadius, out Vector3 collision)
+            public static bool BetweenCapsuleAndSphere(
+                ref Vector3 csb, ref Vector3 csa, double capsuleRadius, 
+                ref Vector3 sphereCenter, double sphereRadius, out Vector3 collision)
             {
                 var maxDistance = capsuleRadius + sphereRadius;
                 // is in the middle
@@ -829,7 +1264,7 @@ namespace UnityFunctions
 
             private static bool HasOverlapOfTwoSpheres(
                 ref Vector3 sphereCenter1, ref Vector3 sphereCenter2, 
-                float sumOfRadii, float sphereRadius1, out Vector3 collision)
+                double sumOfRadii, double sphereRadius1, out Vector3 collision)
             {
                 var d = distance.Between(ref sphereCenter1, ref sphereCenter2);
                 var has = d <= sumOfRadii;
@@ -843,6 +1278,7 @@ namespace UnityFunctions
                 return false;
             }
 
+
             /// <summary>
             /// The points are the centers of the spheres at the end of capsules
             /// </summary>
@@ -853,9 +1289,9 @@ namespace UnityFunctions
             /// <param name="c2sa">capsule 2 sphere above center</param>
             /// <param name="radius2">radius of capsule 2 sphere</param>
             /// <returns>true if there is overlap false otherwise</returns>
-            public static  bool BetweenCapsules(
-                ref Vector3 c1sb, ref Vector3 c1sa, float radius1, 
-                ref Vector3 c2sb, ref Vector3 c2sa, float radius2)
+            internal static bool BetweenCapsules(
+                ref Vector3 c1sb, ref Vector3 c1sa, double radius1, 
+                ref Vector3 c2sb, ref Vector3 c2sa, double radius2)
             {
                 Vector3 closest1, closest2;
                 point.ClosestOnTwoLineSegments(ref c1sb, ref c1sa, ref c2sb, ref c2sa, out closest1, out closest2);
@@ -878,9 +1314,9 @@ namespace UnityFunctions
             /// <param name="radius2">radius of capsule 2 sphere</param>
             /// <param name="collision">The point of collision</param>
             /// <returns>true if there is overlap false otherwise</returns>
-            public static  bool BetweenCapsules(
-                ref Vector3 c1sb, ref Vector3 c1sa, float radius1, 
-                ref Vector3 c2sb, ref Vector3 c2sa, float radius2, out Vector3 collision)
+            internal static bool BetweenCapsules(
+                ref Vector3 c1sb, ref Vector3 c1sa, double radius1, 
+                ref Vector3 c2sb, ref Vector3 c2sa, double radius2, out Vector3 collision)
             {
                 Vector3 closest1, closest2;
                 point.ClosestOnTwoLineSegments(ref c1sb, ref c1sa, ref c2sb, ref c2sa, out closest1, out closest2);
@@ -893,30 +1329,14 @@ namespace UnityFunctions
                         return true;
                     }
 
-                    collision = closest1 + (closest2 - closest1).normalized*radius1;
+                    collision = closest1 + (closest2 - closest1).normalized*(float)radius1;
                     return true;
                 }
                 collision = Vector3.zero;
                 return false;
             }
 
-            private static bool IsLineSegmentGettingCloserToOriginThan(ref Vector2 a, ref Vector2 b, float maxDist)
-            {
-                var k = ((b.y - a.y)*-a.x - (b.x - a.x)*-a.y)/((b.y - a.y) *(b.y - a.y) + (b.x - a.x) *(b.x - a.x));
-                var p = new Vector2(-k*(b.y - a.y), k*(b.x - a.x));
-                if (point.IsOn2DSegment(ref a, ref p, ref b))
-                {
-                    return p.magnitude <= maxDist;
-                }
-                return min(a.magnitude, b.magnitude) <= maxDist;
-            }
-
-            private static bool IsLineGettingCloserToOriginThan(ref Vector2 a, ref Vector2 b, float maxDist)
-            {
-                var k = ((b.y - a.y)*-a.x - (b.x - a.x)*-a.y)/((b.y - a.y) *(b.y - a.y) + (b.x - a.x) *(b.x - a.x));
-                var p = new Vector2(-k*(b.y - a.y), k*(b.x - a.x));
-                return p.magnitude <= maxDist;
-            }
+            
             private static bool IsLineGettingCloserToOriginThan(ref Vector2 a, ref Vector2 b, float maxDist, out Vector2 projection)
             {
                 var k = ((b.y - a.y)*-a.x - (b.x - a.x)*-a.y)/((b.y - a.y) *(b.y - a.y) + (b.x - a.x) *(b.x - a.x));
@@ -924,11 +1344,12 @@ namespace UnityFunctions
                 return projection.magnitude <= maxDist;
             }
 
-            
 
 
 
-            public static  bool BetweenLines(ref Vector3 ray1Origin, ref Vector3 ray1Dir, ref Vector3 ray2Origin, ref Vector3 ray2Dir, out Vector3 intersection)
+
+
+            public static bool BetweenLines(ref Vector3 ray1Origin, ref Vector3 ray1Dir, ref Vector3 ray2Origin, ref Vector3 ray2Dir, out Vector3 intersection)
             {
                 var lineVec3 = ray2Origin - ray1Origin;
 		        var crossVec1and2 = cross.Product(ref ray1Dir, ref ray2Dir);
@@ -947,7 +1368,7 @@ namespace UnityFunctions
 			    return false;
             }
 
-            public static  bool BetweenTriangleAndLine(
+            public static bool BetweenTriangleAndLineSegment(
                 ref Vector3 p1, ref Vector3 p2, ref Vector3 p3, 
                 ref Vector3 line1, ref Vector3 line2)
             {
@@ -968,7 +1389,28 @@ namespace UnityFunctions
                 return false;
             }
 
-            public static  bool BetweenTriangleAndRay(ref Vector3 p1, ref Vector3 p2, ref Vector3 p3, ref Vector3 rayForward, ref Vector3 rayOrigin)
+            public static bool BetweenTriangleAndLineSegment(
+                ref Vector3 p1, ref Vector3 p2, ref Vector3 p3, 
+                ref Vector3 line1, ref Vector3 line2, out Vector3 collision)
+            {
+                var diff = line1 - line2;
+                var rayForward = diff.normalized;
+                var rayOrigin = line2;
+                var rayCollides = BetweenTriangleAndRay(ref p1, ref p2, ref p3, ref rayForward, ref rayOrigin);
+                if (rayCollides)
+                {
+                    Vector3 planeNormal;
+                    point.GetNormal(ref p1, ref p2, ref p3, out planeNormal);
+                    if (BetweenPlaneAndRay(ref planeNormal, ref p1, ref rayForward, ref rayOrigin, out collision))
+                    {
+                        return (collision - rayOrigin).sqrMagnitude <= diff.sqrMagnitude;
+                    }
+                }
+                collision = Vector3.zero;
+                return false;
+            }
+
+            public static bool BetweenTriangleAndRay(ref Vector3 p1, ref Vector3 p2, ref Vector3 p3, ref Vector3 rayForward, ref Vector3 rayOrigin)
             {
                 //Find vectors for two edges sharing vertex/point p1
                 var e1 = p2 - p1;
@@ -1012,7 +1454,7 @@ namespace UnityFunctions
                 return false;
             }
 
-            public static  bool BetweenPlaneAndLine(
+            public static bool BetweenPlaneAndLine(
                 ref Vector3 planeNormal, ref Vector3 planePoint,
                 ref Vector3 lineA, ref Vector3 lineB, out Vector3 intersection)
             {
@@ -1036,12 +1478,11 @@ namespace UnityFunctions
                     return false;
                 }
                 var distanceToCollision = num / a;
-                intersection = lineA + rayNormal*distanceToCollision;
+                intersection = lineA + rayNormal * distanceToCollision;
                 return true;
             }
 
-
-            public static  bool BetweenPlaneAndRay(
+            public static bool BetweenPlaneAndRay(
                 ref Vector3 planeNormal, ref Vector3 planePoint,
                 ref Vector3 rayNormal, ref Vector3 rayOrigin, out float distanceToCollision)
             {
@@ -1058,7 +1499,7 @@ namespace UnityFunctions
                 return distanceToCollision > 0.0;
             }
 
-            public static  bool BetweenPlaneAndRay(
+            public static bool BetweenPlaneAndRay(
                 ref Vector3 planeNormal, ref Vector3 planePoint,
                 ref Vector3 rayNormal, ref Vector3 rayOrigin, 
                 out Vector3 collisionPoint)
@@ -1082,7 +1523,7 @@ namespace UnityFunctions
                 return false;
             }
 
-            public static  bool BetweenPlaneAndRay(
+            public static bool BetweenPlaneAndRay(
                 ref Vector3 planeNormal, ref Vector3 planePoint,
                 ref Vector3 rayNormal, ref Vector3 rayOrigin, 
                 out float distanceToCollision, out Vector3 collisionPoint)
@@ -1108,7 +1549,7 @@ namespace UnityFunctions
                 return false;
             }
 
-            public static  bool BetweenPlaneAndLineSegment(
+            public static bool BetweenPlaneAndLineSegment(
                 ref Vector3 planeNormal, ref Vector3 planePoint,
                 ref Vector3 line1, ref Vector3 line2, out Vector3 collisionPoint)
             {
@@ -1118,7 +1559,7 @@ namespace UnityFunctions
                         ref line1, ref line2, 
                         out distanceToCollision, out collisionPoint);
             }
-            public static  bool BetweenPlaneAndLineSegment(
+            public static bool BetweenPlaneAndLineSegment(
                 ref Vector3 planeNormal, ref Vector3 planePoint,
                 ref Vector3 line1, ref Vector3 line2, out float distanceToCollision, out Vector3 collisionPoint)
             {
@@ -1151,7 +1592,7 @@ namespace UnityFunctions
                 return false;
             }
 
-            public static  int BetweenLineAndUnitCircle(
+            public static int BetweenLineAndUnitCircle(
                 Vector2 point1, Vector2 point2, 
                 out Vector2 intersection1, out Vector2 intersection2)
             {
@@ -1188,10 +1629,7 @@ namespace UnityFunctions
                 intersection2 = new Vector2(point1.x + t * dx, point1.y + t * dy);
                 return 2;
             }
-            /// <summary>
-            /// returns the number of intersections
-            /// </summary>
-            public static  int BetweenLineAndCircle(
+            public static int BetweenLineAndCircle2d(
                 Vector2 circleCenter, float circleRadius, 
                 Vector2 point1, Vector2 point2, 
                 out Vector2 intersection1, out Vector2 intersection2)
@@ -1209,8 +1647,8 @@ namespace UnityFunctions
                 if ((a <= 0.0000001) || (determinate < -0.0000001))
                 {
                     // No real solutions.
-                    intersection1 = Vector2.zero;
-                    intersection2 = Vector2.zero;
+                    intersection1 = new Vector2(float.NaN, float.NaN);
+                    intersection2 = new Vector2(float.NaN, float.NaN);
                     return 0;
                 }
                 if (determinate < 0.0000001 && determinate > -0.0000001)
@@ -1218,7 +1656,7 @@ namespace UnityFunctions
                     // One solution.
                     t = -b / (2 * a);
                     intersection1 = new Vector2(point1.x + t * dx, point1.y + t * dy);
-                    intersection2 = Vector2.zero;
+                    intersection2 = new Vector2(float.NaN, float.NaN);
                     return 1;
                 }
                 
@@ -1227,67 +1665,15 @@ namespace UnityFunctions
                 intersection1 = new Vector2(point1.x + t * dx, point1.y + t * dy);
                 t = (float)((-b - Math.Sqrt(determinate)) / (2 * a));
                 intersection2 = new Vector2(point1.x + t * dx, point1.y + t * dy);
-
                 return 2;
             }
-            
-            public static  int BetweenLineAndCircle(
-                ref Vector2 circleCenter, float circleRadius, 
+
+            public static int BetweenLineAndCircle2d(
+                ref Vector2 circleCenter, double circleRadius, 
                 ref Vector2 point1, ref Vector2 point2, 
                 out Vector2 intersection1, out Vector2 intersection2)
             {
-                // test to see if line is inside the circle
-                var dx = point2.x - point1.x;
-                var dy = point2.y - point1.y;
-
-                var a = dx * dx + dy * dy;
-                var b = 2 * (dx * (point1.x - circleCenter.x) + dy * (point1.y - circleCenter.y));
-                var c = (point1.x - circleCenter.x) * (point1.x - circleCenter.x) + (point1.y - circleCenter.y) * (point1.y - circleCenter.y) - circleRadius * circleRadius;
-
-                var determinate = b * b - 4 * a * c;
-                if ((a <= 0.0000001) || (determinate < -0.0000001))
-                {
-                    // No real solutions.
-                    intersection1 = Vector2.zero;
-                    intersection2 = Vector2.zero;
-                    return 0;
-                }
                 float t;
-                if (determinate < 0.0000001 && determinate > -0.0000001)
-                {
-                    // One solution.
-                    t = -b / (2 * a);
-                    intersection1 = new Vector2(point1.x + t * dx, point1.y + t * dy);
-                    intersection2 = Vector2.zero;
-                    return 1;
-                }
-                
-                // Two solutions.
-                t = (float)((-b + Math.Sqrt(determinate)) / (2 * a));
-                intersection1 = new Vector2(point1.x + t * dx, point1.y + t * dy);
-                t = (float)((-b - Math.Sqrt(determinate)) / (2 * a));
-                intersection2 = new Vector2(point1.x + t * dx, point1.y + t * dy);
-                return 2;
-            }
-
-            public static  int BetweenLineSegmentAndCircle2D(
-                ref Vector2 circleCenter, float circleRadius, 
-                ref Vector2 point1, ref Vector2 point2, 
-                out Vector2 intersection1, out Vector2 intersection2)
-            {
-                // test to see if line is inside the circle
-                var dsq = distanceSquared.Between(ref circleCenter, ref point1);
-                var circleRadiusSqr = circleRadius*circleRadius;
-                if (dsq < circleRadiusSqr)
-                {
-                    dsq = distanceSquared.Between(ref circleCenter, ref point2);
-                    if (dsq < circleRadiusSqr)
-                    {
-                        intersection1 = Vector2.zero;
-                        intersection2 = Vector2.zero;
-                        return 0;
-                    }
-                }
 
                 var dx = point2.x - point1.x;
                 var dy = point2.y - point1.y;
@@ -1300,32 +1686,28 @@ namespace UnityFunctions
                 if ((a <= 0.0000001) || (determinate < -0.0000001))
                 {
                     // No real solutions.
-                    intersection1 = Vector2.zero;
-                    intersection2 = Vector2.zero;
+                    intersection1 = new Vector2(float.NaN, float.NaN);
+                    intersection2 = new Vector2(float.NaN, float.NaN);
                     return 0;
                 }
-                float t;
                 if (determinate < 0.0000001 && determinate > -0.0000001)
                 {
                     // One solution.
                     t = -b / (2 * a);
                     intersection1 = new Vector2(point1.x + t * dx, point1.y + t * dy);
-                    point.EnforceWithin(ref intersection1, ref point1, ref point2);
-                    intersection2 = Vector2.zero;
+                    intersection2 = new Vector2(float.NaN, float.NaN);
                     return 1;
                 }
                 
                 // Two solutions.
                 t = (float)((-b + Math.Sqrt(determinate)) / (2 * a));
                 intersection1 = new Vector2(point1.x + t * dx, point1.y + t * dy);
-                point.EnforceWithin(ref intersection1, ref point1, ref point2);
                 t = (float)((-b - Math.Sqrt(determinate)) / (2 * a));
                 intersection2 = new Vector2(point1.x + t * dx, point1.y + t * dy);
-                point.EnforceWithin(ref intersection2, ref point1, ref point2);
                 return 2;
             }
 
-            public static  bool BetweenLinesIgnoreY(
+            public static bool BetweenLinesIgnoreY(
                    ref Vector3 line1point1, ref Vector3 line1point2,
                    ref Vector3 line2point1, ref Vector3 line2point2,
                    out Vector3? intersection)
@@ -1367,91 +1749,89 @@ namespace UnityFunctions
                        z >= minZ2 && z <= maxZ2;
             }
 
-            public static  bool BetweenPlanes(ref Vector3 plane1Normal, ref Vector3 plane2Normal, out Vector3 intersectionNormal)
-            {
-                var zero = Vector3.zero;
-                Vector3 intersectionPoint;
-                return BetweenPlanes(ref plane1Normal, ref zero, ref plane2Normal, ref zero, out intersectionPoint, out intersectionNormal);
+            public static bool BetweenPlanes(ref Vector3 plane1Normal, ref Vector3 plane2Normal, out Vector3 intersectionNormal)
+            { 
+		        intersectionNormal = cross.Product(ref plane1Normal, ref plane2Normal);
+                intersectionNormal = intersectionNormal.normalized;
+		        return true;
             }
-
-            public static  bool BetweenPlanes(
+            public static bool BetweenPlanes(
                 ref Vector3 plane1Normal, ref Vector3 plane1Position, 
                 ref Vector3 plane2Normal, ref Vector3 plane2Position, 
                 out Vector3 intersectionPoint, out Vector3 intersectionNormal)
             {
-                
+                intersectionPoint = Vector3.zero;
  
 		        //We can get the direction of the line of intersection of the two planes by calculating the 
 		        //cross product of the normals of the two planes. Note that this is just a direction and the line
 		        //is not fixed in space yet. We need a point for that to go with the line vector.
 		        cross.Product(ref plane1Normal, ref plane2Normal, out intersectionNormal);
-                intersectionNormal = intersectionNormal.normalized;
+                intersectionNormal.Normalize();
+
+
 		        //Next is to calculate a point on the line to fix it's position in space. This is done by finding a vector from
 		        //the plane2 location, moving parallel to it's plane, and intersecting plane1. To prevent rounding
 		        //errors, this vector also has to be perpendicular to lineDirection. To get this vector, calculate
 		        //the cross product of the normal of plane2 and the lineDirection.		
-		        Vector3 ldir;
-                cross.Product(ref plane2Normal, ref intersectionNormal, out ldir);		
+		        Vector3 ldir = cross.Product(ref plane2Normal, ref intersectionNormal);		
  
 		        var denominator = dot.Product(ref plane1Normal, ref ldir);
 		        //Prevent divide by zero
-		        if(abs(denominator) > 0.00001){
+		        if(abs(denominator) > 0.00001f){
  
 			        var plane1ToPlane2 = plane1Position - plane2Position;
 			        var t = dot.Product(ref plane1Normal, ref plane1ToPlane2) / denominator;
 			        intersectionPoint = plane2Position + t * ldir;
- 
+		            intersectionNormal = intersectionNormal.normalized;
 			        return true;
 		        }
-                intersectionPoint = Vector3.zero;
 			    return false;
             }
 
-            public static  bool BetweenPlanes(Vector3 plane1Normal, Vector3 plane2Normal, out Vector3 intersectionNormal)
+            public static bool BetweenPlanes(Vector3 plane1Normal, Vector3 plane2Normal, out Vector3 intersectionNormal)
             {
                 var zero = Vector3.zero;
                 Vector3 intersectionPoint;
                 return BetweenPlanes(plane1Normal, zero, plane1Normal, zero, out intersectionPoint, out intersectionNormal);
             }
 
-            public static  bool BetweenPlanes(
+            public static bool BetweenPlanes(
                 Vector3 plane1Normal, Vector3 plane1Position, 
                 Vector3 plane2Normal, Vector3 plane2Position, 
                 out Vector3 intersectionPoint, out Vector3 intersectionNormal)
             {
-                
+                intersectionPoint = Vector3.zero;
  
 		        //We can get the direction of the line of intersection of the two planes by calculating the 
 		        //cross product of the normals of the two planes. Note that this is just a direction and the line
 		        //is not fixed in space yet. We need a point for that to go with the line vector.
-		        cross.Product(ref plane1Normal, ref plane2Normal, out intersectionNormal);
-                intersectionNormal = intersectionNormal.normalized;
+		        intersectionNormal = Vector3.Cross(plane1Normal, plane2Normal);
+ 
 		        //Next is to calculate a point on the line to fix it's position in space. This is done by finding a vector from
 		        //the plane2 location, moving parallel to it's plane, and intersecting plane1. To prevent rounding
 		        //errors, this vector also has to be perpendicular to lineDirection. To get this vector, calculate
 		        //the cross product of the normal of plane2 and the lineDirection.		
-		        Vector3 ldir;
-                cross.Product(ref plane2Normal, ref intersectionNormal, out ldir);		
+		        Vector3 ldir = Vector3.Cross(plane2Normal, intersectionNormal);		
  
-		        var denominator = dot.Product(ref plane1Normal, ref ldir);
+		        float denominator = Vector3.Dot(plane1Normal, ldir);
+ 
 		        //Prevent divide by zero
-		        if(abs(denominator) > 0.00001){
+		        if(Mathf.Abs(denominator) > 0.001f){
  
-			        var plane1ToPlane2 = plane1Position - plane2Position;
-			        var t = dot.Product(ref plane1Normal, ref plane1ToPlane2) / denominator;
+			        Vector3 plane1ToPlane2 = plane1Position - plane2Position;
+			        float t = Vector3.Dot(plane1Normal, plane1ToPlane2) / denominator;
 			        intersectionPoint = plane2Position + t * ldir;
  
 			        return true;
 		        }
-                intersectionPoint = Vector3.zero;
 			    return false;
             }
 
-            public static  float BetweenRayAndSphere(
-                ref Vector3 rayOrigin, 
+            public static float BetweenRayAndSphere(
                 ref Vector3 rayDirection, 
+                ref Vector3 rayOrigin, 
                 ref Vector3 sphereCenter, 
-                float radius)
+                double radius)
             {
                 var xDiff = sphereCenter.x - rayOrigin.x;
                 var yDiff = sphereCenter.y - rayOrigin.y;
@@ -1475,511 +1855,40 @@ namespace UnityFunctions
                 return num - (float)Math.Sqrt(squareOfRadius - sqDiff);
             }
 
-            public static  bool Between2DLines(Vector2 line1p1, Vector2 line1p2, Vector2 line2p1, Vector2 line2p2)
+            public static bool TryBetweenRayAndSphere(
+                ref Vector3 rayDirection, 
+                ref Vector3 rayOrigin, 
+                ref Vector3 sphereCenter, 
+                double radius)
             {
-                return Between2DLines(ref line1p1, ref line1p2, ref line2p1, ref line2p2);
-            }
-            public static  bool Between2DLines(ref Vector2 line1p1, ref Vector2 line1p2, ref Vector2 line2p1, ref Vector2 line2p2)
-            {
-                // Find the four orientations needed for general and
-                // special cases
-                var o1 = Orientation(ref line1p1, ref line1p2, ref line2p1);
-                var o2 = Orientation(ref line1p1, ref line1p2, ref line2p2);
-                var o3 = Orientation(ref line2p1, ref line2p2, ref line1p1);
-                var o4 = Orientation(ref line2p1, ref line2p2, ref line1p2);
- 
-                // General case
-                if (o1 != o2 && o3 != o4)
-                    return true;
- 
-                // Special Cases : colinear
-                if (o1 == 0 && point.IsOn2DSegment(ref line1p1, ref line2p1, ref line1p2)) return true;
- 
-                if (o2 == 0 && point.IsOn2DSegment(ref line1p1, ref line2p2, ref line1p2)) return true;
- 
-                if (o3 == 0 && point.IsOn2DSegment(ref line2p1, ref line1p1, ref line2p2)) return true;
- 
-                if (o4 == 0 && point.IsOn2DSegment(ref line2p1, ref line1p2, ref line2p2)) return true;
- 
-                return false; // Doesn't fall in any of the above cases
-            }
-            public static  bool Between2DLines(Vector2 lineA1, Vector2 lineA2, Vector2 lineB1, Vector2 lineB2, out Vector2 intersect)
-            {
-                var a1 = (double)lineA2.y - (double)lineA1.y;
-                var b1 = (double)lineA1.x - (double)lineA2.x;
-                var c1 = a1 * (double)lineA1.x + b1 * (double)lineA1.y;
-
-                var a2 = (double)lineB2.y - (double)lineB1.y;
-                var b2 = (double)lineB1.x - (double)lineB2.x;
-                var c2 = a2 * (double)lineB1.x + b2 * (double)lineB1.y;
-
-                var det = a1 * b2 - a2 * b1;
-                // if lines are parallel
-                if (det < 0.00001f && det > -0.00001f)
+                var xDiff = sphereCenter.x - rayOrigin.x;
+                var yDiff = sphereCenter.y - rayOrigin.y;
+                var zDiff = sphereCenter.z - rayOrigin.z;
+                var sumOfSquares = ((xDiff * xDiff) + (yDiff * yDiff)) + (zDiff * zDiff);
+                var squareOfRadius = radius * radius;
+                if (sumOfSquares <= squareOfRadius)
                 {
-                    intersect = Vector2.zero;
+                    return true;
+                }
+                var num = ((xDiff * rayDirection.x) + (yDiff * rayDirection.y)) + (zDiff * rayDirection.z);
+                if (num < 0f)
+                {
                     return false;
                 }
-                var x = (b2 * c1 - b1 * c2) / det;
-                var y = (a1 * c2 - a2 * c1) / det;
-                intersect = new Vector2((float)x, (float)y);
-
-                return
-                    intersect.x >= Mathf.Min(lineA1.x, lineA2.x) &&
-                    intersect.x <= Mathf.Max(lineA1.x, lineA2.x) &&
-                    intersect.y >= Mathf.Min(lineA1.y, lineA2.y) &&
-                    intersect.y <= Mathf.Max(lineA1.y, lineA2.y) &&
-                    intersect.x >= Mathf.Min(lineB1.x, lineB2.x) &&
-                    intersect.x <= Mathf.Max(lineB1.x, lineB2.x) &&
-                    intersect.y >= Mathf.Min(lineB1.y, lineB2.y) &&
-                    intersect.y <= Mathf.Max(lineB1.y, lineB2.y);
-            }
-            public static  bool Between2DLines(ref Vector2 lineA1, ref Vector2 lineA2, ref Vector2 lineB1, ref Vector2 lineB2, out Vector2 intersect)
-            {
-                var a1 = (double)lineA2.y - (double)lineA1.y;
-                var b1 = (double)lineA1.x - (double)lineA2.x;
-                var c1 = a1 * (double)lineA1.x + b1 * (double)lineA1.y;
-
-                var a2 = (double)lineB2.y - (double)lineB1.y;
-                var b2 = (double)lineB1.x - (double)lineB2.x;
-                var c2 = a2 * lineB1.x + b2 * lineB1.y;
-                var det = a1 * b2 - a2 * b1;
-                // if lines are parallel
-                if (det < 0.00001 && det > -0.00001)
+                var sqDiff = sumOfSquares - (num * num);
+                if (sqDiff > squareOfRadius)
                 {
-                    intersect = Vector2.zero;
                     return false;
                 }
-                var x = (b2 * c1 - b1 * c2) / det;
-                var y = (a1 * c2 - a2 * c1) / det;
-                intersect = new Vector2((float)x, (float)y);
-                return
-                    intersect.x >= Mathf.Min(lineA1.x, lineA2.x) &&
-                    intersect.x <= Mathf.Max(lineA1.x, lineA2.x) &&
-                    intersect.y >= Mathf.Min(lineA1.y, lineA2.y) &&
-                    intersect.y <= Mathf.Max(lineA1.y, lineA2.y) &&
-                    intersect.x >= Mathf.Min(lineB1.x, lineB2.x) &&
-                    intersect.x <= Mathf.Max(lineB1.x, lineB2.x) &&
-                    intersect.y >= Mathf.Min(lineB1.y, lineB2.y) &&
-                    intersect.y <= Mathf.Max(lineB1.y, lineB2.y);
-            }
- 
-            // To find orientation of ordered triplet (p, q, r).
-            // The function returns following values
-            // 0 --> p, q and r are colinear
-            // 1 --> Clockwise
-            // 2 --> Counterclockwise
-            private static int Orientation(ref Vector2 p, ref Vector2 q, ref Vector2 r)
-            {
-                // See http://www.geeksforgeeks.org/orientation-3-ordered-points/
-                // for details of below formula.
-                var val = ((double)q.y - (double)p.y) * ((double)r.x - (double)q.x) - ((double)q.x - (double)p.x) * ((double)r.y - (double)q.y);
- 
-                if (val < 0.000001 && val > -0.000001) return 0;  // colinear
- 
-                return (val > 0)? 1: 2; // clock or counterclock wise
+                return true;
             }
 
-            public static  bool BetweenTriangleAndSphere(
-                ref Vector3 t1, ref Vector3 t2, ref Vector3 t3, 
-                ref Vector3 sphereCenter, float sphereRadius,
-                out Vector3 collision)
-            {
-                Vector3 triangleNormal;
-                point.GetNormal(ref t1, ref t2, ref t3, out triangleNormal);
-
-                Vector3 proj;
-                point.ProjectOnPlane(ref sphereCenter, ref triangleNormal, ref t1, out proj);
-                var x2d = (t2 - t1).normalized;
-                Vector3 y2d;
-                vector.GetNormal(ref x2d, ref triangleNormal, out y2d);
-
-                var dist = distance.Between(ref sphereCenter, ref proj);
-                var ratio = dist/sphereRadius;
-                if (ratio <= 1.0)
-                {
-
-                    var t1in2d = Vector2.zero;
-                    var t2in2d = (t2 - t1).As2d(ref x2d, ref y2d);
-                    var t3in2d = (t3 - t1).As2d(ref x2d, ref y2d);
-                    var spin2d = (sphereCenter - t1).As2d(ref x2d, ref y2d);
-                    var radius2d = (float) Math.Sqrt(1.0 - ratio*ratio)*sphereRadius;
-                    if (HasCircleTriangleCollision2D(ref spin2d, radius2d, ref t1in2d, ref t2in2d, ref t3in2d))
-                    {
-                        Vector2 int2d;
-                        GetCircleTriangle2DIntersectionPoint(ref spin2d, radius2d, ref t1in2d, ref t2in2d, ref t3in2d, out int2d);
-//for (var a = 0; a < 360; a += 5)
-//{
-//Debug.DrawLine(
-//    spin2d+(Vector2)((Vector3)(Vector2.right*radius2d)).RotateAbout(Vector3.forward, a), 
-//    spin2d+(Vector2)((Vector3)(Vector2.right*radius2d)).RotateAbout(Vector3.forward, a+5), 
-//    Color.red,0, false);
-//}
-//Debug.DrawLine(t1in2d,t2in2d,Color.black,0, false);
-//Debug.DrawLine(t2in2d,t3in2d,Color.black,0, false);
-//Debug.DrawLine(t3in2d,t1in2d,Color.black,0, false);
-//Debug.DrawLine(Vector2.one*100,int2d,Color.magenta,0, false);
-                        int2d.As3d(ref t1, ref x2d, ref y2d, out collision);
-                        return true;
-                    }
-                }
-                collision = Vector3.zero;
-                return false;
-            }
-
-            private static bool GetCircleTriangle2DIntersectionPoint(
-                ref Vector2 circleCenter, float radius, 
-                ref Vector2 t1, ref Vector2 t2, ref Vector2 t3, out Vector2 intersect)
-            {
-                intersect = Vector2.zero;
-                var n1 = GetLineCircleIntersectionPoint(
-                        false, ref circleCenter, radius, ref t1, ref t2, ref intersect);
-                var n2 = GetLineCircleIntersectionPoint(
-                        n1 > 0, ref circleCenter, radius, ref t2, ref t3, ref intersect);
-                var n3 = GetLineCircleIntersectionPoint(
-                        n1 + n2 > 0, ref circleCenter, radius, ref t3, ref t1, ref intersect);
-                var hasIntersection = (n1 + n2 + n3) > 0;
-                if (hasIntersection)
-                {
-                    return true;
-                }
-
-                // if the circle is inside the triangle
-                if (distanceSquared.Between(ref t1, ref circleCenter) > radius*radius)
-                {
-                    intersect = circleCenter;
-                    return false;
-                }
-                // if the triangle is inside the circle
-                Vector2 centroid;
-                triangle.GetCentroid2D(ref t1, ref t2, ref t3, out centroid);
-                intersect = centroid;
-                return false;
-            }
-
-            private static int GetLineCircleIntersectionPoint(
-                bool hasPrevious, 
-                ref Vector2 circleCenter, float curcleRadius,
-                ref Vector2 point1, ref Vector2 point2, ref Vector2 output)
-            {
-                Vector2 intersection1,intersection2;
-                var num = 
-                    BetweenLineSegmentAndCircle2D(
-                        ref circleCenter, curcleRadius, 
-                        ref point1, ref point2, 
-                        out intersection1, out intersection2);
-                var current = Vector2.zero;
-                if (num == 1) current = intersection1;
-                else if (num == 2) point.Middle(ref intersection1, ref intersection2, out current);
-                if (num > 0)
-                {
-                    if (hasPrevious) point.Middle(ref output, ref current, out output);
-                    else output = current;
-                }
-                return num;
-            }
-
-            public static  bool BetweenTriangleAndSphere(ref Vector3 t1, ref Vector3 t2, ref Vector3 t3, ref Vector3 sphereCenter, float sphereRadius)
-            {
-                Vector3 triangleNormal;
-                point.GetNormal(ref t1, ref t2, ref t3, out triangleNormal);
-
-                Vector3 proj;
-                point.ProjectOnPlane(ref sphereCenter, ref triangleNormal, ref t1, out proj);
-                var x2d = (t2 - t1).normalized;
-                Vector3 y2d;
-                vector.GetNormal(ref x2d, ref triangleNormal, out y2d);
-
-                var dist = distance.Between(ref sphereCenter, ref proj);
-                var ratio = dist/sphereRadius;
-                if (ratio <= 1.0)
-                {
-
-                    var t1in2d = t1.As2d(ref x2d, ref y2d);
-                    var t2in2d = t2.As2d(ref x2d, ref y2d);
-                    var t3in2d = t3.As2d(ref x2d, ref y2d);
-                    var spin2d = sphereCenter.As2d(ref x2d, ref y2d);
-                    var radius2d = (float) Math.Sqrt(1.0 - ratio*ratio)*sphereRadius;
-
-                    return HasCircleTriangleCollision2D(ref spin2d, radius2d, ref t1in2d, ref t2in2d, ref t3in2d);
-                }
-                return false;
-            }
-            private static bool HasCircleTriangleCollision2D(ref Vector2 centre, float radius, ref Vector2 t1, ref Vector2 t2, ref Vector2 t3)
-            {
-                //
-                // TEST 1: Vertex within circle
-                //
-                var c1x = centre.x - t1.x;
-                var c1y = centre.y - t1.y;
-
-                var radiusSqr = radius*radius;
-                var c1sqr = c1x*c1x + c1y*c1y - radiusSqr;
-
-                if (c1sqr <= 0) return true;
-
-                var c2x = centre.x - t2.x;
-                var c2y = centre.y - t2.y;
-                var c2sqr = c2x*c2x + c2y*c2y - radiusSqr;
-
-                if (c2sqr <= 0) return true;
-
-                var c3x = centre.x - t3.x;
-                var c3y = centre.y - t3.y;
-                var c3sqr = c3x*c3x + c3y*c3y - radiusSqr;
-
-                if (c3sqr <= 0) return true;
-
-                //
-                // TEST 2: Circle centre within triangle
-                //
-
-                //
-                // Calculate edges
-                //
-                if (fun.triangle.IsPointInside(ref centre, ref t1, ref t2, ref t3)) return true;
-
-
-                //
-                // TEST 3: Circle intersects edge
-                //
-                var e1x = t2.x - t1.x;
-                var e1y = t2.y - t1.y;
-
-                var e2x = t3.x - t2.x;
-                var e2y = t3.y - t2.y;
-
-                var e3x = t1.x - t3.x;
-                var e3y = t1.y - t3.y;
-
-                var k = c1x*e1x + c1y*e1y;
-
-                if (k > 0)
-                {
-                    var len = e1x*e1x + e1y*e1y;     // squared len
-
-                    if (k < len)
-                    {
-                        if ((c1sqr*len) <= k*k)
-                            return true;
-                    }
-                }
-
-                // Second edge
-                k = c2x*e2x + c2y*e2y;
-
-                if (k > 0)
-                {
-                    var len = e2x*e2x + e2y*e2y;
-
-                    if (k < len)
-                    {
-                        if ((c2sqr*len) <= k*k)
-                            return true;
-                    }
-                }
-
-                // Third edge
-                k = c3x*e3x + c3y*e3y;
-
-                if (k > 0)
-                {
-                    var len = e3x*e3x + e3y*e3y;
-
-                    if (k < len)
-                    {
-                        if ((c3sqr * len) <= k*k)
-                            return true;
-                    }
-                }
-                // We're done, no intersection
-                return false;
-            }
-            public static  bool BetweenTriangleAndDisk(
-                ref Vector3 t1, ref Vector3 t2, ref Vector3 t3, 
-                ref Vector3 diskNormal, ref Vector3 diskCenter, float diskRadius, 
-                out Vector3 intersect)
-            {
-                Vector3 triangleNormal;
-                point.GetNormal(ref t1, ref t2, ref t3, out triangleNormal);
-                diskNormal.Normalize(); // ensure disk normal is unit vector
-
-                // they are parallel
-                if (abs(dot.Product(ref triangleNormal, ref diskNormal)) > 0.999999f)
-                {
-                    var diskCenterPlus = diskCenter + diskNormal;
-                    Vector3 proj;
-                    point.ProjectOnLine(ref t1, ref diskCenter, ref diskCenterPlus, out proj);
-                    // they lie on the same plane
-                    if (distanceSquared.Between(ref proj, ref diskCenter) < 0.0001)
-                    {
-                        Vector3 x2d,y2d;
-                        vector.ComputeRandomXYAxesForPlane(ref diskNormal, out x2d, out y2d);
-
-                        var t1in2d = Vector2.zero;
-                        var t2in2d = (t2 - t1).As2d(ref x2d, ref y2d);
-                        var t3in2d = (t3 - t1).As2d(ref x2d, ref y2d);
-                        var dcin2d = (diskCenter - t1).As2d(ref x2d, ref y2d);
-
-                        if (HasCircleTriangleCollision2D(ref dcin2d, diskRadius, ref t1in2d, ref t2in2d, ref t3in2d))
-                        {
-                            Vector2 int2d;
-                            GetCircleTriangle2DIntersectionPoint(ref dcin2d, diskRadius, ref t1in2d, ref t2in2d, ref t3in2d, out int2d);
-                            intersect = int2d.As3d(ref t1, ref x2d, ref y2d);
-                            return true;
-                        }
-                    }
-                }
-
-                Vector3 intPoint,intNorm;
-                var linesIntersect = BetweenPlanes(ref triangleNormal, ref t1, ref diskNormal, ref diskCenter, out intPoint, out intNorm);
-                if (linesIntersect)
-                {
-                    var distToInt = distance.Between(ref intPoint, ref diskCenter);
-                    var ratio = distToInt/diskRadius;
-                    if (ratio <= 1.0)
-                    {
-                        var side = (float) Math.Sqrt(1.0 - ratio*ratio)*diskRadius;
-                        var xPos = diskCenter + (intPoint - diskCenter);
-                        var w1 = xPos + intNorm*side;
-                        var w2 = xPos + intNorm*-side;
-
-                        var x2d = intNorm;
-                        Vector3 y2d;
-                        vector.GetNormal(ref intNorm, ref triangleNormal, out y2d);
-
-                        var t1in2d = Vector2.zero;
-                        var t2in2d = (t2 - t1).As2d(ref x2d, ref y2d);
-                        var t3in2d = (t3 - t1).As2d(ref x2d, ref y2d);
-                        var w1in2d = (w1 - t1).As2d(ref x2d, ref y2d);
-                        var w2in2d = (w2 - t1).As2d(ref x2d, ref y2d);
-                        Vector2 int2d;
-                        if (Between2DTriangleAndLineSegment(
-                            ref t1in2d, ref t2in2d, ref t3in2d,
-                            ref w1in2d, ref w2in2d, out int2d))
-                        {
-                            intersect = int2d.As3d(ref t1, ref x2d, ref y2d);
-                            return true;
-                        }
-                    }
-                }
-                intersect = Vector3.zero;
-                return false;
-            }
-
-            public static  bool Between2DTriangleAndLineSegment(
-                ref Vector2 t1, ref Vector2 t2, ref Vector2 t3,
-                ref Vector2 line1, ref Vector2 line2,
-                out Vector2 intersect)
-            {
-                Vector2 curr;
-                var c = Vector2.zero;
-                var b1 = false;
-                var b2 = false;
-                var b3 = false;
-                if (Between2DLines(ref t1, ref t2, ref line1, ref line2, out curr))
-                {
-                    b1 = true;
-                    c = curr;
-                }
-                if (Between2DLines(ref t2, ref t3, ref line1, ref line2, out curr))
-                {
-                    b2 = true;
-                    c = b1 ? point.Middle(c, curr) : curr;
-                }
-                if (Between2DLines(ref t3, ref t1, ref line1, ref line2, out curr))
-                {
-                    b3 = true;
-                    c = b1 || b2 ? point.Middle(c, curr) : curr;
-                }
-                if (b1 || b2 || b3)
-                {
-                    intersect = c;
-                    return true;
-                }
-
-                if (triangle.IsPointInside(ref line1, ref t1, ref t2, ref t3) ||
-                    triangle.IsPointInside(ref line2, ref t1, ref t2, ref t3))
-                {
-                    Vector2 wcin2d;
-                    point.Middle(ref line1, ref line2, out wcin2d);
-                    intersect = wcin2d;
-                    return true;
-                }
-                intersect = Vector2.zero;
-                return false;
-            }
-
-            /// <summary>
-            /// note the collision point returned is not precise, but is good enough for my needs
-            /// </summary>
-            public static  bool BetweenTriangles(
-                ref Vector3 t1p1, ref Vector3 t1p2, ref Vector3 t1p3, 
-                ref Vector3 t2p1, ref Vector3 t2p2, ref Vector3 t2p3, 
-                out Vector3 collision)
-            {
-                if (triangle.Overlap(
-                    ref t1p1, ref t1p2, ref t1p3,
-                    ref t2p1, ref t2p2, ref t2p3))
-                {
-                    Vector3 normalT1, normalT2;
-                    point.GetNormal(ref t1p1, ref t1p2, ref t1p3, out normalT1);
-                    point.GetNormal(ref t2p1, ref t2p2, ref t2p3, out normalT2);
-
-                    // then are on the same plane
-                    if (abs(dot.Product(ref normalT1, ref normalT2)) > 0.999999f)
-                    {
-                        Vector3 cen1, cen2;
-                        triangle.GetCentroid(ref t1p1, ref t1p2, ref t1p3, out cen1);
-                        triangle.GetCentroid(ref t2p1, ref t2p2, ref t2p3, out cen2);
-
-                        point.Middle(ref cen1, ref cen2, out collision);
-
-                        return true;
-                    }
-
-                    Vector3 intPoint, intNormal;
-                    BetweenPlanes(ref normalT1, ref t1p1, ref normalT2, ref t2p1, out intPoint, out intNormal);
-
-                    var l1 = (intPoint + intNormal*999);
-                    var l2 = (intPoint - intNormal*999);
-
-                    Vector3 x2d,y2d;
-                    vector.ComputeRandomXYAxesForPlane(ref normalT1, out x2d, out y2d);
-                    var t12d = Vector2.zero;
-                    var t22d = (t1p2 - t1p1).As2d(ref x2d, ref y2d);
-                    var t32d = (t1p3 - t1p1).As2d(ref x2d, ref y2d);
-                    var w12d = (l1 - t1p1).As2d(ref x2d, ref y2d);
-                    var w22d = (l2 - t1p1).As2d(ref x2d, ref y2d);
-
-                    Vector2 int2d;
-                    Between2DTriangleAndLineSegment(ref t12d, ref t22d, ref t32d, ref w12d, ref w22d, out int2d);
-                    var p1 = int2d.As3d(ref t1p1, ref x2d, ref y2d);
-
-                    vector.ComputeRandomXYAxesForPlane(ref normalT2, out x2d, out y2d);
-                    t22d = (t2p2 - t2p1).As2d(ref x2d, ref y2d);
-                    t32d = (t2p3 - t2p1).As2d(ref x2d, ref y2d);
-                    w12d = (l1 - t2p1).As2d(ref x2d, ref y2d);
-                    w22d = (l2 - t2p1).As2d(ref x2d, ref y2d);
-
-                    Between2DTriangleAndLineSegment(ref t12d, ref t22d, ref t32d, ref w12d, ref w22d, out int2d);
-                    var p2 = int2d.As3d(ref t2p1, ref x2d, ref y2d);
-//Debug.DrawLine(Vector3.one*100, p1, Color.red, 0, false);
-//Debug.DrawLine(Vector3.one*100, p2, Color.black, 0, false);
-                    point.Middle(ref p1, ref p2, out collision);
-                    return true;
-                }
-
-                collision = Vector3.zero;
-                return false;
-            }
-
-            public static  bool BetweenRayAndDisk(
+            public static bool BetweenRayAndDisk(
                 ref Vector3 rayDirection,
                 ref Vector3 rayOrigin,
                 ref Vector3 diskNormal,
                 ref Vector3 diskCenter,
-                float diskRadius,
+                double diskRadius,
                 out Vector3 crossPoint)
             {
                 Vector3 intersectPlane;
@@ -2000,7 +1909,7 @@ namespace UnityFunctions
                     var cirCen = Vector2.zero;
                     Vector2 int1,int2;
 
-                    var found = BetweenLineAndCircle(ref cirCen, diskRadius, ref line1, ref line2, out int1, out int2) > 0;
+                    var found = BetweenLineAndCircle2d(ref cirCen, diskRadius, ref line1, ref line2, out int1, out int2) > 0;
 
                     if (found)
                     {
@@ -2033,7 +1942,7 @@ namespace UnityFunctions
                 return true;
             }
 
-            // https://searchcode.com/codesearch/view/16225010/
+                        // https://searchcode.com/codesearch/view/16225010/
             public static bool BetweenLineSegmentAndCone(
                 ref Vector3 lineStart, ref Vector3 lineEnd, 
                 ref Vector3 coneBase, ref Vector3 coneUp, double coneRadius, double coneHeight, 
@@ -2206,6 +2115,7 @@ namespace UnityFunctions
                 return false;
             }
 
+
             public static bool BetweenLineSegmentAndDisk(
                 ref Vector3 lineEnd1,
                 ref Vector3 lineEnd2,
@@ -2235,7 +2145,7 @@ namespace UnityFunctions
                         ref lineEnd2,
                         ref diskNormal,
                         ref diskCenter,
-                        (float)diskRadius,
+                        diskRadius,
                         out rayDiskIntersection);
                 if (!hasIntersection)
                 {
@@ -2252,12 +2162,12 @@ namespace UnityFunctions
                 return false;
             }
 
-            public static  bool BetweenLineSegmentAndDisk(
+            public static bool BetweenLineSegmentAndDisk(
                 ref Vector3 lineEnd1,
                 ref Vector3 lineEnd2,
                 ref Vector3 diskNormal, 
                 ref Vector3 diskCenter,
-                float diskRadius)
+                double diskRadius)
             {
                 Vector3 rayDiskIntersection;
                 var rayDirection = (lineEnd1 - lineEnd2);
@@ -2291,9 +2201,556 @@ namespace UnityFunctions
                 }
                 return false;
             }
+
+            public static bool BetweenLineSegmentAndPlane(
+                ref Vector3 lineEnd1,
+                ref Vector3 lineEnd2,
+                ref Vector3 planeNormal, 
+                ref Vector3 planePoint,
+                out Vector3 crossPoint)
+            {
+                Vector3 rayDiskIntersection;
+                var rayDirection = (lineEnd1 - lineEnd2);
+                // if 2 ends of a line are the same point, then check if that point lies on the disk
+                if (rayDirection.sqrMagnitude < 0.00001)
+                {
+                    Vector3 projection;
+                    point.ProjectOnPlane(ref lineEnd1, ref planeNormal, ref planePoint, out projection);
+                    if (distanceSquared.Between(ref projection, ref lineEnd1) < 0.0001)
+                    {
+                        crossPoint = lineEnd1;
+                        return true;
+                    }
+                    crossPoint = Vector3.zero;
+                    return false;
+                }
+                var hasIntersection = 
+                    BetweenPlaneAndRay(
+                        ref planeNormal,
+                        ref planePoint,
+                        ref rayDirection,
+                        ref lineEnd2,
+                        out rayDiskIntersection);
+                if (!hasIntersection)
+                {
+                    crossPoint = Vector3.zero;
+                    return false;
+                }
+                // the ray is intersecting disk within that line segment
+                if (point.IsOnSegment(ref lineEnd1, ref rayDiskIntersection, ref lineEnd2))
+                {
+                    crossPoint = rayDiskIntersection;
+                    return true;
+                }
+                crossPoint = Vector3.zero;
+                return false;
+            }
+
+
+            public static bool Between2DLines(Vector2 line1p1, Vector2 line1p2, Vector2 line2p1, Vector2 line2p2)
+            {
+                return Between2DLines(ref line1p1, ref line1p2, ref line2p1, ref line2p2);
+            }
+            public static bool Between2DLines(ref Vector2 line1p1, ref Vector2 line1p2, ref Vector2 line2p1, ref Vector2 line2p2)
+            {
+                // Find the four orientations needed for general and
+                // special cases
+                var o1 = Orientation(ref line1p1, ref line1p2, ref line2p1);
+                var o2 = Orientation(ref line1p1, ref line1p2, ref line2p2);
+                var o3 = Orientation(ref line2p1, ref line2p2, ref line1p1);
+                var o4 = Orientation(ref line2p1, ref line2p2, ref line1p2);
+ 
+                // General case
+                if (o1 != o2 && o3 != o4)
+                    return true;
+ 
+                // Special Cases : colinear
+                if (o1 == 0 && point.IsOn2DSegment(ref line1p1, ref line2p1, ref line1p2)) return true;
+ 
+                if (o2 == 0 && point.IsOn2DSegment(ref line1p1, ref line2p2, ref line1p2)) return true;
+ 
+                if (o3 == 0 && point.IsOn2DSegment(ref line2p1, ref line1p1, ref line2p2)) return true;
+ 
+                if (o4 == 0 && point.IsOn2DSegment(ref line2p1, ref line1p2, ref line2p2)) return true;
+ 
+                return false; // Doesn't fall in any of the above cases
+            }
+            public static bool Between2DLines(Vector2 lineA1, Vector2 lineA2, Vector2 lineB1, Vector2 lineB2, out Vector2 intersect)
+            {
+                var a1 = (double)lineA2.y - (double)lineA1.y;
+                var b1 = (double)lineA1.x - (double)lineA2.x;
+                var c1 = a1 * (double)lineA1.x + b1 * (double)lineA1.y;
+
+                var a2 = (double)lineB2.y - (double)lineB1.y;
+                var b2 = (double)lineB1.x - (double)lineB2.x;
+                var c2 = a2 * (double)lineB1.x + b2 * (double)lineB1.y;
+
+                var det = a1 * b2 - a2 * b1;
+                // if lines are parallel
+                if (det < 0.00001f && det > -0.00001f)
+                {
+                    intersect = Vector2.zero;
+                    return false;
+                }
+                var x = (b2 * c1 - b1 * c2) / det;
+                var y = (a1 * c2 - a2 * c1) / det;
+                intersect = new Vector2((float)x, (float)y);
+
+                return
+                    intersect.x >= Mathf.Min(lineA1.x, lineA2.x) &&
+                    intersect.x <= Mathf.Max(lineA1.x, lineA2.x) &&
+                    intersect.y >= Mathf.Min(lineA1.y, lineA2.y) &&
+                    intersect.y <= Mathf.Max(lineA1.y, lineA2.y) &&
+                    intersect.x >= Mathf.Min(lineB1.x, lineB2.x) &&
+                    intersect.x <= Mathf.Max(lineB1.x, lineB2.x) &&
+                    intersect.y >= Mathf.Min(lineB1.y, lineB2.y) &&
+                    intersect.y <= Mathf.Max(lineB1.y, lineB2.y);
+            }
+            public static bool Between2DLines(ref Vector2 lineA1, ref Vector2 lineA2, ref Vector2 lineB1, ref Vector2 lineB2, out Vector2 intersect)
+            {
+                var a1 = (double)lineA2.y - (double)lineA1.y;
+                var b1 = (double)lineA1.x - (double)lineA2.x;
+                var c1 = a1 * (double)lineA1.x + b1 * (double)lineA1.y;
+
+                var a2 = (double)lineB2.y - (double)lineB1.y;
+                var b2 = (double)lineB1.x - (double)lineB2.x;
+                var c2 = a2 * lineB1.x + b2 * lineB1.y;
+                var det = a1 * b2 - a2 * b1;
+                // if lines are parallel
+                if (det < 0.00001 && det > -0.00001)
+                {
+                    intersect = Vector2.zero;
+                    return false;
+                }
+                var x = (b2 * c1 - b1 * c2) / det;
+                var y = (a1 * c2 - a2 * c1) / det;
+                intersect = new Vector2((float)x, (float)y);
+                return
+                    intersect.x >= Mathf.Min(lineA1.x, lineA2.x) &&
+                    intersect.x <= Mathf.Max(lineA1.x, lineA2.x) &&
+                    intersect.y >= Mathf.Min(lineA1.y, lineA2.y) &&
+                    intersect.y <= Mathf.Max(lineA1.y, lineA2.y) &&
+                    intersect.x >= Mathf.Min(lineB1.x, lineB2.x) &&
+                    intersect.x <= Mathf.Max(lineB1.x, lineB2.x) &&
+                    intersect.y >= Mathf.Min(lineB1.y, lineB2.y) &&
+                    intersect.y <= Mathf.Max(lineB1.y, lineB2.y);
+            }
+
+ 
+            // To find orientation of ordered triplet (p, q, r).
+            // The function returns following values
+            // 0 --> p, q and r are colinear
+            // 1 --> Clockwise
+            // 2 --> Counterclockwise
+            private static int Orientation(ref Vector2 p, ref Vector2 q, ref Vector2 r)
+            {
+                // See http://www.geeksforgeeks.org/orientation-3-ordered-points/
+                // for details of below formula.
+                var val = ((double)q.y - (double)p.y) * ((double)r.x - (double)q.x) - ((double)q.x - (double)p.x) * ((double)r.y - (double)q.y);
+ 
+                if (val < 0.000001 && val > -0.000001) return 0;  // colinear
+ 
+                return (val > 0)? 1: 2; // clock or counterclock wise
+            }
+
+            public static bool BetweenTriangleAndDisk(
+                ref Vector3 t1, ref Vector3 t2, ref Vector3 t3, 
+                ref Vector3 diskNormal, ref Vector3 diskCenter, float diskRadius, 
+                out Vector3 intersect)
+            {
+                Vector3 triangleNormal;
+                point.GetNormal(ref t1, ref t2, ref t3, out triangleNormal);
+                diskNormal.Normalize(); // ensure disk normal is unit vector
+                // they are parallel
+                if (abs(dot.Product(ref triangleNormal, ref diskNormal)) > 0.999999f)
+                {
+                    var diskCenterPlus = diskCenter + diskNormal;
+                    Vector3 proj;
+                    point.ProjectOnLine(ref t1, ref diskCenter, ref diskCenterPlus, out proj);
+                    // they lie on the same plane
+                    if (distanceSquared.Between(ref proj, ref diskCenter) < 0.0001)
+                    {
+                        Vector3 x2d,y2d;
+                        vector.ComputeRandomXYAxesForPlane(ref diskNormal, out x2d, out y2d);
+
+                        var t1in2d = Vector2.zero;
+                        var t2in2d = (t2 - t1).As2d(ref x2d, ref y2d);
+                        var t3in2d = (t3 - t1).As2d(ref x2d, ref y2d);
+                        var dcin2d = (diskCenter - t1).As2d(ref x2d, ref y2d);
+
+                        if (HasCircleTriangleCollision2D(ref dcin2d, diskRadius, ref t1in2d, ref t2in2d, ref t3in2d))
+                        {
+                            Vector2 int2d;
+                            GetCircleTriangle2DIntersectionPoint(ref dcin2d, diskRadius, ref t1in2d, ref t2in2d, ref t3in2d, out int2d);
+                            intersect = int2d.As3d(ref t1, ref x2d, ref y2d);
+                            return true;
+                        }
+                    }
+                }
+                Vector3 intPoint,intNorm;
+                var linesIntersect = BetweenPlanes(ref triangleNormal, ref t1, ref diskNormal, ref diskCenter, out intPoint, out intNorm);
+                if (linesIntersect)
+                {
+                    var distToInt = distance.Between(ref intPoint, ref diskCenter);
+                    var ratio = distToInt/diskRadius;
+                    if (ratio <= 1.0)
+                    {
+                        var side = (float) Math.Sqrt(1.0 - ratio*ratio)*diskRadius;
+                        var xPos = diskCenter + (intPoint - diskCenter);
+                        var w1 = xPos + intNorm*side;
+                        var w2 = xPos + intNorm*-side;
+
+                        var x2d = intNorm;
+                        Vector3 y2d;
+                        vector.GetNormal(ref intNorm, ref triangleNormal, out y2d);
+
+                        var t1in2d = Vector2.zero;
+                        var t2in2d = (t2 - t1).As2d(ref x2d, ref y2d);
+                        var t3in2d = (t3 - t1).As2d(ref x2d, ref y2d);
+                        var w1in2d = (w1 - t1).As2d(ref x2d, ref y2d);
+                        var w2in2d = (w2 - t1).As2d(ref x2d, ref y2d);
+//Debug.DrawLine(Vector3.one*100, w1in2d, Color.red, 0, false);
+//Debug.DrawLine(Vector3.one*100, w2in2d, Color.black, 0, false);
+
+                        Vector2 int2d;
+                        if (Between2DTriangleAndLineSegment(
+                            ref t1in2d, ref t2in2d, ref t3in2d,
+                            ref w1in2d, ref w2in2d, out int2d))
+                        {
+                            intersect = int2d.As3d(ref t1, ref x2d, ref y2d);
+                            return true;
+                        }
+                    }
+                }
+                intersect = Vector3.zero;
+                return false;
+            }
+            public static bool Between2DTriangleAndLineSegment(
+                ref Vector2 t1, ref Vector2 t2, ref Vector2 t3,
+                ref Vector2 line1, ref Vector2 line2,
+                out Vector2 intersect)
+            {
+                Vector2 curr;
+                var c = Vector2.zero;
+                var b1 = false;
+                var b2 = false;
+                var b3 = false;
+                if (Between2DLines(ref t1, ref t2, ref line1, ref line2, out curr))
+                {
+                    b1 = true;
+                    c = curr;
+                }
+                if (Between2DLines(ref t2, ref t3, ref line1, ref line2, out curr))
+                {
+                    b2 = true;
+                    c = b1 ? point.Middle2D(c, curr) : curr;
+                }
+                if (Between2DLines(ref t3, ref t1, ref line1, ref line2, out curr))
+                {
+                    b3 = true;
+                    c = b1 || b2 ? point.Middle2D(c, curr) : curr;
+                }
+                if (b1 || b2 || b3)
+                {
+                    intersect = c;
+                    return true;
+                }
+
+                if (triangle.IsPointInside(ref line1, ref t1, ref t2, ref t3) ||
+                    triangle.IsPointInside(ref line2, ref t1, ref t2, ref t3))
+                {
+                    Vector2 wcin2d;
+                    point.Middle2D(ref line1, ref line2, out wcin2d);
+                    intersect = wcin2d;
+                    return true;
+                }
+                intersect = Vector2.zero;
+                return false;
+            }
+            private static bool GetCircleTriangle2DIntersectionPoint(
+                ref Vector2 circleCenter, float radius, 
+                ref Vector2 t1, ref Vector2 t2, ref Vector2 t3, out Vector2 intersect)
+            {
+                intersect = Vector2.zero;
+                var n1 = GetLineCircleIntersectionPoint(
+                        false, ref circleCenter, radius, ref t1, ref t2, ref intersect);
+                var n2 = GetLineCircleIntersectionPoint(
+                        n1 > 0, ref circleCenter, radius, ref t2, ref t3, ref intersect);
+                var n3 = GetLineCircleIntersectionPoint(
+                        n1 + n2 > 0, ref circleCenter, radius, ref t3, ref t1, ref intersect);
+                var hasIntersection = (n1 + n2 + n3) > 0;
+                if (hasIntersection)
+                {
+                    return true;
+                }
+
+                // if the circle is inside the triangle
+                if (distanceSquared.Between(ref t1, ref circleCenter) > radius*radius)
+                {
+                    intersect = circleCenter;
+                    return false;
+                }
+                // if the triangle is inside the circle
+                Vector2 centroid;
+                triangle.GetCentroid2D(ref t1, ref t2, ref t3, out centroid);
+                intersect = centroid;
+                return false;
+            }
+            private static int GetLineCircleIntersectionPoint(
+                bool hasPrevious, 
+                ref Vector2 circleCenter, float curcleRadius,
+                ref Vector2 point1, ref Vector2 point2, ref Vector2 output)
+            {
+                Vector2 intersection1,intersection2;
+                var num = 
+                    BetweenLineSegmentAndCircle2D(
+                        ref circleCenter, curcleRadius, 
+                        ref point1, ref point2, 
+                        out intersection1, out intersection2);
+                var current = Vector2.zero;
+                if (num == 1) current = intersection1;
+                else if (num == 2) point.Middle2D(ref intersection1, ref intersection2, out current);
+                if (num > 0)
+                {
+                    if (hasPrevious) point.Middle2D(ref output, ref current, out output);
+                    else output = current;
+                }
+                return num;
+            }
+            public static int BetweenLineSegmentAndCircle2D(
+                ref Vector2 circleCenter, float circleRadius, 
+                ref Vector2 point1, ref Vector2 point2, 
+                out Vector2 intersection1, out Vector2 intersection2)
+            {
+                // test to see if line is inside the circle
+                var dsq = distanceSquared.Between(ref circleCenter, ref point1);
+                var circleRadiusSqr = circleRadius*circleRadius;
+                if (dsq < circleRadiusSqr)
+                {
+                    dsq = distanceSquared.Between(ref circleCenter, ref point2);
+                    if (dsq < circleRadiusSqr)
+                    {
+                        intersection1 = Vector2.zero;
+                        intersection2 = Vector2.zero;
+                        return 0;
+                    }
+                }
+
+                var dx = point2.x - point1.x;
+                var dy = point2.y - point1.y;
+
+                var a = dx * dx + dy * dy;
+                var b = 2 * (dx * (point1.x - circleCenter.x) + dy * (point1.y - circleCenter.y));
+                var c = (point1.x - circleCenter.x) * (point1.x - circleCenter.x) + (point1.y - circleCenter.y) * (point1.y - circleCenter.y) - circleRadius * circleRadius;
+
+                var determinate = b * b - 4 * a * c;
+                if ((a <= 0.0000001) || (determinate < -0.0000001))
+                {
+                    // No real solutions.
+                    intersection1 = Vector2.zero;
+                    intersection2 = Vector2.zero;
+                    return 0;
+                }
+                float t;
+                if (determinate < 0.0000001 && determinate > -0.0000001)
+                {
+                    // One solution.
+                    t = -b / (2 * a);
+                    intersection1 = new Vector2(point1.x + t * dx, point1.y + t * dy);
+                    point.EnforceWithin(ref intersection1, ref point1, ref point2);
+                    intersection2 = Vector2.zero;
+                    return 1;
+                }
+                
+                // Two solutions.
+                t = (float)((-b + Math.Sqrt(determinate)) / (2 * a));
+                intersection1 = new Vector2(point1.x + t * dx, point1.y + t * dy);
+                point.EnforceWithin(ref intersection1, ref point1, ref point2);
+                t = (float)((-b - Math.Sqrt(determinate)) / (2 * a));
+                intersection2 = new Vector2(point1.x + t * dx, point1.y + t * dy);
+                point.EnforceWithin(ref intersection2, ref point1, ref point2);
+                return 2;
+            }
+            private static bool HasCircleTriangleCollision2D(ref Vector2 centre, float radius, ref Vector2 t1, ref Vector2 t2, ref Vector2 t3)
+            {
+                //
+                // TEST 1: Vertex within circle
+                //
+                var c1x = centre.x - t1.x;
+                var c1y = centre.y - t1.y;
+
+                var radiusSqr = radius*radius;
+                var c1sqr = c1x*c1x + c1y*c1y - radiusSqr;
+
+                if (c1sqr <= 0) return true;
+
+                var c2x = centre.x - t2.x;
+                var c2y = centre.y - t2.y;
+                var c2sqr = c2x*c2x + c2y*c2y - radiusSqr;
+
+                if (c2sqr <= 0) return true;
+
+                var c3x = centre.x - t3.x;
+                var c3y = centre.y - t3.y;
+                var c3sqr = c3x*c3x + c3y*c3y - radiusSqr;
+
+                if (c3sqr <= 0) return true;
+
+                //
+                // TEST 2: Circle centre within triangle
+                //
+
+                //
+                // Calculate edges
+                //
+                if (fun.triangle.IsPointInside(ref centre, ref t1, ref t2, ref t3)) return true;
+
+
+                //
+                // TEST 3: Circle intersects edge
+                //
+                var e1x = t2.x - t1.x;
+                var e1y = t2.y - t1.y;
+
+                var e2x = t3.x - t2.x;
+                var e2y = t3.y - t2.y;
+
+                var e3x = t1.x - t3.x;
+                var e3y = t1.y - t3.y;
+
+                var k = c1x*e1x + c1y*e1y;
+
+                if (k > 0)
+                {
+                    var len = e1x*e1x + e1y*e1y;     // squared len
+
+                    if (k < len)
+                    {
+                        if ((c1sqr*len) <= k*k)
+                            return true;
+                    }
+                }
+
+                // Second edge
+                k = c2x*e2x + c2y*e2y;
+
+                if (k > 0)
+                {
+                    var len = e2x*e2x + e2y*e2y;
+
+                    if (k < len)
+                    {
+                        if ((c2sqr*len) <= k*k)
+                            return true;
+                    }
+                }
+
+                // Third edge
+                k = c3x*e3x + c3y*e3y;
+
+                if (k > 0)
+                {
+                    var len = e3x*e3x + e3y*e3y;
+
+                    if (k < len)
+                    {
+                        if ((c3sqr * len) <= k*k)
+                            return true;
+                    }
+                }
+                // We're done, no intersection
+                return false;
+            }
+            /// <summary>
+            /// note the collision point returned is not precise, but is good enough for my needs
+            /// </summary>
+            public static bool BetweenTriangles(
+                ref Vector3 t1p1, ref Vector3 t1p2, ref Vector3 t1p3, 
+                ref Vector3 t2p1, ref Vector3 t2p2, ref Vector3 t2p3, 
+                out Vector3 collision)
+            {
+                if (triangle.Overlap(
+                    ref t1p1, ref t1p2, ref t1p3,
+                    ref t2p1, ref t2p2, ref t2p3))
+                {
+                    Vector3 normalT1, normalT2;
+                    point.GetNormal(ref t1p1, ref t1p2, ref t1p3, out normalT1);
+                    point.GetNormal(ref t2p1, ref t2p2, ref t2p3, out normalT2);
+
+                    // then are on the same plane
+                    if (abs(dot.Product(ref normalT1, ref normalT2)) > 0.999999f)
+                    {
+                        Vector3 cen1, cen2;
+                        triangle.GetCentroid(ref t1p1, ref t1p2, ref t1p3, out cen1);
+                        triangle.GetCentroid(ref t2p1, ref t2p2, ref t2p3, out cen2);
+
+                        point.Middle(ref cen1, ref cen2, out collision);
+
+                        return true;
+                    }
+
+                    Vector3 intPoint, intNormal;
+                    BetweenPlanes(ref normalT1, ref t1p1, ref normalT2, ref t2p1, out intPoint, out intNormal);
+
+                    var l1 = (intPoint + intNormal*999);
+                    var l2 = (intPoint - intNormal*999);
+
+                    Vector3 x2d,y2d;
+                    vector.ComputeRandomXYAxesForPlane(ref normalT1, out x2d, out y2d);
+                    var t12d = Vector2.zero;
+                    var t22d = (t1p2 - t1p1).As2d(ref x2d, ref y2d);
+                    var t32d = (t1p3 - t1p1).As2d(ref x2d, ref y2d);
+                    var w12d = (l1 - t1p1).As2d(ref x2d, ref y2d);
+                    var w22d = (l2 - t1p1).As2d(ref x2d, ref y2d);
+
+                    Vector2 int2d;
+                    Between2DTriangleAndLineSegment(ref t12d, ref t22d, ref t32d, ref w12d, ref w22d, out int2d);
+                    var p1 = int2d.As3d(ref t1p1, ref x2d, ref y2d);
+
+                    vector.ComputeRandomXYAxesForPlane(ref normalT2, out x2d, out y2d);
+                    t22d = (t2p2 - t2p1).As2d(ref x2d, ref y2d);
+                    t32d = (t2p3 - t2p1).As2d(ref x2d, ref y2d);
+                    w12d = (l1 - t2p1).As2d(ref x2d, ref y2d);
+                    w22d = (l2 - t2p1).As2d(ref x2d, ref y2d);
+
+                    Between2DTriangleAndLineSegment(ref t12d, ref t22d, ref t32d, ref w12d, ref w22d, out int2d);
+                    var p2 = int2d.As3d(ref t2p1, ref x2d, ref y2d);
+//Debug.DrawLine(Vector3.one*100, p1, Color.red, 0, false);
+//Debug.DrawLine(Vector3.one*100, p2, Color.black, 0, false);
+                    point.Middle(ref p1, ref p2, out collision);
+                    return true;
+                }
+
+                collision = Vector3.zero;
+                return false;
+            }
+
+            public static bool BetweenCircles2D(ref Vector2 p0, float r, ref Vector2 p1, float R, out Vector2 cross1, out Vector2 cross2)
+            {
+                var d = distance.Between(ref p0, ref p1);
+                var radiusesSum = r + R;
+                const float delta = 0.00001f;
+                var radiusesDiff = abs(r - R);
+                if (d > radiusesSum || d < (radiusesDiff+delta))
+                {
+                    cross1 = cross2 = Vector2.zero;
+                    return false;
+                }
+                var a = (r*r - R*R + d*d)/(2*d);
+                var h = sqrt(r*r - a*a);
+                var p2 = ((p1 - p0)*(a/d)) + p0;
+                var x3 = p2.x + h*(p1.y - p0.y)/d;
+                var y3 = p2.y - h*(p1.x - p0.x)/d;
+                var x4 = p2.x - h*(p1.y - p0.y)/d;
+                var y4 = p2.y + h*(p1.x - p0.x)/d;
+
+                cross1 = new Vector2(x3, y3);
+                cross2 = new Vector2(x4, y4);
+                return true;
+            }
         }
 
-
+        // http://wiki.unity3d.com/index.php/ProceduralPrimitives
         public static  class meshes
         {
             public static  GameObject CreateGameObject(string prefix, DtBase data, out Mesh mesh)
@@ -3400,39 +3857,144 @@ namespace UnityFunctions
 
             #endregion
         }
-
-        public static  class point
+        public static class point
         {
             const float epsilon = 0.0000001f;
 
-            public static  void ToLocal(ref Vector3 worldPoint, ref Quaternion worldRotation, ref Vector3 worldPosition, out Vector3 localPoint)
+            public static bool IsInsideCapsule(
+                ref Vector3 point, ref Vector3 cpu, ref Vector3 cpd, double capsuleRadius)
+            {
+                var radius = (float)capsuleRadius;
+
+                Vector3 pointOnLine;
+                ProjectOnLine(ref point, ref cpu, ref cpd, out pointOnLine);
+                if (distance.Between(ref point, ref pointOnLine) > radius) return false;//point is too far from the projection
+
+                var downToUp = cpu - cpd;
+                var downToUpMag = downToUp.magnitude;
+                if (downToUpMag > 0.00001)
+                {
+                    var downToUpDir = downToUp/downToUpMag;
+                    var upTip = cpu + downToUpDir*radius;
+                    var dnTip = cpd - downToUpDir*radius;
+                    if (IsBetweenTwo(ref pointOnLine, ref upTip, ref dnTip))
+                    {
+                        return true;
+                    }
+                    return false;
+                }
+
+                return distance.Between(ref point, ref cpu) < radius;
+            }
+            public static float DistanceToLine(ref Vector3 point, ref Vector3 line1, ref Vector3 line2)
+            {
+                Vector3 proj;
+                ProjectOnLine(ref point, ref line1, ref line2, out proj);
+                return distance.Between(ref point, ref proj);
+            }
+//            public static void GetClosestBetweenLineAndDisk(
+//                ref Vector3 diskNormal, ref Vector3 diskCenter, double diskRadius, 
+//                ref Vector3 line1, ref Vector3 line2, out Vector3 closestOnDisk, out Vector3 closestOnLine)
+//            {
+//                ProjectOnLine(ref diskCenter, ref  line1, ref line2, out closestOnLine);
+//                Vector3 diskCenOnLineProj;
+//                ProjectOnPlane(ref closestOnLine, ref diskNormal, ref diskCenter, out diskCenOnLineProj);
+//                var distSqrToCen = distanceSquared.Between(ref diskCenOnLineProj, ref diskCenter);
+//                if(distSqrToCen < (diskRadius*diskRadius))
+//                {
+//                    closestOnDisk = diskCenOnLineProj;
+//                    return;
+//                }
+//                closestOnDisk = diskCenter.MoveTowards(ref diskCenOnLineProj, diskRadius);
+//            }
+            public static LinePlaneRel GetClosestBetweenLineSegmentAndPlane(
+                ref Vector3 planeNormal, ref Vector3 planePoint, 
+                ref Vector3 line1, ref Vector3 line2, out Vector3 closestOnPlane, out Vector3 closestOnLine)
+            {
+                var isAbove1 = IsAbovePlane(ref line1, ref planeNormal, ref planePoint);
+                var isAbove2 = IsAbovePlane(ref line2, ref planeNormal, ref planePoint);
+                var result = 
+                    isAbove1 == isAbove2 
+                        ? (isAbove1 ? LinePlaneRel.Above : LinePlaneRel.Below)
+                        : LinePlaneRel.Cross;
+                if(result == LinePlaneRel.Cross)
+                {
+                    intersection.BetweenLineSegmentAndPlane(ref line1, ref line2, ref planeNormal, ref planePoint, out closestOnPlane);
+                    closestOnLine = closestOnPlane;
+                    return result;
+                }
+                var d1 = DistanceToPlane(ref line1, ref planeNormal, ref planePoint);
+                var d2 = DistanceToPlane(ref line2, ref planeNormal, ref planePoint);
+
+                if(abs(d1-d2) < 0.00001)
+                {
+                    closestOnLine = IsFirstCloser(ref line1, ref line2, ref planePoint) ? line1 : line2; 
+                }
+                else
+                {
+                    closestOnLine = d1 > d2 ? line1 : line2;  
+                }
+                
+                ProjectOnPlane(ref closestOnLine, ref planeNormal, ref planePoint, out closestOnPlane);
+
+                return result;
+            }
+
+            public static LinePlaneRel GetClosestBetweenLineSegmentAndPlane(
+                ref Vector3 planeNormal, ref Vector3 planePoint, 
+                ref Vector3 line1, ref Vector3 line2, out float distBetweenClosest, out Vector3 closestOnPlane, out Vector3 closestOnLine)
+            {
+                var isAbove1 = IsAbovePlane(ref line1, ref planeNormal, ref planePoint);
+                var isAbove2 = IsAbovePlane(ref line2, ref planeNormal, ref planePoint);
+                var result = 
+                    isAbove1 == isAbove2 
+                        ? (isAbove1 ? LinePlaneRel.Above : LinePlaneRel.Below)
+                        : LinePlaneRel.Cross;
+                if(result == LinePlaneRel.Cross)
+                {
+                    intersection.BetweenLineSegmentAndPlane(ref line1, ref line2, ref planeNormal, ref planePoint, out closestOnPlane);
+                    closestOnLine = closestOnPlane;
+                    distBetweenClosest = 0;
+                    return result;
+                }
+                var d1 = DistanceToPlane(ref line1, ref planeNormal, ref planePoint);
+                var d2 = DistanceToPlane(ref line2, ref planeNormal, ref planePoint);
+
+                closestOnLine = d1 < d2 ? line1 : line2;
+                distBetweenClosest = min(d1, d2);
+                ProjectOnPlane(ref closestOnLine, ref planeNormal, ref planePoint, out closestOnPlane);
+
+                return result;
+            }
+
+            public static void ToLocal(ref Vector3 worldPoint, ref Quaternion worldRotation, ref Vector3 worldPosition, out Vector3 localPoint)
             {
                 localPoint = Quaternion.Inverse(worldRotation)*(worldPoint - worldPosition);
             }
-            public static  Vector3 ToLocal(ref Vector3 worldPoint, ref Quaternion worldRotation, ref Vector3 worldPosition)
+            public static Vector3 ToLocal(ref Vector3 worldPoint, ref Quaternion worldRotation, ref Vector3 worldPosition)
             {
                 return Quaternion.Inverse(worldRotation)*(worldPoint - worldPosition);
             }
-            public static  Vector3 ToLocal(Vector3 worldPoint, Quaternion worldRotation, Vector3 worldPosition)
+            public static Vector3 ToLocal(Vector3 worldPoint, Quaternion worldRotation, Vector3 worldPosition)
             {
                 return Quaternion.Inverse(worldRotation)*(worldPoint - worldPosition);
             }
 
 
-            public static  void ToWorld(ref Vector3 localPoint, ref Quaternion worldRotation, ref Vector3 worldPosition, out Vector3 worldPoint)
+            public static void ToWorld(ref Vector3 localPoint, ref Quaternion worldRotation, ref Vector3 worldPosition, out Vector3 worldPoint)
             {
                 worldPoint = worldRotation * localPoint + worldPosition;
             }
-            public static  Vector3 ToWorld(ref Vector3 localPoint, ref Quaternion worldRotation, ref Vector3 worldPosition)
+            public static Vector3 ToWorld(ref Vector3 localPoint, ref Quaternion worldRotation, ref Vector3 worldPosition)
             {
                 return worldRotation * localPoint + worldPosition;
             }
-            public static  Vector3 ToWorld(Vector3 localPoint, Quaternion worldRotation, Vector3 worldPosition)
+            public static Vector3 ToWorld(Vector3 localPoint, Quaternion worldRotation, Vector3 worldPosition)
             {
                 return worldRotation * localPoint + worldPosition;
             }
 
-            public static  bool IsOn2DSegment(ref Vector2 segStart, ref Vector2 point, ref Vector2 segEnd)
+            public static bool IsOn2DSegment(ref Vector2 segStart, ref Vector2 point, ref Vector2 segEnd)
             {
                 if (point.x <= max(segStart.x, segEnd.x)+epsilon && 
                     point.x >= min(segStart.x, segEnd.x)-epsilon && 
@@ -3443,7 +4005,7 @@ namespace UnityFunctions
                 return false;
             }
 
-            public static  bool IsOnSegment(ref Vector3 segStart, ref Vector3 point, ref Vector3 segEnd)
+            public static bool IsOnSegment(ref Vector3 segStart, ref Vector3 point, ref Vector3 segEnd)
             {
                 if (point.x <= max(segStart.x, segEnd.x)+epsilon && 
                     point.x >= min(segStart.x, segEnd.x)-epsilon && 
@@ -3456,7 +4018,7 @@ namespace UnityFunctions
                 return false;
             }
 
-            public static  bool ClosestOnLineSegment(ref Vector3 p, ref Vector3 line1, ref Vector3 line2, out Vector3 closest)
+            public static bool ClosestOnLineSegment(ref Vector3 p, ref Vector3 line1, ref Vector3 line2, out Vector3 closest)
             {
                 point.ProjectOnLine(ref p, ref line1, ref line2, out closest);
                 if (!IsOnSegment(ref line1, ref closest, ref line2))
@@ -3468,7 +4030,7 @@ namespace UnityFunctions
                 }
                 return true;
             }
-            public static  void ClosestOnTwoLineSegments(
+            public static void ClosestOnTwoLineSegments(
                 ref Vector3 line1p1, ref Vector3 line1p2, 
                 ref Vector3 line2p1, ref Vector3 line2p2, 
                 out Vector3 closestPointLine1, out Vector3 closestPointLine2)
@@ -3476,7 +4038,7 @@ namespace UnityFunctions
                 var dir1 = (line1p2 - line1p1).normalized;
                 var dir2 = (line2p2 - line2p1).normalized;
 
-                ClosestOnTwoLines(
+                ClosestOnTwoLinesByPointAndDirection(
                         ref line1p1, ref dir1, ref line2p1, ref dir2, 
                         out closestPointLine1, out closestPointLine2);
 
@@ -3546,7 +4108,9 @@ namespace UnityFunctions
                 }
             }
             // if the lines are parallel then any point is closest so we return false
-	        public static  bool ClosestOnTwoLines(ref Vector3 line1p1, ref Vector3 line1Direction, ref Vector3 line2p1, ref Vector3 line2Direction, out Vector3 closestPointLine1, out Vector3 closestPointLine2)
+	        public static bool ClosestOnTwoLinesByPointAndDirection(
+                ref Vector3 line1p1, ref Vector3 line1Direction, ref Vector3 line2p1, ref Vector3 line2Direction, 
+                out Vector3 closestPointLine1, out Vector3 closestPointLine2)
 	        {
 
                 var a = dot.Product(ref line1Direction, ref line1Direction);
@@ -3574,58 +4138,130 @@ namespace UnityFunctions
 	            point.ProjectOnLine(ref line1p1, ref line2p1, ref line2p2, out closestPointLine2);
                 return false;
 	        }
-            public static  bool IsLeftOfLine2D(ref Vector2 point, ref Vector2 linePoint1, ref Vector2 linePoint2)
+
+            public static bool ClosestOnTwoLinesByPoints(
+                ref Vector3 line1p1, ref Vector3 line1p2, ref Vector3 line2p1, ref Vector3 line2p2, 
+                out Vector3 closestPointLine1, out Vector3 closestPointLine2)
+            {
+                var line1Direction = (line1p2 - line1p1).normalized;
+                var line2Direction = (line2p2 - line2p1).normalized;
+
+                return ClosestOnTwoLinesByPointAndDirection(
+                    ref line1p1, ref line1Direction, 
+                    ref line2p1, ref line2Direction, 
+                    out closestPointLine1, out closestPointLine2);
+	        }
+
+            
+
+            public static bool IsLeftOfLine2D(ref Vector2 point, ref Vector2 linePoint1, ref Vector2 linePoint2)
             {
                 return ((linePoint2.x - linePoint1.x)*(point.y - linePoint1.y) - (linePoint2.y - linePoint1.y)*(point.x - linePoint1.x)) > 0;
             }
-            public static  bool IsLeftOfLine2D(Vector2 point, Vector2 linePoint1, Vector2 linePoint2)
+            public static bool IsLeftOfLine2D(Vector2 point, Vector2 linePoint1, Vector2 linePoint2)
             {
                 return ((linePoint2.x - linePoint1.x)*(point.y - linePoint1.y) - (linePoint2.y - linePoint1.y)*(point.x - linePoint1.x)) > 0;
             }
-            public static  bool IsAbovePlane(ref Vector3 point, ref Vector3 planeNormal, ref Vector3 planePoint)
+            public static bool IsAbovePlane(ref Vector3 point, ref Vector3 planeNormal, ref Vector3 planePoint)
             {
-                var vectorToPlane = point - planePoint;
+                var vectorToPlane = (point - planePoint).normalized;
                 var distance = -dot.Product(ref vectorToPlane, ref planeNormal);
                 return distance < 0;
             }
-            public static  bool IsAbovePlane(Vector3 point, Vector3 planeNormal, Vector3 planePoint)
+            public static bool IsAbovePlane(Vector3 point, Vector3 planeNormal, Vector3 planePoint)
             {
-                var vectorToPlane = point - planePoint;
+                var vectorToPlane = (point - planePoint).normalized;
                 var distance = -dot.Product(ref vectorToPlane, ref planeNormal);
                 return distance < 0;
             }
-            public static  bool IsAbovePlane(ref Vector3 point, ref Vector3 planeNormal)
+            public static bool IsAbovePlane(ref Vector3 point, ref Vector3 planeNormal)
             {
-                var zero = Vector3.zero;
-                return IsAbovePlane(ref point, ref planeNormal, ref zero);
+                var v3 = Vector3.zero;
+                return IsAbovePlane(ref point, ref planeNormal, ref v3);
             }
-            public static  bool IsAbovePlane(Vector3 point, Vector3 planeNormal)
+            public static bool IsAbovePlane(Vector3 point, Vector3 planeNormal)
             {
-                var zero = Vector3.zero;
-                return IsAbovePlane(ref point, ref planeNormal, ref zero);
+                var v3 = Vector3.zero;
+                return IsAbovePlane(ref point, ref planeNormal, ref v3);
             }
-            public static  Vector3 ProjectOnPlane(ref Vector3 point, ref Vector3 planeNormal, ref Vector3 planePoint)
+
+
+            public static bool IsBelowPlane(Vector3 point, Vector3 planeNormal, Vector3 planePoint)
             {
-                planeNormal = planeNormal.normalized;
+                var vectorToPlane = (point - planePoint).normalized;
+                var distance = -dot.Product(ref vectorToPlane, ref planeNormal);
+                return distance > 0;
+            }
+            public static bool IsBelowPlane(ref Vector3 point, ref Vector3 planeNormal, ref Vector3 planePoint)
+            {
+                var vectorToPlane = (point - planePoint).normalized;
+                var distance = -dot.Product(ref vectorToPlane, ref planeNormal);
+                return distance > 0;
+            }
+            public static bool IsBelowPlane(ref Vector3 point, ref Vector3 planeNormal)
+            {
+                var v3 = Vector3.zero;
+                return IsBelowPlane(ref point, ref planeNormal, ref v3);
+            }
+            public static bool IsBelowPlane(Vector3 point, Vector3 planeNormal)
+            {
+                var v3 = Vector3.zero;
+                return IsBelowPlane(ref point, ref planeNormal, ref v3);
+            }
+
+
+            public static bool AreOnSameSidesOfPlane(ref Vector3 point1, ref Vector3 point2, ref Vector3 planeNormal, ref Vector3 planePoint)
+            {
+                return IsAbovePlane(ref point1, ref planeNormal, ref planePoint) == IsAbovePlane(ref point2, ref planeNormal, ref planePoint);
+            }
+
+            public static float DistanceToPlane(ref Vector3 point, ref Vector3 planeNormal, ref Vector3 planePoint)
+            {
+                var vectorToPlane = point - planePoint;
+                var distance = dot.Product(ref planeNormal, ref vectorToPlane);
+                return abs(distance);
+            }
+            public static float DistanceToPlane(Vector3 point, Vector3 planeNormal, Vector3 planePoint)
+            {
+                var vectorToPlane = point - planePoint;
+                var distance = dot.Product(ref planeNormal, ref vectorToPlane);
+                return abs(distance);
+            }
+
+            public static bool IsFirstCloser(ref Vector3 first, ref Vector3 second, ref Vector3 reference)
+            {
+                var d1 = distanceSquared.Between(ref first, ref reference);
+                var d2 = distanceSquared.Between(ref second, ref reference);
+                return d1 < d2;
+            }
+            public static bool IsFirstCloser(Vector3 first, Vector3 second, Vector3 reference)
+            {
+                var d1 = distanceSquared.Between(ref first, ref reference);
+                var d2 = distanceSquared.Between(ref second, ref reference);
+                return d1 < d2;
+            }
+
+            public static Vector3 ProjectOnPlane(ref Vector3 point, ref Vector3 planeNormal, ref Vector3 planePoint)
+            {
                 var vectorToPlane = point - planePoint;
                 var distance = -dot.Product(ref planeNormal, ref vectorToPlane);
                 return point + planeNormal * distance;
             }
-            public static  void ProjectOnPlane(ref Vector3 point, ref Vector3 planeNormal, ref Vector3 planePoint, out Vector3 projection)
+            public static void ProjectOnPlane(ref Vector3 point, ref Vector3 planeNormal, ref Vector3 planePoint, out Vector3 projection)
             {
                 planeNormal = planeNormal.normalized;
                 var vectorToPlane = point - planePoint;
                 var distance = -dot.Product(ref planeNormal, ref vectorToPlane);
                 projection = point + planeNormal * distance;
             }
-            public static  Vector3 ProjectOnPlane(Vector3 point, Vector3 planeNormal, Vector3 planePoint)
+            public static Vector3 ProjectOnPlane(Vector3 point, Vector3 planeNormal, Vector3 planePoint)
             {
                 planeNormal = planeNormal.normalized;
                 var vectorToPlane = point - planePoint;
                 var distance = -dot.Product(ref planeNormal, ref vectorToPlane);
                 return point + planeNormal * distance;
             }
-            public static  Vector3 ProjectOnLine(Vector3 point, Vector3 line1, Vector3 line2)
+            public static Vector3 ProjectOnLine(Vector3 point, Vector3 line1, Vector3 line2)
             {
                 var pointToLine = point - line1;
                 var lineVector = line2 - line1;
@@ -3633,7 +4269,7 @@ namespace UnityFunctions
                 vector.ProjectOnNormal(ref pointToLine, ref lineVector, out onNormal);
                 return onNormal + line1;
             }
-            public static  Vector3 ProjectOnLine(ref Vector3 point, ref Vector3 line1, ref Vector3 line2)
+            public static Vector3 ProjectOnLine(ref Vector3 point, ref Vector3 line1, ref Vector3 line2)
             {
                 var pointToLine = point - line1;
                 var lineVector = line2 - line1;
@@ -3641,7 +4277,7 @@ namespace UnityFunctions
                 vector.ProjectOnNormal(ref pointToLine, ref lineVector, out onNormal);
                 return onNormal + line1;
             }
-            public static  void ProjectOnLine(ref Vector3 point, ref Vector3 line1, ref Vector3 line2, out Vector3 projection)
+            public static void ProjectOnLine(ref Vector3 point, ref Vector3 line1, ref Vector3 line2, out Vector3 projection)
             {
                 var pointToLine = point - line1;
                 var lineVector = line2 - line1;
@@ -3649,7 +4285,7 @@ namespace UnityFunctions
                 vector.ProjectOnNormal(ref pointToLine, ref lineVector, out onNormal);
                 projection = onNormal + line1;
             }
-            public static  bool TryProjectOnLineSegment(ref Vector3 point, ref Vector3 line1, ref Vector3 line2, out Vector3 projection)
+            public static bool TryProjectOnLineSegment(ref Vector3 point, ref Vector3 line1, ref Vector3 line2, out Vector3 projection)
             {
                 var pointToLine = point - line1;
                 var lineVector = line2 - line1;
@@ -3663,6 +4299,7 @@ namespace UnityFunctions
                 }
                 return true;
             }
+
             public static void ProjectOnLineSegmentOrGetClosest(ref Vector3 point, ref Vector3 line1, ref Vector3 line2, out Vector3 projection)
             {
                 var pointToLine = point - line1;
@@ -3677,15 +4314,14 @@ namespace UnityFunctions
                     projection = d1 < d2 ? line1 : line2;
                 }
             }
-            public static  void ProjectOnLine2D(ref Vector2 point, ref Vector2 linePoint1, ref Vector2 linePoint2, out Vector2 result)
+            public static void ProjectOnLine2D(ref Vector2 point, ref Vector2 linePoint1, ref Vector2 linePoint2, out Vector2 result)
             {
                 var line = linePoint1 - linePoint2;
                 var newPoint = point - linePoint2;
 
-                result = ((dot.Product(ref newPoint, ref line)/dot.Product(ref line, ref line))*line)  + linePoint2;
-
+                result = ((dot.Product2D(ref newPoint, ref line)/dot.Product2D(ref line, ref line))*line)  + linePoint2;
             }
-            public static  Vector3 ReflectOfPlane(Vector3 point, Vector3 planeNormal, Vector3 planePoint)
+            public static Vector3 ReflectOfPlane(Vector3 point, Vector3 planeNormal, Vector3 planePoint)
             {
                 Vector3 projection;
                 ProjectOnPlane(ref point, ref planeNormal, ref planePoint, out projection);
@@ -3694,7 +4330,7 @@ namespace UnityFunctions
                 fun.point.TryMoveAbs(ref point, ref projection, distance*2, out mirrorPoint);
                 return mirrorPoint;
             }
-            public static  Vector3 ReflectOfPlane(ref Vector3 point, ref Vector3 planeNormal, ref Vector3 planePoint)
+            public static Vector3 ReflectOfPlane(ref Vector3 point, ref Vector3 planeNormal, ref Vector3 planePoint)
             {
                 Vector3 projection;
                 ProjectOnPlane(ref point, ref planeNormal, ref planePoint, out projection);
@@ -3703,7 +4339,7 @@ namespace UnityFunctions
                 fun.point.TryMoveAbs(ref point, ref projection, distance*2, out mirrorPoint);
                 return mirrorPoint;
             }
-            public static  void ReflectOfPlane(ref Vector3 point, ref Vector3 planeNormal, ref Vector3 planePoint, out Vector3 mirrorPoint)
+            public static void ReflectOfPlane(ref Vector3 point, ref Vector3 planeNormal, ref Vector3 planePoint, out Vector3 mirrorPoint)
             {
                 Vector3 projection;
                 ProjectOnPlane(ref point, ref planeNormal, ref planePoint, out projection);
@@ -3711,7 +4347,10 @@ namespace UnityFunctions
                 fun.point.TryMoveAbs(ref point, ref projection, distance*2, out mirrorPoint);
             }
 
-            public static  Vector3 GetNormal(Vector3 p1, Vector3 p2,  Vector3 p3)
+            /// <summary>
+            /// if you are looking from above the normal: counter clockwise
+            /// </summary>
+            public static Vector3 GetNormal(Vector3 p1, Vector3 p2,  Vector3 p3)
             {
                 var lhs = p1 - p2;
                 var rhs = p3 - p2;
@@ -3719,16 +4358,19 @@ namespace UnityFunctions
                 vector.GetNormal(ref lhs, ref rhs, out r);
                 return r;
             }
-            public static  void GetNormal(ref Vector3 p1, ref Vector3 p2, ref Vector3 p3, out Vector3 r)
+            /// <summary>
+            /// if you are looking from above the normal: counter clockwise
+            /// </summary>
+            public static void GetNormal(ref Vector3 p1, ref Vector3 p2, ref Vector3 p3, out Vector3 r)
             {
                 var lhs = p1 - p2;
                 var rhs = p3 - p2;
                 vector.GetNormal(ref lhs, ref rhs, out r);
             }
-            public static  Vector2 MoveRel2D(Vector2 from, Vector2 to, double ratio)
+            public static Vector2 MoveRel2D(Vector2 from, Vector2 to, double ratio)
             {
                 var r = (float) ratio;
-                if (r < 0.0000001 && r > -0.0000001)
+                if (r.IsEqual(0))
                 {
                     return from;
                 }
@@ -3738,10 +4380,10 @@ namespace UnityFunctions
                                 y = from.y + (to.y - from.y) * r
                             };
             }
-            public static  Vector2 MoveRel2D(ref Vector2 from, ref Vector2 to, double ratio)
+            public static Vector2 MoveRel2D(ref Vector2 from, ref Vector2 to, double ratio)
             {
                 var r = (float) ratio;
-                if (r < 0.0000001 && r > -0.0000001)
+                if (r.IsEqual(0))
                 {
                     return from;
                 }
@@ -3751,73 +4393,57 @@ namespace UnityFunctions
                                 y = from.y + (to.y - from.y) * r
                             };
             }
-            public static  Vector3 MoveRel(ref Vector3 from, ref Vector3 to, double ratio)
+            public static Vector3 MoveRel(ref Vector3 from, ref Vector3 to, double ratio)
             {
                 var r = (float) ratio;
-                if (r < 0.0000001 && r > -0.0000001)
+                if (r.IsEqual(0))
                 {
                     return from;
                 }
-                return new Vector3
-                {
-                    x = from.x + (to.x - from.x) * r,
-                    y = from.y + (to.y - from.y) * r,
-                    z = from.z + (to.z - from.z) * r
-                };
+                return new Vector3(from.x + (to.x - from.x) * r,from.y + (to.y - from.y) * r,from.z + (to.z - from.z) * r);
             }
-            public static  void MoveRel(ref Vector3 from, ref Vector3 to, double ratio, out Vector3 result)
+            public static void MoveRel(ref Vector3 from, ref Vector3 to, double ratio, out Vector3 result)
             {
                 var r = (float) ratio;
-                if (r < 0.0000001 && r > -0.0000001)
+                if (r.IsEqual(0))
                 {
                     result = from;
                     return;
                 }
-                result = new Vector3
-                {
-                    x = from.x + (to.x - from.x) * r,
-                    y = from.y + (to.y - from.y) * r,
-                    z = from.z + (to.z - from.z) * r
-                };
+                result = new Vector3(from.x + (to.x - from.x) * r,from.y + (to.y - from.y) * r,from.z + (to.z - from.z) * r);
             }
-            public static  Vector3 MoveRel(Vector3 from, Vector3 to, double ratio)
+            public static Vector3 MoveRel(Vector3 from, Vector3 to, double ratio)
             {
                 var r = (float) ratio;
-                if (r < 0.0000001 && r > -0.0000001)
+                if (r.IsEqual(0))
                 {
                     return from;
                 }
-                return new Vector3
-                {
-                    x = from.x + (to.x - from.x) * r,
-                    y = from.y + (to.y - from.y) * r,
-                    z = from.z + (to.z - from.z) * r
-                };
+                return new Vector3(from.x + (to.x - from.x) * r,from.y + (to.y - from.y) * r,from.z + (to.z - from.z) * r);
             }
 
-            public static  Vector3 MoveRel(Vector3 from, Vector3 to, double ratio, 
+            public static Vector3 MoveRel(Vector3 from, Vector3 to, double ratio, 
                 Func<float,float> xFunc, Func<float,float> yFunc, Func<float,float> zFunc )
             {
                 var r = (float) ratio;
-                if (r < 0.0000001 && r > -0.0000001)
+                if (r.IsEqual(0))
                 {
                     return from;
                 }
                 if (xFunc == null) xFunc = n => n;
                 if (yFunc == null) yFunc = n => n;
                 if (zFunc == null) zFunc = n => n;
-                return new Vector3
-                {
-                    x = from.x + (to.x - from.x) * xFunc(r),
-                    y = from.y + (to.y - from.y) * yFunc(r),
-                    z = from.z + (to.z - from.z) * zFunc(r)
-                };
+                return new Vector3(
+                    from.x + (to.x - from.x) * xFunc(r),
+                    from.y + (to.y - from.y) * yFunc(r),
+                    from.z + (to.z - from.z) * zFunc(r)
+                );
             }
 
-            public static  bool TryMoveRel2D(ref Vector2 from, ref Vector2 to, double ratio, out Vector2 result)
+            public static bool TryMoveRel2D(ref Vector2 from, ref Vector2 to, double ratio, out Vector2 result)
             {
                 var r = (float) ratio;
-                if (r < 0.0000001 && r > -0.0000001)
+                if (r.IsEqual(0))
                 {
                     result = from;
                     return false;
@@ -3829,10 +4455,10 @@ namespace UnityFunctions
                 };
                 return true;
             }
-            public static  bool TryMoveRel(ref Vector3 from, ref Vector3 to, double ratio, out Vector3 result)
+            public static bool TryMoveRel(ref Vector3 from, ref Vector3 to, double ratio, out Vector3 result)
             {
                 var r = (float) ratio;
-                if (r < 0.0000001 && r > -0.0000001)
+                if (r.IsEqual(0))
                 {
                     result = from;
                     return false;
@@ -3845,9 +4471,9 @@ namespace UnityFunctions
                 };
                 return true;
             }
-            public static  bool TryMoveAbs(float fromX, float fromY, float toX, float toY, double distance, out float x, out float y)
+            public static bool TryMoveAbs(float fromX, float fromY, float toX, float toY, double distance, out float x, out float y)
             {
-                if (distance < 0.0000001 && distance > -0.0000001)
+                if (((float)distance).IsEqual(0))
                 {
                     x = fromX;
                     y = fromY;
@@ -3856,7 +4482,7 @@ namespace UnityFunctions
 
                 var preDistance = fun.distance.Between(fromX, fromY, toX, toY);
 
-                if (preDistance < 0.0000001 && preDistance > -0.0000001)
+                if (preDistance.IsEqual(0))
                 {
                     x = toX;
                     y = toY;
@@ -3868,9 +4494,9 @@ namespace UnityFunctions
                 y = fromY + (toY - fromY)*amount;
                 return true;
             }
-            public static  bool TryMoveAbs2D(ref Vector2 from, ref Vector2 to, double distance, out Vector2 result)
+            public static bool TryMoveAbs2D(ref Vector2 from, ref Vector2 to, double distance, out Vector2 result)
             {
-                if (distance < 0.0000001 && distance > -0.0000001)
+                if (((float)distance).IsEqual(0))
                 {
                     result = from;
                     return false;
@@ -3878,7 +4504,7 @@ namespace UnityFunctions
 
                 var preDistance = fun.distance.Between(ref from, ref to);
 
-                if (preDistance < 0.0000001 && preDistance > -0.0000001)
+                if (preDistance.IsEqual(0))
                 {
                     result = to;
                     return false;
@@ -3892,107 +4518,114 @@ namespace UnityFunctions
                 };
                 return true;
             }
-            public static  bool TryMoveAbs(ref Vector3 from, ref Vector3 to, double distance, out Vector3 result)
+            public static bool TryMoveAbs(ref Vector3 from, ref Vector3 to, double distance, out Vector3 result)
             {
-                if (distance < 0.0000001 && distance > -0.0000001)
+                if (((float)distance).IsEqual(0))
                 {
                     result = from;
                     return false;
                 }
 
                 var dir = (to - from);
-
-                if (dir.magnitude < 0.00001)
+                var mag = vector.Magnitude(ref dir);
+                if (mag < 0.00001)
                 {
                     result = to;
                     return false;
                 }
-
-                dir = dir.normalized;
+                dir = dir/mag;
 
                 result = from + dir*(float)distance;
                 return true;
             }
-            public static  Vector2 MoveAbs2D(Vector2 from, Vector2 to, double distance)
+            public static Vector2 MoveAbs2D(Vector2 from, Vector2 to, double distance)
             {
-                if (distance < 0.0000001 && distance > -0.0000001)
+                if (((float)distance).IsEqual(0))
                 {
                     return from;
                 }
 
                 var dir = (to - from);
+                var mag = vector.Magnitude2D(ref dir);
+                if (mag < 0.00001) return to;
 
-                if (dir.magnitude < 0.00001) return to;
-
-                dir = dir.normalized;
+                dir = dir/mag;
 
                 return from + dir*(float)distance;
             }
-            public static  Vector3 MoveAbs(Vector3 from, Vector3 to, double distance)
+            public static Vector3 MoveAbs(Vector3 from, Vector3 to, double distance)
             {
-                if (distance < 0.0000001 && distance > -0.0000001)
+                if (((float)distance).IsEqual(0))
                 {
                     return from;
                 }
 
                 var dir = (to - from);
-
-                if (dir.magnitude < 0.00001) return to;
-
-                dir = dir.normalized;
+                var mag = vector.Magnitude(ref dir);
+                if (mag < 0.00001)
+                {
+                    return to;
+                }
+                dir = dir/mag;
 
                 return from + dir*(float)distance;
             }
-            public static  Vector3 MoveAbs(ref Vector3 from, ref Vector3 to, float distance)
+            public static Vector3 MoveAbs(ref Vector3 from, ref Vector3 to, double distance)
             {
-                if (distance < 0.0000001 && distance > -0.0000001)
+                if (((float)distance).IsEqual(0))
                 {
                     return from;
                 }
 
                 var dir = (to - from);
+                var mag = vector.Magnitude(ref dir);
+                if (mag < 0.00001)
+                {
+                    return to;
+                }
+                dir = dir/mag;
 
-                if (dir.magnitude < 0.00001) return to;
-
-                dir = dir.normalized;
-
-                return from + dir*distance;
+                return from + dir*(float)distance;
             }
-            public static  void MoveAbs(ref Vector3 from, ref Vector3 to, float distance, out Vector3 result)
+            public static bool MoveAbs(ref Vector3 from, ref Vector3 to, double distance, out Vector3 result)
             {
-                if (distance < 0.0000001 && distance > -0.0000001)
+                if (((float)distance).IsEqual(0))
                 {
                     result = from;
-                    return;
+                    return false;
                 }
 
                 var dir = (to - from);
-
-                if (dir.magnitude < 0.00001)
+                var mag = vector.Magnitude(ref dir);
+                if (mag < 0.00001)
                 {
                     result = to;
-                    return;
+                    return false;
                 }
+                dir = dir/mag;
 
-                dir = dir.normalized;
-
-                result = from + dir*distance;
+                result = from + dir*(float)distance;
+                return true;
             }
 
-            public static  Vector2 Middle(Vector2 a, Vector2 b)
+            public static Vector2 Middle2D(Vector2 a, Vector2 b)
             {
                 return new Vector2((b.x - a.x)*0.5f+a.x, (b.y - a.y)*0.5f+a.y);
             }
-            public static  void Middle(ref Vector2 a, ref Vector2 b, out Vector2 output)
+            public static void Middle2D(ref Vector2 a, ref Vector2 b, out Vector2 output)
             {
                 output = new Vector2((b.x - a.x)*0.5f+a.x, (b.y - a.y)*0.5f+a.y);
             }
-            public static  void Middle(ref Vector3 a, ref Vector3 b, out Vector3 output)
+            public static Vector3 Middle(Vector3 a, Vector3 b)
+            {
+                return new Vector3((b.x - a.x)*0.5f+a.x, (b.y - a.y)*0.5f+a.y, (b.z - a.z)*0.5f+a.z);
+            }
+            public static void Middle(ref Vector3 a, ref Vector3 b, out Vector3 output)
             {
                 output = new Vector3((b.x - a.x)*0.5f+a.x, (b.y - a.y)*0.5f+a.y, (b.z - a.z)*0.5f+a.z);
             }
 
-            public static  void EnforceWithin(ref Vector2 current, ref Vector2 start, ref Vector2 end)
+            public static void EnforceWithin(ref Vector2 current, ref Vector2 start, ref Vector2 end)
             {
                 var isWithin =
                     current.x <= max(start.x, end.x) + epsilon && current.x >= min(start.x, end.x) - epsilon &&
@@ -4006,11 +4639,77 @@ namespace UnityFunctions
                     current = dSq1 < dSq2 ? start : end;
                 }
             }
+
+            public static void GetPlaneNormalOfTheSideOf(ref Vector3 planeNormal, ref Vector3 planeCenter, ref Vector3 point, out Vector3 planeNormalOfTheSideOfPoint)
+            {
+                var toPoint = (point - planeCenter).normalized;
+                planeNormal.Normalize();
+
+                var dp = dot.Product(ref toPoint, ref planeNormal);
+                if (dp > 0)
+                {
+                    planeNormalOfTheSideOfPoint = planeNormal;
+                }
+                else
+                {
+                    planeNormalOfTheSideOfPoint = -planeNormal;
+                }
+            }
+
+            
+            public static void LiftAboveTowards(ref Vector3 point, ref Vector3 planeNormal, ref Vector3 planePoint, ref Vector3 towardsPoint, double liftAmount, out Vector3 pointLifted)
+            {
+                var normal = IsAbovePlane(ref towardsPoint, ref planeNormal, ref planePoint) ? planeNormal : -planeNormal;
+                pointLifted = point + normal*(float)liftAmount;
+            }
+
+            public static bool IsBetweenTwo(ref Vector3 point, ref Vector3 limitA, ref Vector3 limitB)
+            {
+                var vec = limitA - limitB;
+                var normMag = vec.magnitude;
+                if (normMag < 0.00001)
+                {
+                    return false;
+                }
+                var normB = vec/normMag;
+                var normA = -normB;
+
+                return IsAbovePlane(ref point, ref normB, ref limitB) && IsAbovePlane(ref point, ref normA, ref limitA);
+            }
+
+            public static Vector3 MidAwayFromAxis(ref Vector3 point1, ref Vector3 point2, double awayMeters, ref Vector3 axis)
+            {
+                var v3 = Vector3.zero;
+                return MidAwayFromAxis(ref point1, ref point2, awayMeters, ref axis, ref v3);
+            }
+
+            public static Vector3 MidAwayFromAxis(ref Vector3 point1, ref Vector3 point2, double awayMeters, ref Vector3 axis, ref Vector3 axisPoint)
+            {
+                Vector3 mid;
+                MoveRel(ref point1, ref point2, 0.5, out mid);
+
+                Vector3 proj;
+                ProjectOnLine(ref mid, ref axisPoint, ref axis, out proj);
+
+                var dir = (mid - proj).normalized;
+
+                return mid + dir*(float)awayMeters;
+            }
+
+            public static bool IsFirstCloserToLine(ref Vector3 first, ref Vector3 second, ref Vector3 linePoint1, ref Vector3 linePoint2)
+            {
+                Vector3 firstOnLine, secondOnLine;
+                ProjectOnLine(ref first, ref linePoint1, ref linePoint2, out firstOnLine);
+                ProjectOnLine(ref second, ref linePoint1, ref linePoint2, out secondOnLine);
+
+                return distanceSquared.Between(ref first, ref firstOnLine) <
+                       distanceSquared.Between(ref second, ref secondOnLine);
+            }
         }
 
-        public static  class polygon
+        public static class polygon
         {
-            public static  bool IsPointWithin(Vector2 point, Vector2[] points)
+            public static bool IsPointWithin(Vector2 point, Vector2[] points)
             {
                 var result = false;
                 int curr;
@@ -4029,56 +4728,65 @@ namespace UnityFunctions
                 return result;
             }
         }
-
-        public static  class random
+        public static class random
         {
             private static readonly System.Random _rnd = new System.Random((int)(DateTime.UtcNow.Ticks%1000000000));
-            public static  float Between(double min, double max)
+            public static float Between(double min, double max)
             {
                 return Between((float)min, (float)max);
             }
             // probabilityDistribFunc => 0; would mean non altered probability, func [0-1]
-            public static  float Between(double min, double max, Func<double, double> probabilityDistribFunc)
+            public static float Between(double min, double max, Func<double, double> probabilityDistribFunc)
             {
                 return Between((float)min, (float)max, probabilityDistribFunc);
             }
-            public static  int Between(int min, int max)
+            public static int Between(int min, int max)
             {
                 return _rnd.Next(min, max + 1);
             }
-            public static  float Between(float min, float max)
+            public static float Between(float min, float max)
             {
                 var n = (float)_rnd.NextDouble();
                 return (max - min) * n + min;
             }
+            public static float number01 { get { return (float) _rnd.NextDouble(); } }
 
             // probabilityDistribFunc => 0; would mean non altered probability, func [0-1]
-            public static  float Between(float min, float max, Func<double, double> probabilityDistribFunc)
+            public static float Between(float min, float max, Func<double, double> probabilityDistribFunc)
             {
                 var nd = _rnd.NextDouble();
                 var n = (float)probabilityDistribFunc(nd);
                 var range = (max - min);
                 var candidate = range * n + min;
-                return Mathf.Clamp(candidate, min, max);
+                return candidate.Clamp(min, max);
             }
-            public static  T Of<T>(IList<T> arr)
+            public static T Of<T>(T a, T b)
+            {
+                return Bool(0.5) ? a : b;
+            }
+            public static T Of<T>(T a, T b, T c)
+            {
+                var n = number01;
+                return n <= 0.33333 ? a : n <= 0.66666 ? b : c;
+            }
+            public static T Of<T>(IList<T> arr)
             {
                 return arr[Index(arr.Count)];
             }
-            public static  T Of<T>(Func<double, double> probabilityDistribFunc, IList<T> arr)
+            public static T Of<T>(Func<double, double> probabilityDistribFunc, IList<T> arr)
             {
                 return arr[Index(arr.Count, probabilityDistribFunc)];
             }
-            public static  T Of<T>(params T[] arr)
+            public static T Of<T>(params T[] arr)
             {
                 return arr[Index(arr.Length)];
             }
-            public static  T Of<T>(Func<double, double> probabilityDistribFunc, params T[] arr)
+            public static T Of<T>(Func<double, double> probabilityDistribFunc, params T[] arr)
             {
                 return arr[Index(arr.Length)];
             }
 
-            public static  T OfExcept<T>(T[] arr, T except)
+            public static T OfExcept<T>(T[] arr, T except)
             {
                 T curr;
                 var i = 0;
@@ -4090,41 +4798,41 @@ namespace UnityFunctions
                 while (curr.Equals(except));
                 return curr;
             }
-            public static  T Between<T>(IList<T> arr, int exceptIndex)
+            public static T Between<T>(IList<T> arr, int exceptIndex)
             {
                 return arr[Index(arr.Count, exceptIndex)];
             }
-            public static  int Index(int count)
+            public static int Index(int count)
             {
                 return _rnd.Next(0, count);
             }
-            public static  int Index(int count, int exceptIndex)
+            public static int Index(int count, int exceptIndex)
             {
                 if (exceptIndex < 0 || exceptIndex >= count) return Index(count);
                 var i = Index(count - 1);
                 if (i >= exceptIndex) ++i;
                 return i;
             }
-            public static  int Index(int count, Func<double, double> probabilityDistribFunc)
+            public static int Index(int count, Func<double, double> probabilityDistribFunc)
             {
                 var nd = _rnd.NextDouble();
                 var n = (float)probabilityDistribFunc(nd);
                 var index = (int)Math.Round(count * n);
-                return Mathf.Clamp(index,0, count - 1);
+                return Mathf.Clamp(index, 0, count - 1);
             }
-            public static  bool Bool(double probability)
+            public static bool Bool(double probability)
             {
                 if (probability < 0.000001) return false;
                 if (probability > 0.999999) return true;
                 var n = (float)_rnd.NextDouble();
                 return n <= probability;
             }
-            public static  Vector2 V2(float x1, float y1, float x2, float y2)
+            public static Vector2 V2(float x1, float y1, float x2, float y2)
             {
                 return new Vector2(Between(x1, x2), Between(y1, y2));
             }
 
-            public static  Vector3 PointOnPlane(Vector3 position, Vector3 normal, float radius)
+            public static Vector3 PointOnPlane(Vector3 position, Vector3 normal, float radius)
             {
                 Vector3 randomPoint;
  
@@ -4140,7 +4848,7 @@ namespace UnityFunctions
                 return randomPoint;
             }
 
-            public static  void PointOnPlane(ref Vector3 position, ref Vector3 normal, float radius, out Vector3 result)
+            public static void PointOnPlane(ref Vector3 position, ref Vector3 normal, float radius, out Vector3 result)
             {
                 Vector3 randomPoint;
  
@@ -4155,11 +4863,35 @@ namespace UnityFunctions
        
                 result = randomPoint;
             }
+            public static bool TrySelectIndexNotInBit(int len, ref long mask, out int index)
+            {
+                if(len >= 64) throw new ArgumentException("The length of mask must be less than 32");
+                var numChecked = 0;
+                for (var i = 0; i < len; ++i)
+                {
+                    if ((mask & (1 << i)) > 0) ++numChecked;
+                }
+                var tempIndex = Between(0, len - numChecked);
+                var count = -1;
+                for (var i = 0; i < len; ++i)
+                {
+                    var curr = (long)1 << i;
+                    if ((curr & mask) == 0) ++count;
+                    if (count == tempIndex)
+                    {
+                        mask |= curr;
+                        index = i;
+                        return true;
+                    }
+                }
+                index = 0;
+                return false;
+            }
         }
 
-        public static  class rotate
+        public static class rotate
         {
-            public static  void AngleAndAxisToQuaternion(float degrees, ref Vector3 axis, out Quaternion quaternion)
+            public static void AngleAndAxisToQuaternion(float degrees, ref Vector3 axis, out Quaternion quaternion)
             {
                 var radians = degrees*DTR;
                 var s = (float)Math.Sin(radians/2f);
@@ -4169,8 +4901,10 @@ namespace UnityFunctions
                 var w = (float)Math.Cos(radians/2);
                 quaternion = new Quaternion(x, y, z, w);
             }
-
-            public static  void Vector(ref Vector3 vector, ref Vector3 aboutAxis, double degrees, out Vector3 result)
+            /// <summary>
+            /// If looking from axis up towards down the positive angle results in rotation clockwise
+            /// </summary>
+            public static void Vector(ref Vector3 vector, ref Vector3 aboutAxis, double degrees, out Vector3 result)
             {
                 //var rotation = Quaternion.AngleAxis(degrees, aboutAxis);
                 Quaternion rotation;
@@ -4195,7 +4929,28 @@ namespace UnityFunctions
                 result = vector3;
             }
 
-            public static  void PointAbout(ref Vector3 rotatePoint, ref Vector3 pivot, ref Vector3 aboutAxis, double degrees, out Vector3 result)
+            public static void Point2dAbout(ref Vector2 pointToRotate, ref Vector2 privotPoint, double degrees, out Vector2 result)
+            {
+                var s = sin(degrees*DTR);
+                var c = cos(degrees*DTR);
+
+                var px = pointToRotate.x;
+                var py = pointToRotate.y;
+
+                // translate point back to origin:
+                px -= privotPoint.x;
+                py -= privotPoint.y;
+
+                // rotate point
+                var xnew = px * c - py * s;
+                var ynew = px * s + py * c;
+
+                // translate point back:
+                px = xnew + privotPoint.x;
+                py = ynew + privotPoint.y;
+                result = new Vector2(px, py);
+            }
+            public static void PointAbout(ref Vector3 rotatePoint, ref Vector3 pivot, ref Vector3 aboutAxis, double degrees, out Vector3 result)
             {
                 var rotation = Quaternion.AngleAxis((float)degrees, aboutAxis);
 
@@ -4220,7 +4975,7 @@ namespace UnityFunctions
                 result = vector3 + pivot;
             }
 
-            public static  Vector3 PointAbout(ref Vector3 rotatePoint, ref Vector3 pivot, ref Vector3 aboutAxis, double degrees)
+            public static Vector3 PointAbout(ref Vector3 rotatePoint, ref Vector3 pivot, ref Vector3 aboutAxis, double degrees)
             {
                 var rotation = Quaternion.AngleAxis((float)degrees, aboutAxis);
 
@@ -4245,7 +5000,7 @@ namespace UnityFunctions
                 return vector3 + pivot;
             }
 
-            public static  void Vector(ref Vector3 vector, ref Vector3 aboutAxis, ref Quaternion rotation, out Vector3 result)
+            public static void Vector(ref Vector3 vector, ref Vector3 aboutAxis, ref Quaternion rotation, out Vector3 result)
             {
                 var num1 = rotation.x * 2f;
                 var num2 = rotation.y * 2f;
@@ -4266,7 +5021,7 @@ namespace UnityFunctions
                 result = vector3;
             }
 
-            public static  void PointAbout(ref Vector3 rotatePoint, ref Vector3 pivot, ref Vector3 aboutAxis, ref Quaternion rotation, out Vector3 result)
+            public static void PointAbout(ref Vector3 rotatePoint, ref Vector3 pivot, ref Vector3 aboutAxis, ref Quaternion rotation, out Vector3 result)
             {
                 var point = rotatePoint - pivot;
 
@@ -4290,26 +5045,26 @@ namespace UnityFunctions
             }
         }
 
-        public static  class statistics
+        public static class statistics
         {
             private const float epsilon = 0.00001f;
-            public static  Vector2 LerpAverageV2(Vector2 lastAverage, Vector2 current, int count)
+            public static Vector2 LerpAverageV2(Vector2 lastAverage, Vector2 current, int count)
             {
                 return (count <= 1) ? current : new Vector2(Average(lastAverage.x, current.x, count), Average(lastAverage.y, current.y, count));
             }
-            public static  Vector2 LerpAverageV2(ref Vector2 lastAverage, ref Vector2 current, int count)
+            public static Vector2 LerpAverageV2(ref Vector2 lastAverage, ref Vector2 current, int count)
             {
                 return (count <= 1) ? current : new Vector2(Average(lastAverage.x, current.x, count), Average(lastAverage.y, current.y, count));
             }
-            public static  Vector3 LerpAverage(Vector3 lastAverage, Vector3 current, int count)
+            public static Vector3 LerpAverage(Vector3 lastAverage, Vector3 current, int count)
             {
                 return (count <= 1) ? current : new Vector3(Average(lastAverage.x, current.x, count), Average(lastAverage.y, current.y, count), Average(lastAverage.z, current.z, count));
             }
-            public static  Vector3 LerpAverage(ref Vector3 lastAverage, ref Vector3 current, int count)
+            public static Vector3 LerpAverage(ref Vector3 lastAverage, ref Vector3 current, int count)
             {
                 return (count <= 1) ? current : new Vector3(Average(lastAverage.x, current.x, count), Average(lastAverage.y, current.y, count), Average(lastAverage.z, current.z, count));
             }
-            public static  Vector3 SlerpAverage(Vector3 lastAverage, Vector3 current, int count)
+            public static Vector3 SlerpAverage(Vector3 lastAverage, Vector3 current, int count)
             {
                 if (count <= 1) return current;
                 var lastAverageMag = lastAverage.magnitude;
@@ -4321,7 +5076,7 @@ namespace UnityFunctions
                 return Vector3.Slerp(lastAverage, current, 1/(float) count).normalized*
                        Average(lastAverageMag, currentMag, count);
             }
-            public static  Vector3 SlerpAverage(ref Vector3 lastAverage, ref Vector3 current, int count)
+            public static Vector3 SlerpAverage(ref Vector3 lastAverage, ref Vector3 current, int count)
             {
                 if (count <= 1) return current;
                 var lastAverageMag = lastAverage.magnitude;
@@ -4333,7 +5088,7 @@ namespace UnityFunctions
                 return Vector3.Slerp(lastAverage, current, 1/(float) count).normalized*
                        Average(lastAverageMag, currentMag, count);
             }
-            public static  Vector3 SlerpAverageFavorSameDirection(Vector3 lastAverage, Vector3 current, int count)
+            public static Vector3 SlerpAverageFavorSameDirection(Vector3 lastAverage, Vector3 current, int count)
             {
                 if (count <= 1) return current;
                 var lastAverageMag = lastAverage.magnitude;
@@ -4346,7 +5101,7 @@ namespace UnityFunctions
                 return Vector3.Slerp(lastAverage, current, 1/(float) count).normalized*
                        Average(lastAverageMag, currentMag, count);
             }
-            public static  Vector3 SlerpAverageFavorSameDirection(ref Vector3 lastAverage, ref Vector3 current, int count)
+            public static Vector3 SlerpAverageFavorSameDirection(ref Vector3 lastAverage, ref Vector3 current, int count)
             {
                 if (count <= 1) return current;
                 var lastAverageMag = lastAverage.magnitude;
@@ -4358,76 +5113,108 @@ namespace UnityFunctions
                 currentMag = currentMag * fun.dot.Product(ref lastAverage, ref current);
                 return Vector3.Slerp(lastAverage, current, 1/(float) count).normalized*
                        Average(lastAverageMag, currentMag, count);
+            }
+            public static Quaternion SlerpAverage(Quaternion lastAverage, Quaternion current, int count)
+            {
+                if (count <= 1) return current;
+                return Quaternion.Slerp(lastAverage, current, 1/(float) count);
+            }
+            public static Quaternion SlerpAverage(ref Quaternion lastAverage, ref Quaternion current, int count)
+            {
+                if (count <= 1) return current;
+                return Quaternion.Slerp(lastAverage, current, 1/(float) count);
             }
 
-            public static  Quaternion QuaternionAverageFavorSameDirection(Quaternion lastAverage, Quaternion current, int count)
-            {
-                if (count <= 1) return current;
-                float aAngle, bAngle;
-                Vector3 aAxis, bAxis;
-                lastAverage.ToAngleAxis(out aAngle, out aAxis);
-                current.ToAngleAxis(out bAngle, out bAxis);
-                var axis = SlerpAverageFavorSameDirection(ref aAxis, ref bAxis, count);
-                return Quaternion.AngleAxis(Average(aAngle,bAngle,count), axis);
-            }
-            public static  Quaternion QuaternionAverageFavorSameDirection(ref Quaternion lastAverage, ref Quaternion current, int count)
-            {
-                if (count <= 1) return current;
-                float aAngle, bAngle;
-                Vector3 aAxis, bAxis;
-                lastAverage.ToAngleAxis(out aAngle, out aAxis);
-                current.ToAngleAxis(out bAngle, out bAxis);
-                var axis = SlerpAverageFavorSameDirection(ref aAxis, ref bAxis, count);
-                return Quaternion.AngleAxis(Average(aAngle,bAngle,count), axis);
-            }
-            public static  float Average(double lastAverage, double current, int count)
+            public static float Average(double lastAverage, double current, int count)
             {
                 return (count <= 1.0f) ? (float)current : ((float)lastAverage * (count - 1.0f) + (float)current) / count;
             }
-            public static  float Average(float lastAverage, float current, int count)
+            public static float Average(float lastAverage, float current, int count)
             {
                 return (count <= 1.0f) ? current : (lastAverage * (count - 1.0f) + current) / count;
             }
-            public static  float PopulationVariance(double sumOfSquared, double sum, int count)
+            public static float PopulationVariance(double sumOfSquared, double sum, int count)
             {
                 if (count <= 0) return 0;
                 return ((float)sumOfSquared - (((float)sum * (float)sum) / count)) / count;
             }
-            public static  float PopulationStandardDeviation(double sumOfSquared, double sum, int count)
+            public static float PopulationStandardDeviation(double sumOfSquared, double sum, int count)
             {
                 return (count <= 1)
                         ? 0.0f
                         : (float)Math.Sqrt(PopulationVariance(sumOfSquared, sum, count));
             }
         }
-
-        public static  class triangle
+        public static class triangle
         {
-            public static  Vector3 GetCentroid(Vector3 a, Vector3 b, Vector3 c)
+            /* different tasks for any type of triangle 
+                   ^
+                  /C\  
+               a /   \ b
+                /B___A\
+                   c 
+            */
+
+            /* "we know sides:a,b,c what is angle C"
+                   ^
+                  /?\  
+               a /   \ b
+                /_____\
+                   c 
+                C = arccos((a*a + b*b - c*c) / 2*a*b)
+            */
+            public static float GetDegreesBySides(double a, double b, double c)
+            {
+                return (float)Math.Acos((a*a + b*b - c*c)/(2*a*b))*RTD; // http://mathworld.wolfram.com/LawofCosines.html
+            }
+            /* "we know sides:a,b AND angle:C what is side c"
+                   ^
+                  /C\  
+               a /   \ b
+                /_____\
+                   ? 
+                c	=	sqrt(a*a + b*b-2*a*b*cos(C))
+            */
+            public static float GetBaseByTwoSidesAndAngleBetween(double a, double b, double degreesC)
+            {
+                return (float)Math.Sqrt(a*a + b*b - 2*a*b*Math.Cos(degreesC*DTR)); // http://mathworld.wolfram.com/LawofCosines.html
+            }
+            /* "we know sides:a,b AND angle:A what is angle C"
+                   ^
+                  /?\  
+               a /   \ b
+                /____A\
+                   c 
+                C	=	180 - A - arcsin((b * sin(A)) / a)
+            */
+            public static float GetAngleDegreesByTwoSidesAndSideAngle(double a, double b, double degreesA)
+            {
+                return 180f - (float)degreesA - RTD*(float)Math.Asin((b * Math.Sin(degreesA*DTR)) / a); // https://www.mathsisfun.com/algebra/trig-sine-law.html
+            }
+            public static Vector3 GetCentroid(Vector3 a, Vector3 b, Vector3 c)
             {
                 return new Vector3((a.x+b.x+c.x)/3f,(a.y+b.y+c.y)/3f,(a.z+b.z+c.z)/3f);
             }
-            public static  Vector3 GetCentroid(ref Vector3 a, ref Vector3 b, ref Vector3 c)
+            public static Vector3 GetCentroid(ref Vector3 a, ref Vector3 b, ref Vector3 c)
             {
                 return new Vector3((a.x+b.x+c.x)/3f,(a.y+b.y+c.y)/3f,(a.z+b.z+c.z)/3f);
             }
-            public static  void GetCentroid(ref Vector3 a, ref Vector3 b, ref Vector3 c, out Vector3 output)
+            public static void GetCentroid(ref Vector3 a, ref Vector3 b, ref Vector3 c, out Vector3 output)
             {
                 output = new Vector3((a.x+b.x+c.x)/3f,(a.y+b.y+c.y)/3f,(a.z+b.z+c.z)/3f);
             }
-            public static  Vector2 GetCentroid2D(Vector2 a, Vector2 b, Vector2 c)
+            public static Vector2 GetCentroid2D(Vector2 a, Vector2 b, Vector2 c)
             {
                 return new Vector2((a.x+b.x+c.x)/3f,(a.y+b.y+c.y)/3f);
             }
-            public static  Vector2 GetCentroid2D(ref Vector2 a, ref Vector2 b, ref Vector2 c)
+            public static Vector2 GetCentroid2D(ref Vector2 a, ref Vector2 b, ref Vector2 c)
             {
                 return new Vector2((a.x+b.x+c.x)/3f,(a.y+b.y+c.y)/3f);
             }
-            public static  void GetCentroid2D(ref Vector2 a, ref Vector2 b, ref Vector2 c, out Vector2 centroid)
+            public static void GetCentroid2D(ref Vector2 a, ref Vector2 b, ref Vector2 c, out Vector2 centroid)
             {
                 centroid = new Vector2((a.x+b.x+c.x)/3f,(a.y+b.y+c.y)/3f);
             }
-
             /*
                ^
               /|\  
@@ -4436,7 +5223,7 @@ namespace UnityFunctions
                c
             height starts between sides a and b and falls info side c
             */
-            public static  float GetHeight(double a, double b, double c)
+            public static float GetHeight(double a, double b, double c)
             {
                 if (abs(c) < 0.000001) return (float)((a+b)/2);
                 var s = (a + b + c) / 2f;
@@ -4455,7 +5242,7 @@ namespace UnityFunctions
             ac^2 + h^2 = a^2
             bc^2 + h^2 = b^2
             */
-            public static  void GetBaseSubSides(double a, double b, double c, out float ac, out float bc)
+            public static void GetBaseSubSides(double a, double b, double c, out float ac, out float bc)
             {
                 var h = GetHeight(a, b, c);
                 ac = sqrt(a*a - h*h);
@@ -4472,12 +5259,26 @@ namespace UnityFunctions
             ac^2 + h^2 = a^2
             bc^2 + h^2 = b^2
             */
-            public static  float GetBaseSubSideAc(double a, double b, double c)
+            public static float GetBaseSubSideAc(double a, double b, double c)
             {
                 var h = GetHeight(a, b, c);
                 return sqrt(a*a - h*h);
             }
-            public static  bool IsPointInside(Vector2 point, Vector2 t1, Vector2 t2, Vector2 t3)
+
+            /*
+               ^
+              /D\  
+             / |h\
+            /__|__\
+            baseLen
+
+            D = 180 - 2*arctan(2h/baseLen)*radians_to_degrees
+            */
+            public static float GetInIsoscelesDegreesByBaseAndHeight(double baseLen, double height)
+            {
+                return 180f - (float)(2*Math.Atan((2*height)/baseLen)*RTD);
+            }
+            public static bool IsPointInside(Vector2 point, Vector2 t1, Vector2 t2, Vector2 t3)
             {
                 var b1 = Sign3(ref point, ref t1, ref t2) < 0.0f;
                 var b2 = Sign3(ref point, ref t2, ref t3) < 0.0f;
@@ -4485,7 +5286,7 @@ namespace UnityFunctions
 
                 return (b1 == b2) && (b2 == b3);
             }
-            public static  bool IsPointInside(ref Vector2 point, ref Vector2 t1, ref Vector2 t2, ref Vector2 t3)
+            public static bool IsPointInside(ref Vector2 point, ref Vector2 t1, ref Vector2 t2, ref Vector2 t3)
             {
                 var b1 = Sign3(ref point, ref t1, ref t2) < 0.0f;
                 var b2 = Sign3(ref point, ref t2, ref t3) < 0.0f;
@@ -4497,13 +5298,11 @@ namespace UnityFunctions
             {
                 return (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y);
             }
-
-
-            public static  bool Overlap(Vector3 t1p1, Vector3 t1p2, Vector3 t1p3, Vector3 t2p1, Vector3 t2p2, Vector3 t2p3)
+            public static bool Overlap(Vector3 t1p1, Vector3 t1p2, Vector3 t1p3, Vector3 t2p1, Vector3 t2p2, Vector3 t2p3)
             {
                 return Overlap(ref t1p1, ref t1p2, ref t1p3, ref t2p1, ref t2p2, ref t2p3);
             }
-            public static  bool Overlap(ref Vector3 t1p1, ref Vector3 t1p2, ref Vector3 t1p3, ref Vector3 t2p1, ref Vector3 t2p2, ref Vector3 t2p3)
+            public static bool Overlap(ref Vector3 t1p1, ref Vector3 t1p2, ref Vector3 t1p3, ref Vector3 t2p1, ref Vector3 t2p2, ref Vector3 t2p3)
             {
                 Vector2 isect1 = Vector2.zero, isect2 = Vector2.zero;
 
@@ -4777,23 +5576,282 @@ namespace UnityFunctions
 
         public static class vector
         {
-        
-            public static  void ToLocal(ref Vector3 worldVector, ref Quaternion worldRotation, out Vector3 localVector)
+            public static Vector3 Slerp(Vector3 a, double t, Vector3 b)
+            {
+                return Vector3.SlerpUnclamped(a, b, (float)t);
+            }
+            public static Vector3 Slerp(Vector3 a, Vector3 b, double t)
+            {
+                return Vector3.SlerpUnclamped(a, b, (float)t);
+            }
+            public static Vector3 Slerp(Vector3 a, double ab, Vector3 b, double abc, Vector3 c)
+            {
+                return Vector3.SlerpUnclamped(Vector3.SlerpUnclamped(a, b, (float)ab), c, (float)abc);
+            }
+            public static Vector3 Slerp(ref Vector3 a, ref Vector3 b, double t)
+            {
+                return Vector3.SlerpUnclamped(a, b, (float)t);
+            }
+            public static void Slerp(ref Vector3 a, ref Vector3 b, double t, out Vector3 d)
+            {
+                d = Vector3.SlerpUnclamped(a, b, (float)t);
+            }
+            public static Vector3 Slerp(ref Vector3 a, double ab, ref Vector3 b, double abc, ref Vector3 c)
+            {
+                return Vector3.SlerpUnclamped(Vector3.SlerpUnclamped(a, b, (float)ab), c, (float)abc);
+            }
+            public static float LengthOnNormal(ref Vector3 vectorToPlane, ref Vector3 planeNormal)
+            {
+                var distance = dot.Product(ref planeNormal, ref vectorToPlane);
+                return abs(distance);
+            }
+            public static void ToLocal(ref Vector3 worldVector, ref Quaternion worldRotation, out Vector3 localVector)
             {
                 localVector = Quaternion.Inverse(worldRotation)*worldVector;
             }
-            public static  Vector3 ToLocal(ref Vector3 worldVector, ref Quaternion worldRotation)
+            public static Vector3 ToLocal(ref Vector3 worldVector, ref Quaternion worldRotation)
             {
                 return Quaternion.Inverse(worldRotation)*worldVector;
             }
-            public static  Vector3 ToLocal(Vector3 worldVector, Quaternion worldRotation)
+            public static Vector3 ToLocal(Vector3 worldVector, Quaternion worldRotation)
             {
                 return Quaternion.Inverse(worldRotation)*worldVector;
             }
 
+
+            public static void ToWorld(ref Vector3 localVector, ref Quaternion worldRotation, out Vector3 worldPoint)
+            {
+                worldPoint = worldRotation * localVector;
+            }
+            public static Vector3 ToWorld(ref Vector3 localVector, ref Quaternion worldRotation)
+            {
+                return worldRotation * localVector;
+            }
+            public static Vector3 ToWorld(Vector3 localVector, Quaternion worldRotation)
+            {
+                return worldRotation * localVector;
+            }
+
+
+            public static bool IsAbovePlane(ref Vector3 vectorToPlane, ref Vector3 planeNormal)
+            {
+                var distance = -dot.Product(ref vectorToPlane, ref planeNormal);
+                return distance < 0;
+            }
+            public static bool IsAbovePlane(Vector3 vectorToPlane, Vector3 planeNormal)
+            {
+                var distance = -dot.Product(ref vectorToPlane, ref planeNormal);
+                return distance < 0;
+            }
+            public static float ProjectionLength(ref Vector3 ofVector, ref Vector3 ontoVector)
+            {
+                var unitOntoVector = ontoVector.normalized;
+                return dot.Product(ref ofVector, ref unitOntoVector);
+            }
+            public static float ProjectionLength(Vector3 ofVector, Vector3 ontoVector)
+            {
+                var unitOntoVector = ontoVector.normalized;
+                return dot.Product(ref ofVector, ref unitOntoVector);
+            }
+            public static Vector3 ProjectOnNormal(Vector3 vector, Vector3 onNormal)
+            {
+                var dotProduct = (float)((double) onNormal.x * (double) onNormal.x + (double) onNormal.y * (double) onNormal.y + (double) onNormal.z * (double) onNormal.z);;
+                if ((double)dotProduct < (double) Mathf.Epsilon)
+                    return Vector3.zero;
+                return onNormal * Vector3.Dot(vector, onNormal) / (float)dotProduct;
+            }
+            public static Vector3 ProjectOnNormal(ref Vector3 vector, ref Vector3 onNormal)
+            {
+                var dotProduct = (float)((double) onNormal.x * (double) onNormal.x + (double) onNormal.y * (double) onNormal.y + (double) onNormal.z * (double) onNormal.z);;
+                if ((double)dotProduct < (double) Mathf.Epsilon)
+                    return Vector3.zero;
+                return onNormal * Vector3.Dot(vector, onNormal) / (float)dotProduct;
+            }
+            public static void ProjectOnNormal(ref Vector3 vector, ref Vector3 onNormal, out Vector3 projection)
+            {
+                var dotProduct = (float)((double) onNormal.x * (double) onNormal.x + (double) onNormal.y * (double) onNormal.y + (double) onNormal.z * (double) onNormal.z);;
+                if ((double)dotProduct < (double) Mathf.Epsilon)
+                    projection = Vector3.zero;
+                else
+                    projection = onNormal * Vector3.Dot(vector, onNormal) / (float)dotProduct;
+            }
+            public static Vector3 ProjectOnPlane(ref Vector3 vector, ref Vector3 planeNormal)
+            {
+                var normPlaneNormal = planeNormal.normalized;
+                var distance = -dot.Product(ref normPlaneNormal, ref vector);
+                return vector + normPlaneNormal * distance;
+            }
+            public static void ProjectOnPlane(ref Vector3 vector, ref Vector3 planeNormal, out Vector3 projection)
+            {
+                var normPlaneNormal = planeNormal.normalized;
+                var distance = -dot.Product(ref normPlaneNormal, ref vector);
+                projection = vector + normPlaneNormal * distance;
+            }
+            public static Vector3 ProjectOnPlane(Vector3 vector, Vector3 planeNormal)
+            {
+                var normPlaneNormal = planeNormal.normalized;
+                var distance = -dot.Product(ref normPlaneNormal, ref vector);
+                return vector + normPlaneNormal * distance;
+            }
+            public static Vector3 ReflectOfPlane(Vector3 vector, Vector3 planeNormal)
+            {
+                Vector3 projection;
+                ProjectOnPlane(ref vector, ref planeNormal, out projection);
+                projection.Normalize();
+                return Vector3.SlerpUnclamped(vector, projection.normalized, 2);
+            }
+            public static Vector3 ReflectOfPlane(ref Vector3 vector, ref Vector3 planeNormal)
+            {
+                Vector3 projection;
+                ProjectOnPlane(ref vector, ref planeNormal, out projection);
+                projection.Normalize();
+                return Vector3.SlerpUnclamped(vector, projection.normalized, 2);
+            }
+            public static void ReflectOfPlane(ref Vector3 vector, ref Vector3 planeNormal, out Vector3 reflection)
+            {
+                Vector3 projection;
+                ProjectOnPlane(ref vector, ref planeNormal, out projection);
+                projection.Normalize();
+                reflection = Vector3.SlerpUnclamped(vector, projection.normalized, 2);
+            }
+            public static Vector3 GetNormal(Vector3 lhs, Vector3 rhs)
+            {
+                var normal = new Vector3((lhs.y * rhs.z - lhs.z * rhs.y), (lhs.z * rhs.x - lhs.x * rhs.z), (lhs.x * rhs.y - lhs.y * rhs.x));
+
+                // normalize:
+                var len = Math.Sqrt(normal.x * normal.x + normal.y * normal.y + normal.z * normal.z);
+                if (len > 9.99999974737875E-06)
+                    normal = normal / (float)len;
+                else
+                    normal = new Vector3(0, 0, 0);
+                return normal;
+            }
+            public static void GetNormal(ref Vector3 lhs, ref Vector3 rhs, out Vector3 normal)
+            {
+                normal = new Vector3((lhs.y * rhs.z - lhs.z * rhs.y), (lhs.z * rhs.x - lhs.x * rhs.z), (lhs.x * rhs.y - lhs.y * rhs.x));
+
+                // normalize:
+                var len = Math.Sqrt(normal.x * normal.x + normal.y * normal.y + normal.z * normal.z);
+                if (len > 9.99999974737875E-06)
+                    normal = normal / (float)len;
+                else
+                    normal = new Vector3(0, 0, 0);
+            }
+            public static void GetRealUp(ref Vector3 forward, ref Vector3 originalUp, ref Vector3 originalFw, out Vector3 realUp)
+            {
+                var dpWithUp = dot.Product(ref forward, ref originalUp).Clamp(-1.0,1.0);
+                var rawUp = 
+                    dpWithUp < 0 
+                    ? Vector3.Slerp(originalUp, originalFw, dpWithUp*-1) 
+                    : Vector3.Slerp(originalUp, -originalFw, dpWithUp);
+                Vector3 right;
+                cross.Product(ref rawUp, ref forward, out right);
+                right.Normalize();
+                cross.Product(ref forward, ref right, out realUp);
+                realUp.Normalize();
+            }
+            public static void GetRealUp(ref Vector3 forward, ref Vector3 rawUp, out Vector3 realUp)
+            {
+                Vector3 right;
+                cross.Product(ref rawUp, ref forward, out right);
+                right.Normalize();
+                cross.Product(ref forward, ref right, out realUp);
+                realUp.Normalize();
+            }
+            public static Vector3 GetRealUp(Vector3 forward, Vector3 rawUp)
+            {
+                Vector3 right, realUp;
+                cross.Product(ref rawUp, ref forward, out right);
+                right.Normalize();
+                cross.Product(ref forward, ref right, out realUp);
+               return realUp.normalized;
+            }
+
+            public static bool PointSameDirection(ref Vector3 a, ref Vector3 b)
+            {
+                return dot.Product(ref a, ref b) > 0;
+            }
+            public static bool PointSameDirection(Vector3 a, Vector3 b)
+            {
+                return dot.Product(ref a, ref b) > 0;
+            }
+            public static bool PointSameDirection2D(ref Vector2 a, ref Vector2 b)
+            {
+                return dot.Product2D(ref a, ref b) > 0;
+            }
+
+            public static bool PointDifferentDirection(ref Vector3 a, ref Vector3 b)
+            {
+                return dot.Product(ref a, ref b) <= 0;
+            }
+            public static bool PointDifferentDirection(Vector3 a, Vector3 b)
+            {
+                return dot.Product(ref a, ref b) <= 0;
+            }
+            public static bool PointDifferentDirection2D(ref Vector2 a, ref Vector2 b)
+            {
+                return dot.Product2D(ref a, ref b) <= 0;
+            }
+
+            public static void ComputeRandomXYAxesForPlane(ref Vector3 planeNormal, out Vector3 normX, out Vector3 normY)
+            {
+                var fw = Vector3.right;
+                cross.Product(ref planeNormal, ref fw, out normX);
+                if (normX.sqrMagnitude < 0.001)
+                {
+                    var rt = Vector3.forward;
+                    cross.Product(ref planeNormal, ref rt, out normX);
+                }
+                normX = normX.normalized;
+                vector.GetNormal(ref planeNormal, ref normX, out normY);
+            }
+
+            public static void EnsurePointSameDirAs(ref Vector3 direction, ref Vector3 mustBeCodirectionalTo, out Vector3 sameDirection)
+            {
+                if (PointSameDirection(ref direction, ref mustBeCodirectionalTo))
+                {
+                    sameDirection = direction;
+                }
+                else
+                {
+                    sameDirection = -direction;
+                }
+            }
+            public static void EnsurePointDifferentDirThan(ref Vector3 direction, ref Vector3 mustNotBeCodirectionalTo, out Vector3 sameDirection)
+            {
+                if (PointSameDirection(ref direction, ref mustNotBeCodirectionalTo))
+                {
+                    sameDirection = -direction;
+                }
+                else
+                {
+                    sameDirection = direction;
+                }
+            }
+            public static bool IsCloserToFirst(ref Vector3 normalizedTargetVector, ref Vector3 normalizedFirst, ref Vector3 normalizedSecond)
+            {
+                var dp1 = dot.Product(ref normalizedTargetVector, ref normalizedFirst);
+                var dp2 = dot.Product(ref normalizedTargetVector, ref normalizedSecond);
+                return dp1 > dp2;
+            }
+            public static bool IsWithinCircleFormedBy(ref Vector3 normalInQuestion, ref Vector3 normalBoundary1, ref Vector3 normalBoundary2)
+            {
+                var normalCenter = Vector3.Slerp(normalBoundary1, normalBoundary2, 0.5f);
+                var dpMaxDiff = dot.Product(ref normalCenter, ref normalBoundary1);
+                var dpActDiff = dot.Product(ref normalCenter, ref normalInQuestion);
+                return dpActDiff >= dpMaxDiff;// remember dot product is oposit to angle, higher means closer lower further apart
+            }
+            public static float HorzMagnitude(ref Vector3 a)
+            {
+                return (float)Math.Sqrt(((double) a.x * (double) a.x + (double) a.z * (double) a.z));
+            }
             public static float Magnitude(ref Vector3 a)
             {
                 return (float)Math.Sqrt(((double) a.x * (double) a.x + (double) a.y * (double) a.y + (double) a.z * (double) a.z));
+            }
+            public static double MagnitudeAsDouble(ref Vector3 a)
+            {
+                return Math.Sqrt(((double) a.x * (double) a.x + (double) a.y * (double) a.y + (double) a.z * (double) a.z));
             }
             public static float SqrMagnitude(ref Vector3 a)
             {
@@ -4807,148 +5865,56 @@ namespace UnityFunctions
             {
                 return (float)((double) a.x * (double) a.x + (double) a.y * (double) a.y);
             }
-
-            public static  void ToWorld(ref Vector3 localVector, ref Quaternion worldRotation, out Vector3 worldPoint)
+            public static bool TryNormalize(ref Vector3 vector, out Vector3 normal)
             {
-                worldPoint = worldRotation * localVector;
-            }
-            public static  Vector3 ToWorld(ref Vector3 localVector, ref Quaternion worldRotation)
-            {
-                return worldRotation * localVector;
-            }
-            public static  Vector3 ToWorld(Vector3 localVector, Quaternion worldRotation)
-            {
-                return worldRotation * localVector;
-            }
-        
-            public static  bool IsAbovePlane(ref Vector3 vectorToPlane, ref Vector3 planeNormal)
-            {
-                var distance = -dot.Product(ref vectorToPlane, ref planeNormal);
-                return distance < 0;
-            }
-            public static  bool IsAbovePlane(Vector3 vectorToPlane, Vector3 planeNormal)
-            {
-                var distance = -dot.Product(ref vectorToPlane, ref planeNormal);
-                return distance < 0;
-            }
-            public static  float ProjectionLength(ref Vector3 ofVector, ref Vector3 ontoVector)
-            {
-                var unitOntoVector = ontoVector.normalized;
-                return dot.Product(ref ofVector, ref unitOntoVector);
-            }
-            public static  float ProjectionLength(Vector3 ofVector, Vector3 ontoVector)
-            {
-                var unitOntoVector = ontoVector.normalized;
-                return dot.Product(ref ofVector, ref unitOntoVector);
-            }
-            public static  Vector3 ProjectOnNormal(Vector3 vector, Vector3 onNormal)
-            {
-                var dotProduct = ((double) onNormal.x * (double) onNormal.x + (double) onNormal.y * (double) onNormal.y + (double) onNormal.z * (double) onNormal.z);
-                if (dotProduct < (double) Mathf.Epsilon)
-                    return Vector3.zero;
-                return onNormal * dot.Product(ref vector, ref onNormal) / (float)dotProduct;
-            }
-            public static  Vector3 ProjectOnNormal(ref Vector3 vector, ref Vector3 onNormal)
-            {
-                var dotProduct = ((double) onNormal.x * (double) onNormal.x + (double) onNormal.y * (double) onNormal.y + (double) onNormal.z * (double) onNormal.z);
-                if (dotProduct < (double) Mathf.Epsilon)
-                    return Vector3.zero;
-                return onNormal * dot.Product(ref vector, ref onNormal) / (float)dotProduct;
-            }
-            public static  void ProjectOnNormal(ref Vector3 vector, ref Vector3 onNormal, out Vector3 projection)
-            {
-                var dotProduct = (float)((double) onNormal.x * (double) onNormal.x + (double) onNormal.y * (double) onNormal.y + (double) onNormal.z * (double) onNormal.z);;
-                if ((double)dotProduct < (double) Mathf.Epsilon)
-                    projection = Vector3.zero;
-                else
-                    projection = onNormal * dot.Product(ref vector, ref onNormal) / (float)dotProduct;
-            }
-            public static  Vector3 ProjectOnPlane(ref Vector3 vector, ref Vector3 planeNormal)
-            {
-                var normPlaneNormal = planeNormal.normalized;
-                var distance = -dot.Product(ref normPlaneNormal, ref vector);
-                return vector + normPlaneNormal * distance;
-            }
-            public static  void ProjectOnPlane(ref Vector3 vector, ref Vector3 planeNormal, out Vector3 projection)
-            {
-                var normPlaneNormal = planeNormal.normalized;
-                var distance = -dot.Product(ref normPlaneNormal, ref vector);
-                projection = vector + normPlaneNormal * distance;
-            }
-            public static  Vector3 ProjectOnPlane(Vector3 vector, Vector3 planeNormal)
-            {
-                var normPlaneNormal = planeNormal.normalized;
-                var distance = -dot.Product(ref normPlaneNormal, ref vector);
-                return vector + normPlaneNormal * distance;
-            }
-            public static  Vector3 ReflectOfPlane(ref Vector3 vector, ref Vector3 planeNormal)
-            {
-                Vector3 projection;
-                ProjectOnPlane(ref vector, ref planeNormal, out projection);
-                return Vector3.SlerpUnclamped(vector, projection.normalized, 2);
-            }
-            public static  void ReflectOfPlane(ref Vector3 vector, ref Vector3 planeNormal, out Vector3 reflection)
-            {
-                Vector3 projection;
-                ProjectOnPlane(ref vector, ref planeNormal, out projection);
-                reflection = Vector3.SlerpUnclamped(vector, projection.normalized, 2);
-            }
-            public static  Vector3 GetNormal(Vector3 lhs, Vector3 rhs)
-            {
-                var normal = new Vector3((lhs.y * rhs.z - lhs.z * rhs.y), (lhs.z * rhs.x - lhs.x * rhs.z), (lhs.x * rhs.y - lhs.y * rhs.x));
-
-                // normalize:
-                var len = Math.Sqrt(normal.x * normal.x + normal.y * normal.y + normal.z * normal.z);
-                if (len > 9.99999974737875E-06)
-                    normal = normal / (float)len;
-                else
-                    normal = new Vector3(0, 0, 0);
-                return normal;
-            }
-            public static  void GetNormal(ref Vector3 lhs, ref Vector3 rhs, out Vector3 normal)
-            {
-                normal = new Vector3((lhs.y * rhs.z - lhs.z * rhs.y), (lhs.z * rhs.x - lhs.x * rhs.z), (lhs.x * rhs.y - lhs.y * rhs.x));
-
-                // normalize:
-                var len = Math.Sqrt(normal.x * normal.x + normal.y * normal.y + normal.z * normal.z);
-                if (len > 9.99999974737875E-06)
-                    normal = normal / (float)len;
-                else
-                    normal = new Vector3(0, 0, 0);
-            }
-
-            public static  void GetRealUp(ref Vector3 forward, ref Vector3 rawUp, out Vector3 realUp)
-            {
-                Vector3 right;
-                cross.Product(ref rawUp, ref forward, out right);
-                right.Normalize();
-                cross.Product(ref forward, ref right, out realUp);
-                realUp.Normalize();
-            }
-            public static  Vector3 GetRealUp(Vector3 forward, Vector3 rawUp)
-            {
-                Vector3 right, realUp;
-                cross.Product(ref rawUp, ref forward, out right);
-                right.Normalize();
-                cross.Product(ref forward, ref right, out realUp);
-               return realUp.normalized;
-            }
-            public static  void ComputeRandomXYAxesForPlane(ref Vector3 planeNormal, out Vector3 normX, out Vector3 normY)
-            {
-                var fw = Vector3.right;
-                cross.Product(ref planeNormal, ref fw, out normX);
-                if (normX.sqrMagnitude < 0.001)
+                var mag = Math.Sqrt(((double) vector.x * (double) vector.x + (double) vector.y * (double) vector.y + (double) vector.z * (double) vector.z));
+                if (mag < 0.00001)
                 {
-                    var rt = Vector3.forward;
-                    cross.Product(ref planeNormal, ref rt, out normX);
+                    normal = Vector3.zero;
+                    return false;
                 }
-                normX = normX.normalized;
-                vector.GetNormal(ref planeNormal, ref normX, out normY);
+                normal = vector/(float)mag; 
+                return true;
+            }
+            public static bool TryNormalize(ref Vector3 vector, out float magnitude, out Vector3 normal)
+            {
+                var mag = Math.Sqrt(((double) vector.x * (double) vector.x + (double) vector.y * (double) vector.y + (double) vector.z * (double) vector.z));
+                magnitude = (float)mag;
+                if (mag < 0.000001)
+                {
+                    normal = Vector3.zero;
+                    return false;
+                }
+                normal = vector/magnitude; 
+                return true;
+            }
+            public static bool TryNormalize(Vector3 vector, out Vector3 normal)
+            {
+                var mag = Math.Sqrt(((double) vector.x * (double) vector.x + (double) vector.y * (double) vector.y + (double) vector.z * (double) vector.z));
+                if (mag < 0.00001)
+                {
+                    normal = Vector3.zero;
+                    return false;
+                }
+                normal = vector/(float)mag; 
+                return true;
+            }
+            public static bool TryNormalize(Vector3 vector, out float magnitude, out Vector3 normal)
+            {
+                var mag = Math.Sqrt(((double) vector.x * (double) vector.x + (double) vector.y * (double) vector.y + (double) vector.z * (double) vector.z));
+                magnitude = (float)mag;
+                if (mag < 0.00001)
+                {
+                    normal = Vector3.zero;
+                    return false;
+                }
+                normal = vector/magnitude; 
+                return true;
             }
         }
     }
 
-    public abstract class DtBase
+        public abstract class DtBase
     {
         internal string name;
         internal Mesh mesh;
@@ -5001,4 +5967,13 @@ namespace UnityFunctions
         internal int latitude = 16;
         internal Vector3 localPos = Vector3.zero;
     }
+
+    public enum LinePlaneRel : byte
+    {
+        Cross = 1,
+        Above = 2,
+        Below = 3
+
+    }
+
 }

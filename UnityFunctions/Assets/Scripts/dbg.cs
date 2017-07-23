@@ -24,6 +24,9 @@ namespace UnityFunctions
             _appendInitialized = true;
         }
         internal static int int1;
+        internal static Vector3 v1;
+        internal static Vector3 v2;
+        internal static Vector3 v3;
         internal static string st
         {
             get

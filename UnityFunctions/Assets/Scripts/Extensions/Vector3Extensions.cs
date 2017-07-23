@@ -11,6 +11,88 @@ namespace Unianio.Extensions
         private static readonly Vector3 unitX = new Vector3(1, 0, 0);
         private static readonly Vector3 unitY = new Vector3(0, 1, 0);
 
+        internal static Vector3 RotateTowardsCanOvershoot(this Vector3 current, ref Vector3 target, double degrees)
+        {
+            Vector3 normal;
+            fun.vector.GetNormal(ref current, ref target, out normal);
+            Vector3 result;
+            fun.rotate.Vector(ref current, ref normal, degrees, out result);
+            return result;
+        }
+        internal static Vector3 ToUnit(this Vector3 vector, Vector3 dirIfZero)
+        {
+            var mag = fun.vector.Magnitude(ref vector);
+            return mag < 0.00001 ? dirIfZero : vector/mag;
+        }
+        internal static Vector3 ToUnit(this Vector3 vector, Vector3 dirIfZero, out float magnitude)
+        {
+            magnitude = fun.vector.Magnitude(ref vector);
+            return magnitude < 0.00001 ? dirIfZero : vector/magnitude;
+        }
+        internal static Vector3 ToUnit(this Vector3 vector)
+        {
+            var magnitude = fun.vector.Magnitude(ref vector);
+            return magnitude < 0.00001 ? Vector3.zero : vector/magnitude;
+        }
+        internal static Vector3 ToUnit(this Vector3 vector, out float magnitude)
+        {
+            magnitude = fun.vector.Magnitude(ref vector);
+            return magnitude < 0.00001 ? Vector3.zero : vector/magnitude;
+        }
+        internal static Vector3 ToUnit(this Vector3 vector, ref Vector3 dirIfZero)
+        {
+            var mag = fun.vector.Magnitude(ref vector);
+            return mag < 0.00001 ? dirIfZero : vector/mag;
+        }
+        internal static Vector3 ToUnit(this Vector3 vector, ref Vector3 dirIfZero, out float magnitude)
+        {
+            magnitude = fun.vector.Magnitude(ref vector);
+            return magnitude < 0.00001 ? dirIfZero : vector/magnitude;
+        }
+
+        internal static Vector3 ProjectOnPlaneAndNormalize(this Vector3 vector, ref Vector3 planeNormal)
+        {
+            fun.vector.ProjectOnPlane(ref vector, ref planeNormal, out vector);
+            var mag = fun.vector.Magnitude(ref vector);
+            if ((double) mag > 9.99999974737875E-06) return vector / mag;
+            return Vector3.zero;
+        }
+        internal static Vector3 HorizontalUnit(this Vector3 v3)
+        {
+            v3.y = 0;
+            // normalize
+            var mag = (float)Math.Sqrt((float) ((double) v3.x * (double) v3.x + (double) v3.z * (double) v3.z));
+            if ((double) mag > 9.99999974737875E-06)
+                return v3/mag;
+            return Vector3.zero;
+        }
+        internal static Vector3 HorizontalUnit(this Vector3 v3, Vector3 ifZero)
+        {
+            v3.y = 0;
+            // normalize
+            var mag = (float)Math.Sqrt((float) ((double) v3.x * (double) v3.x + (double) v3.z * (double) v3.z));
+            if ((double) mag > 9.99999974737875E-06)
+                return v3/mag;
+            return ifZero;
+        }
+        internal static Vector3 HorizontalUnit(this Vector3 v3, Vector3 ifZero, out float mag)
+        {
+            v3.y = 0;
+            // normalize
+            mag = (float)Math.Sqrt((float) ((double) v3.x * (double) v3.x + (double) v3.z * (double) v3.z));
+            if ((double) mag > 9.99999974737875E-06)
+                return v3/mag;
+            return ifZero;
+        }
+        internal static Vector3 HorizontalUnit(this Vector3 v3, out float mag)
+        {
+            v3.y = 0;
+            // normalize
+            mag = (float)Math.Sqrt((float) ((double) v3.x * (double) v3.x + (double) v3.z * (double) v3.z));
+            if ((double) mag > 9.99999974737875E-06)
+                return v3/mag;
+            return Vector3.zero;
+        }
 
         internal static Vector2 As2d(this Vector3 v3, Vector3 normalizedX, Vector3 normalizedY)
         {
@@ -472,6 +554,34 @@ namespace Unianio.Extensions
         internal static float SignedDistanceToPlane(this Vector3 point, Vector3 planeNormal, Vector3 planePoint)
         {
             return Vector3.Dot(planeNormal, point - planePoint);
+        }
+        internal static Vector3 GetRealUp(this Vector3 forward, Vector3 aproximateUp)
+        {
+            Vector3 realUp;
+            fun.vector.GetRealUp(ref forward, ref aproximateUp, out realUp);
+            return realUp;
+        }
+        internal static Vector3 GetRealUp(this Vector3 forward, ref Vector3 aproximateUp)
+        {
+            Vector3 realUp;
+            fun.vector.GetRealUp(ref forward, ref aproximateUp, out realUp);
+            return realUp;
+        }
+        internal static void GetRealUp(this Vector3 forward, ref Vector3 originalUp, ref Vector3 originalFw, out Vector3 realUp)
+        {
+            fun.vector.GetRealUp(ref forward, ref originalUp, ref originalFw, out realUp);
+        }
+        internal static Vector3 GetRealUp(this Vector3 forward, Vector3 originalUp, Vector3 originalFw)
+        {
+            Vector3 realUp;
+            fun.vector.GetRealUp(ref forward, ref originalUp, ref originalFw, out realUp);
+            return realUp;
+        }
+        internal static Vector3 GetRealUp(this Vector3 forward, ref Vector3 originalUp, ref Vector3 originalFw)
+        {
+            Vector3 realUp;
+            fun.vector.GetRealUp(ref forward, ref originalUp, ref originalFw, out realUp);
+            return realUp;
         }
         private static float SignedDistancePlanePoint(ref Vector3 planeNormal, ref Vector3 planePoint, ref Vector3 point)
         {
