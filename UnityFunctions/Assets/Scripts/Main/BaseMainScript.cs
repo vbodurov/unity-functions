@@ -11,6 +11,7 @@ namespace Main
     {
         protected Transform _a, _b,_c;
         protected Mesh _mesh;
+        private readonly bool[] _hasPrev = new bool[10];
 
         protected readonly IDictionary<string,bool> ChangeNames = new Dictionary<string, bool>(StringComparer.InvariantCultureIgnoreCase);
 
@@ -99,7 +100,14 @@ namespace Main
                 t.gameObject.SetStandardShaderTransparentColor(hasIntersection ? ifTrue : ifFalse);
             }
         }
-
+        protected bool IsShiftKeyAndNumberDown(int num)
+        {
+            var key = (KeyCode)(48+num);
+            var hasNext = Input.GetKey(key);
+            var hasPrev = _hasPrev[num];
+            _hasPrev[num] = hasNext;
+            return !hasPrev && hasNext && (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift));
+        }
         protected static Color rgba(double r, double g, double b, double a)
         {
             return new Color((float)r,(float)g,(float)b,(float)a);

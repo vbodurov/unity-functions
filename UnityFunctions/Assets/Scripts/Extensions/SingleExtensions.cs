@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Text;
 using System.Threading;
 
-namespace Unianio.Extensions
+namespace Extensions
 {
     internal static class SingleExtensions
     {

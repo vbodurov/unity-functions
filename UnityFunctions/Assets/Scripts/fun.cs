@@ -1,11 +1,7 @@
-﻿ 
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Extensions;
-using Unianio.Extensions;
 using UnityEngine;
-using Utils;
 
 namespace UnityFunctions
 {
@@ -3305,6 +3301,7 @@ namespace UnityFunctions
                 var bottomRadius = (float)dt.bottomRadius;
                 var topRadius = (float)dt.topRadius;
                 var nbSides = dt.numSides;
+                var noseLen = (float)dt.relNoseLen;
                 var nbHeightSeg = 1;
  
                 int nbVerticesCap = nbSides + 1;
@@ -3321,7 +3318,7 @@ namespace UnityFunctions
                 {
 	                float rad = (float)vert / nbSides * _2pi;
                     var isXtop = Mathf.Sin(rad) > 0.95f;
-                    var nose = isXtop ? 0.75f*bottomRadius : 0;
+                    var nose = isXtop ? noseLen*bottomRadius : 0;
                     var noseShift = isXtop ? 0 : 1;
 	                vertices[vert] = new Vector3(Mathf.Cos(rad) * bottomRadius * noseShift, 0f, Mathf.Sin(rad) * bottomRadius + nose);
 	                vert++;
@@ -3345,7 +3342,7 @@ namespace UnityFunctions
 	                float rad = (float)v / nbSides * _2pi;
                     
                     var isXtop = Mathf.Sin(rad) > 0.95f;
-                    var nose = isXtop ? 0.75f*bottomRadius : 0;
+                    var nose = isXtop ? noseLen*bottomRadius : 0;
                     var noseShift = isXtop ? 0 : 1;
 	                vertices[vert] = new Vector3(Mathf.Cos(rad) * topRadius, height, Mathf.Sin(rad) * topRadius);
 	                vertices[vert + 1] = new Vector3(Mathf.Cos(rad) * bottomRadius*noseShift, 0, Mathf.Sin(rad) * bottomRadius+nose);
@@ -5936,6 +5933,7 @@ namespace UnityFunctions
         internal double bottomRadius = .5f;
         internal double topRadius = .01f;
         internal int numSides = 18;
+        internal double relNoseLen = 0.75; // relative to bottom radius nose length
         internal Vector3 localPos = Vector3.zero;
     }
 

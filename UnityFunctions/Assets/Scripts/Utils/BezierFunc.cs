@@ -1,5 +1,5 @@
 ﻿using System;
-using Unianio.Extensions;
+using Extensions;
 using UnityEngine;
 
 namespace Utils

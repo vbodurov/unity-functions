@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityFunctions;
 
-namespace Unianio.Extensions
+namespace Extensions
 {
     internal static class Vector3Extensions
     {

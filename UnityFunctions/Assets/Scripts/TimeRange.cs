@@ -1,4 +1,4 @@
-﻿using Unianio.Extensions;
+﻿using Extensions;
 using UnityEngine;
 
 namespace UnityFunctions
