@@ -44,7 +44,10 @@ namespace UnityFunctions
         public static float atan2(double a, double b) { return (float)Math.Atan2(a, b); }
         public static float pow(double n, double p) { return (float)Math.Pow(n, p); }
         public static float tan(double n) { return (float)Math.Tan(n); }
-
+        internal static Vector3 lerp(ref Vector3 a, ref Vector3 b, double t)
+        {
+            return new Vector3(a.x + (b.x - a.x) * (float)t, a.y + (b.y - a.y) * (float)t, a.z + (b.z - a.z) * (float)t);
+        }
         public static class invserseKinematics
         {
             public static void ThreeJoinOnVertPlane(
@@ -642,6 +645,62 @@ namespace UnityFunctions
 
         public static class intersection
         {
+            /// <summary>
+            /// intersection between two spheres is a circle
+            /// </summary>
+            /// <param name="sphere1Center">sphere 1 center</param>
+            /// <param name="sphere1Radius">sphere 1 radius</param>
+            /// <param name="sphere2Center">sphere 2 center</param>
+            /// <param name="sphere2Radius">sphere 2 radius</param>
+            /// <param name="intersectCircleCenter">intersection circle center</param>
+            /// <param name="intersectCircleRadius">intersection circle radius</param>
+            /// <returns>return true if the 2 spheres intersect their surfaces, if one is inside the other returns false</returns>
+            internal static bool BetweenSpheres(ref Vector3 sphere1Center, double sphere1Radius, ref Vector3 sphere2Center, double sphere2Radius, out Vector3 intersectCircleCenter, out float intersectCircleRadius)
+            {
+                var r1 = (float)sphere1Radius;
+                var r2 = (float)sphere2Radius;
+                var d = distance.Between(ref sphere1Center, ref sphere2Center);
+                // Two separate spheres
+                if (d > (r1 + r2))
+                {
+                    intersectCircleCenter = lerp(ref sphere1Center, ref sphere2Center, sphere1Radius / sphere2Radius);
+                    intersectCircleRadius = 0;
+                    return false;
+                }
+                // Outer tangency
+                if (d.IsEqual(r1 + r2))
+                {
+                    intersectCircleCenter = sphere1Center + (sphere2Center - sphere1Center).normalized * r2;
+                    intersectCircleRadius = 0;
+                    return true;
+                }
+                // Inner tangency
+                if (d.IsEqual(abs(r1 - r2)))
+                {
+                    intersectCircleCenter =
+                        r1 > r2
+                        ? sphere1Center + (sphere2Center - sphere1Center).ToUnit(Vector3.forward) * r1
+                        : sphere2Center + (sphere1Center - sphere2Center).ToUnit(Vector3.forward) * r2;
+                    intersectCircleRadius = 0;
+                    return true;
+                }
+                // One sphere inside the other
+                if (d < abs(r1 - r2))
+                {
+                    intersectCircleCenter = lerp(ref sphere1Center, ref sphere2Center, 0.5);
+                    intersectCircleRadius = 0;
+                    return false;
+                }
+                var d1 = (d * d - r2 * r2 + r1 * r1) / (2 * d);
+                var ratio = d1 / r1;
+                var cr = sqrt(1f - ratio * ratio) * r1;
+                intersectCircleRadius = cr;
+                var dir = (sphere2Center - sphere1Center).ToUnit(Vector3.forward);
+                intersectCircleCenter = sphere1Center + dir * d1;
+                return true;
+            }
+
+
             /// <summary>
             /// Check if disk and plane cross each other
             /// </summary>
