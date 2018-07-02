@@ -1,4 +1,5 @@
 ﻿using Extensions;
+using Unianio;
 using UnityEngine;
 using UnityFunctions;
 
@@ -10,9 +11,9 @@ namespace Main
 //        private const float CapsuleRadius2 = 0.2f;
 //        private const float CapsuleHeight1 = 0.8f;
 //        private const float CapsuleHeight2 = 0.6f;
-        private const float CapsuleRadius1 = 0.14f;
+        private const float CapsuleRadius1 = 0.20f;
         private const float CapsuleRadius2 = 0.06f;
-        private const float CapsuleHeight1 = 0.4f;
+        private const float CapsuleHeight1 = 0.50f;
         private const float CapsuleHeight2 = 0.8f;
         private Transform _capsule1,_capsule2,_collision;
 
