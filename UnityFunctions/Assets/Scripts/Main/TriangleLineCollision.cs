@@ -32,7 +32,7 @@ namespace Main
 
             // test code STARTS here -----------------------------------------------
             var hasIntersection =
-                fun.intersection.BetweenTriangleAndLine(ref tp1, ref tp2, ref tp3, ref line1, ref line2);
+                fun.intersection.BetweenTriangleAndLineSegment(in tp1, in tp2, in tp3, in line1, in line2);
             // test code ENDS here -------------------------------------------------
 
             Debug.DrawLine(line1, line2, hasIntersection ? Color.green : Color.red, 0, true);

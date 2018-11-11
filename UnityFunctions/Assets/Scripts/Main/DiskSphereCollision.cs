@@ -49,7 +49,7 @@ namespace Main
             Vector3 collision;
             var hasCollision = 
                 fun.intersection.BetweenDiskAndSphere(
-                    ref diskPlaneNormal, ref diskCenter, DiskRadius, ref sphereCenter, SphereRadius, out collision);
+                    in diskPlaneNormal, in diskCenter, DiskRadius, in sphereCenter, SphereRadius, out collision);
             // test code ENDS here -------------------------------------------------
 
             _collision.position = hasCollision ? collision : new Vector3(0,999,0);

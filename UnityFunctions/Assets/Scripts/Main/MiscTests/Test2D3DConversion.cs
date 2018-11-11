@@ -43,16 +43,16 @@ namespace Main.MiscTests
 
             // test code STARTS here -----------------------------------------------
             Vector3 xAxis2d,yAxis2d;
-            fun.vector.ComputeRandomXYAxesForPlane(ref planeNormal, out xAxis2d, out yAxis2d);
+            fun.vector.ComputeRandomXYAxesForPlane(in planeNormal, out xAxis2d, out yAxis2d);
 
             // we take point "a" to be the origin 
-            var p1in2d = p1.As2d(ref a, ref xAxis2d, ref yAxis2d);
-            var p2in2d = p2.As2d(ref a, ref xAxis2d, ref yAxis2d);
-            var p3in2d = p3.As2d(ref a, ref xAxis2d, ref yAxis2d);
+            var p1in2d = p1.As2d(in a, in xAxis2d, in yAxis2d);
+            var p2in2d = p2.As2d(in a, in xAxis2d, in yAxis2d);
+            var p3in2d = p3.As2d(in a, in xAxis2d, in yAxis2d);
 
-            var p1Proj = p1in2d.As3d(ref a, ref xAxis2d, ref yAxis2d);
-            var p2Proj = p2in2d.As3d(ref a, ref xAxis2d, ref yAxis2d);
-            var p3Proj = p3in2d.As3d(ref a, ref xAxis2d, ref yAxis2d);
+            var p1Proj = p1in2d.As3d(in a, in xAxis2d, in yAxis2d);
+            var p2Proj = p2in2d.As3d(in a, in xAxis2d, in yAxis2d);
+            var p3Proj = p3in2d.As3d(in a, in xAxis2d, in yAxis2d);
 
 
             // test code ENDS here -------------------------------------------------

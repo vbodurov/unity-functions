@@ -37,7 +37,7 @@ namespace Main
             Vector3 collision;
             var hasCollision = 
                 fun.intersection.BetweenRayAndSphere(
-                    ref rayFw, ref rayOr, ref sphereCenter, SphereRadius, out collision);
+                    in rayFw, in rayOr, in sphereCenter, SphereRadius, out collision);
             // test code ENDS here -------------------------------------------------
             if (hasCollision)
             {

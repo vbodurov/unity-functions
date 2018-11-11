@@ -52,8 +52,8 @@ namespace Main
             Vector3 collision;
             var hasCollision = 
                 fun.intersection.BetweenLineSegmentAndDisk(
-                    ref l1, ref l2, 
-                    ref diskNormal, ref diskCenter, DiskRadius, 
+                    in l1, in l2,
+                    in diskNormal, in diskCenter, DiskRadius, 
                     out collision);
             // test code ENDS here -------------------------------------------------
 

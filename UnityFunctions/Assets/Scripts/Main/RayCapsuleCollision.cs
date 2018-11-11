@@ -35,7 +35,7 @@ namespace Main
             Vector3 collision;
             var hasCollision = 
                 fun.intersection.BetweenRayAndCapsule(
-                    ref rayFw, ref rayOr, ref c1p1, ref c1p2, CapsuleRadius, out collision);
+                    in rayFw, in rayOr, in c1p1, in c1p2, CapsuleRadius, out collision);
             // test code ENDS here -------------------------------------------------
             Debug.DrawLine(rayOr, rayOr+rayFw*3, Color.gray, 0, false);
             if (hasCollision)

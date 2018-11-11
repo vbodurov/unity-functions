@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Utils
 {
-        // to test functions: http://cubic-bezier.com/#.26,1.66,.77,.3
+    // to test functions: http://cubic-bezier.com/#.26,1.66,.77,.3
     internal static class BezierFunc
     {
         const double epsilon = 0.000000001;
@@ -144,7 +144,7 @@ namespace Utils
             //      t^2 * P2
             // where 0 <= t <= 1
 
-            float t = ((float)progress).Clamp01();
+            float t = (float)progress.Clamp01();
             float u = 1 - t;
             float tt = t * t;
             float uu = u * u;
@@ -175,7 +175,7 @@ namespace Utils
             //      t^3 * P3
             // where 0 <= t <= 1
 
-            float t = ((float)progress).Clamp01();
+            float t = (float)progress.Clamp01();
             float u = 1 - t;
             float tt = t * t;
             float uu = u * u;
@@ -204,7 +204,7 @@ namespace Utils
             //      t^2 * P2
             // where 0 <= t <= 1
 
-            float t = ((float)progress).Clamp01();
+            float t = (float)progress.Clamp01();
             float u = 1 - t;
             float tt = t * t;
             float uu = u * u;
@@ -219,7 +219,7 @@ namespace Utils
 
         }
 
-        internal static Vector2 GetPointCubic2D(double progress, ref Vector2 start, ref Vector2 control1, ref Vector2 control2, ref Vector2 end)
+        internal static Vector2 GetPointCubic2D(double progress, in Vector2 start, in Vector2 control1, in Vector2 control2, in Vector2 end)
         {
             // cubic bezier formula is
             // [x,gety] = 
@@ -229,7 +229,7 @@ namespace Utils
             //      t^3 * P3
             // where 0 <= t <= 1
 
-            float t = ((float)progress).Clamp01();
+            float t = (float)progress.Clamp01();
             float u = 1 - t;
             float tt = t * t;
             float uu = u * u;
@@ -258,7 +258,7 @@ namespace Utils
             //      t^2 * P2
             // where 0 <= t <= 1
 
-            float t = ((float)progress).Clamp01();
+            float t = (float)progress.Clamp01();
             float u = 1 - t;
             float tt = t * t;
             float uu = u * u;
@@ -282,7 +282,7 @@ namespace Utils
             //      t^3 * P3
             // where 0 <= t <= 1
 
-            float t = ((float)progress).Clamp01();
+            float t = (float)progress.Clamp01();
             float u = 1 - t;
             float tt = t * t;
             float uu = u * u;
@@ -302,7 +302,7 @@ namespace Utils
         // start = start
         // control = control
         // end = end
-        internal static Vector3 GetPointQuadratic(double progress, ref Vector3 start, ref Vector3 control, ref Vector3 end)
+        internal static Vector3 GetPointQuadratic(double progress, in Vector3 start, in Vector3 control, in Vector3 end)
         {
             // https://en.wikipedia.org/wiki/B%C3%A9zier_curve#Quadratic_B.C3.A9zier_curves
             // quadratic bezier formula is
@@ -312,7 +312,7 @@ namespace Utils
             //      t^2 * P2
             // where 0 <= t <= 1
 
-            float t = ((float)progress).Clamp01();
+            float t = (float)progress.Clamp01();
             float u = 1 - t;
             float tt = t * t;
             float uu = u * u;
@@ -327,7 +327,7 @@ namespace Utils
 
         }
 
-        internal static Vector3 GetPointCubic(double progress, ref Vector3 start, ref Vector3 control1, ref Vector3 control2, ref Vector3 end)
+        internal static Vector3 GetPointCubic(double progress, in Vector3 start, in Vector3 control1, in Vector3 control2, in Vector3 end)
         {
             // cubic bezier formula is
             // [x,gety] = 
@@ -337,7 +337,7 @@ namespace Utils
             //      t^3 * P3
             // where 0 <= t <= 1
 
-            float t = ((float)progress).Clamp01();
+            float t = (float)progress.Clamp01();
             float u = 1 - t;
             float tt = t * t;
             float uu = u * u;
@@ -356,32 +356,32 @@ namespace Utils
 
         internal static float GetLengthCubic(Vector3 start, Vector3 control1, Vector3 control2, Vector3 end)
         {
-            return GetLengthCubic(ref start, ref control1, ref control2, ref end, 16);
+            return GetLengthCubic(in start, in control1, in control2, in end, 16);
         }
         internal static float GetLengthCubic(Vector3 start, Vector3 control1, Vector3 control2, Vector3 end, int segments)
         {
-            return GetLengthCubic(ref start, ref control1, ref control2, ref end, 16);
+            return GetLengthCubic(in start, in control1, in control2, in end, 16);
         }
-        internal static float GetLengthCubic(ref Vector3 start, ref Vector3 control1, ref Vector3 control2, ref Vector3 end)
+        internal static float GetLengthCubic(in Vector3 start, in Vector3 control1, in Vector3 control2, in Vector3 end)
         {
-            return GetLengthCubic(ref start, ref control1, ref control2, ref end, 16);
+            return GetLengthCubic(in start, in control1, in control2, in end, 16);
         }
-        internal static float GetLengthCubic(ref Vector3 start, ref Vector3 control1, ref Vector3 control2, ref Vector3 end, int segments)
+        internal static float GetLengthCubic(in Vector3 start, in Vector3 control1, in Vector3 control2, in Vector3 end, int segments)
         {
-            if(segments < 1 || segments > 2048)
+            if (segments < 1 || segments > 2048)
                 throw new ArgumentException("Segments must be between 1 and 2048");
 
             var distance = 0f;
-            Vector3 prev = new Vector3(0,0,0);
+            Vector3 prev = new Vector3(0, 0, 0);
             for (var i = 0; i <= segments; ++i)
             {
-                var x = i/segments;
+                var x = i / segments;
 
-                var curr = GetPointCubic(x, ref start, ref control1, ref control2, ref end);
+                var curr = GetPointCubic(x, in start, in control1, in control2, in end);
 
                 if (i > 0)
                 {
-                    distance += DistanceBetween(ref curr, ref prev);
+                    distance += DistanceBetween(in curr, in prev);
                 }
 
                 prev = curr;
@@ -393,32 +393,32 @@ namespace Utils
 
         internal static float GetLengthQuadratic(Vector3 start, Vector3 control, Vector3 end)
         {
-            return GetLengthQuadratic(ref start, ref control, ref end, 16);
+            return GetLengthQuadratic(in start, in control, in end, 16);
         }
         internal static float GetLengthQuadratic(Vector3 start, Vector3 control, Vector3 end, int segments)
         {
-            return GetLengthQuadratic(ref start, ref control, ref end, 16);
+            return GetLengthQuadratic(in start, in control, in end, 16);
         }
-        internal static float GetLengthQuadratic(ref Vector3 start, ref Vector3 control, ref Vector3 end)
+        internal static float GetLengthQuadratic(in Vector3 start, in Vector3 control, in Vector3 end)
         {
-            return GetLengthQuadratic(ref start, ref control, ref end, 16);
+            return GetLengthQuadratic(in start, in control, in end, 16);
         }
-        internal static float GetLengthQuadratic(ref Vector3 start, ref Vector3 control, ref Vector3 end, int segments)
+        internal static float GetLengthQuadratic(in Vector3 start, in Vector3 control, in Vector3 end, int segments)
         {
-            if(segments < 1 || segments > 2048)
+            if (segments < 1 || segments > 2048)
                 throw new ArgumentException("Segments must be between 1 and 2048");
 
             var distance = 0f;
-            Vector3 prev = new Vector3(0,0,0);
+            Vector3 prev = new Vector3(0, 0, 0);
             for (var i = 0; i <= segments; ++i)
             {
-                var x = i/segments;
+                var x = i / segments;
 
-                var curr = GetPointQuadratic(x, ref start, ref control, ref end);
+                var curr = GetPointQuadratic(x, in start, in control, in end);
 
                 if (i > 0)
                 {
-                    distance += DistanceBetween(ref curr, ref prev);
+                    distance += DistanceBetween(in curr, in prev);
                 }
 
                 prev = curr;
@@ -427,7 +427,7 @@ namespace Utils
             return distance;
         }
 
-        private static float DistanceBetween(ref Vector3 a, ref Vector3 b)
+        private static float DistanceBetween(in Vector3 a, in Vector3 b)
         {
             var vectorX = a.x - b.x;
             var vectorY = a.y - b.y;
@@ -435,17 +435,17 @@ namespace Utils
             return (float)Math.Sqrt((((double)vectorX * (double)vectorX) + ((double)vectorY * (double)vectorY)) + ((double)vectorZ * (double)vectorZ));
         }
 
-        internal static Vector3 GetFirstDerivativeQuadratic(double progress, ref Vector3 start, ref Vector3 control, ref Vector3 end)
+        internal static Vector3 GetFirstDerivativeQuadratic(double progress, in Vector3 start, in Vector3 control, in Vector3 end)
         {
             var t = Mathf.Clamp01((float)progress);
             var n = 1f - t;
             return 2f * n * (control - start) + 2f * t * (end - control);
         }
-        internal static Vector3 GetFirstDerivativeCubic(double progress, ref Vector3 start, ref Vector3 control1, ref Vector3 control2, ref Vector3 end)
+        internal static Vector3 GetFirstDerivativeCubic(double progress, in Vector3 start, in Vector3 control1, in Vector3 control2, in Vector3 end)
         {
             var t = Mathf.Clamp01((float)progress);
-	        var n = 1f - t;
-	        return 3f * n * n * (control1 - start) + 6f * n * t * (control2 - control1) + 3f * t * t * (end - control2);
+            var n = 1f - t;
+            return 3f * n * n * (control1 - start) + 6f * n * t * (control2 - control1) + 3f * t * t * (end - control2);
         }
     }
 

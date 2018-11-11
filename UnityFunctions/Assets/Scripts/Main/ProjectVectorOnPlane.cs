@@ -39,7 +39,7 @@ namespace Main
             var b = _b.position;
             var c = _c.position;
             Vector3 planeNormal;
-            fun.point.GetNormal(ref c, ref b, ref a, out planeNormal);
+            fun.point.GetNormal(in c, in b, in a, out planeNormal);
 
 	        _mesh.vertices = new [] {b,c,a};
 
@@ -47,9 +47,9 @@ namespace Main
 
             // test code STARTS here -----------------------------------------------
             Vector3 projection;
-            fun.vector.ProjectOnPlane(ref vector, ref planeNormal, out projection);
+            fun.vector.ProjectOnPlane(in vector, in planeNormal, out projection);
             _projection.position = projection;
-            var isAbove = fun.vector.IsAbovePlane(ref vector, ref planeNormal);
+            var isAbove = fun.vector.IsAbovePlane(in vector, in planeNormal);
             // test code ENDS here -------------------------------------------------
 //
             SetColorOnChanged(isAbove,new Color(0,0,1,0.9f),new Color(1,0,0,0.9f),_projection);

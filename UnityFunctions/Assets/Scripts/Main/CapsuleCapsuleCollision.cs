@@ -51,8 +51,8 @@ namespace Main
             Vector3 collision;
             var hasCollision = 
                 fun.intersection.BetweenCapsules(
-                    ref c1p1, ref c1p2, radius1, 
-                    ref c2p1, ref c2p2, radius2, out collision);
+                    in c1p1, in c1p2, radius1,
+                    in c2p1, in c2p2, radius2, out collision);
             // test code ENDS here -------------------------------------------------
 
             _collision.position = hasCollision ? collision : new Vector3(0,999,0);

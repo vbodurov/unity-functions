@@ -44,16 +44,16 @@ namespace Main
 
             // test code STARTS here -----------------------------------------------
             var distToPlane = 
-                fun.point.IsBelowPlane(ref tarPo, ref oriFw, ref oriPo) 
+                fun.point.IsBelowPlane(in tarPo, in oriFw, in oriPo) 
                 ? 0 
-                : fun.point.DistanceToPlane(ref tarPo, ref oriFw, ref oriPo);
+                : fun.point.DistanceToPlane(in tarPo, in oriFw, in oriPo);
 
             var lenAll = (float)(len1+len2+len1);
             var relDistToPlane = distToPlane / lenAll;
             Vector3 oriRt;
-            fun.vector.GetNormal(ref oriFw, ref oriUp, out oriRt);
+            fun.vector.GetNormal(in oriFw, in oriUp, out oriRt);
             Vector3 tarPoOnPlane;
-            fun.point.ProjectOnPlane(ref tarPo, ref oriRt, ref oriPo, out tarPoOnPlane);
+            fun.point.ProjectOnPlane(in tarPo, in oriRt, in oriPo, out tarPoOnPlane);
             tarPo = Vector3.Lerp(tarPoOnPlane, tarPo, (float)BezierFunc.GetY(relDistToPlane, 0.20,0.00,0.00,1.00));
 
 

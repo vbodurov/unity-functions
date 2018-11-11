@@ -56,7 +56,7 @@ namespace Main
 
             // test code STARTS here -----------------------------------------------
             Vector3 cpA,cpB;
-            fun.point.ClosestOnTwoLineSegments(ref lA1, ref lA2, ref lB1, ref lB2, out cpA, out cpB);
+            fun.point.ClosestOnTwoLineSegments(in lA1, in lA2, in lB1, in lB2, out cpA, out cpB);
             // test code ENDS here -------------------------------------------------
             Debug.DrawLine(lA1,lA2,Color.green,0,false);
             Debug.DrawLine(lB1,lB2,Color.blue,0,false);

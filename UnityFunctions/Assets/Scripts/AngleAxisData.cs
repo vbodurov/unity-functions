@@ -19,11 +19,11 @@ namespace UnityFunctions
             toVector.Normalize();
             axis.Normalize();
             var planeNormal = (fromVector - toVector).normalized;
-            fun.vector.ProjectOnPlane(ref axis, ref planeNormal, out axis);
+            fun.vector.ProjectOnPlane(in axis, in planeNormal, out axis);
             var q1 = Quaternion.LookRotation(fromVector, axis);
             var q2 = Quaternion.LookRotation(toVector, axis);
-            var sign = fun.angle.BetweenVectorsSigned(ref fromVector, ref toVector, ref axis) < 0 ? -1 : 1;
-            Angle = fun.angle.Between(ref q1, ref q2)*sign;
+            var sign = fun.angle.BetweenPointsSignedInDegrees(in fromVector, in toVector, in axis) < 0 ? -1 : 1;
+            Angle = fun.angle.Between(in q1, in q2)*sign;
             Axis = axis;
         }
         internal float Angle;

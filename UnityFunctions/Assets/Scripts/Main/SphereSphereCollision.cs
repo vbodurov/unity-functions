@@ -32,14 +32,14 @@ namespace Main
             float circleRadius;
             var hasCollision = 
                 fun.intersection.BetweenSpheres(
-                    ref sc1, Sphere1Radius, ref sc2, Sphere2Radius, out circleCenter, out circleRadius);
+                    in sc1, Sphere1Radius, in sc2, Sphere2Radius, out circleCenter, out circleRadius);
             // test code ENDS here -------------------------------------------------
 
             if (hasCollision)
             {
                 var axis = (sc1 - sc2).normalized;
                 Vector3 normX, normY;
-                fun.vector.ComputeRandomXYAxesForPlane(ref axis, out normX, out normY);
+                fun.vector.ComputeRandomXYAxesForPlane(in axis, out normX, out normY);
 
                 Vector3 prev = Vector3.zero;
                 for (var a = 0; a < 361; a += 10)

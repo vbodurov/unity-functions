@@ -43,8 +43,8 @@ namespace Main
             Vector3 collision;
             var hasCollision = 
                 fun.intersection.BetweenTriangleAndDisk(
-                    ref t1, ref t2, ref t3, 
-                    ref diskNormal, ref diskCenter, DiskRadius, 
+                    in t1, in t2, in t3,
+                    in diskNormal, in diskCenter, DiskRadius, 
                     out collision);
             // test code ENDS here -------------------------------------------------
 

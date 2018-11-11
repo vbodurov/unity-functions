@@ -57,7 +57,7 @@ _lineEnd2.position  = V3(0,0.134,0.016);
             Vector3 collision;
             var hasCollision = 
                 fun.intersection.BetweenLineSegmentAndCone(
-                    ref l1, ref l2, ref coneBase, ref coneUp, ConeRadius, ConeHeight, out collision);
+                    in l1, in l2, in coneBase, in coneUp, ConeRadius, ConeHeight, out collision);
             // test code ENDS here -------------------------------------------------
             if (!hasCollision) collision = Vector3.one*9999;
 

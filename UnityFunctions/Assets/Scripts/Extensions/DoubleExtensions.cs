@@ -73,10 +73,6 @@ namespace Extensions
         {
             return Math.Abs(n - m) < epsilon;
         }
-//        internal static double Project(this double n, IBezierGroup bg)
-//        {
-//            return bg.run(n);
-//        }
         internal static float Project(this double n, Func<double, double> fn)
         {
             if (fn == null) return (float)n; // no function is considered linear identity function 

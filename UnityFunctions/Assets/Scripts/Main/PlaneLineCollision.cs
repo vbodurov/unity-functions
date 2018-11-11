@@ -44,7 +44,7 @@ namespace Main
             var b = _b.position;
             var c = _c.position;
             Vector3 planeNormal;
-            fun.point.GetNormal(ref c, ref b, ref a, out planeNormal);
+            fun.point.GetNormal(in c, in b, in a, out planeNormal);
 
 	        _mesh.vertices = new [] {b,c,a};
 
@@ -52,8 +52,8 @@ namespace Main
             var line2 = _pointB.position;
             // test code STARTS here -----------------------------------------------
             Vector3 collisionPoint;
-            var found = fun.intersection.BetweenPlaneAndLine(ref planeNormal, ref a,
-                ref line1, ref line2, out collisionPoint);
+            var found = fun.intersection.BetweenPlaneAndLine(in planeNormal, in a,
+                in line1, in line2, out collisionPoint);
 
             // test code ENDS here -------------------------------------------------
             _projection.position = found ? collisionPoint : V3(0, 10000, 0);

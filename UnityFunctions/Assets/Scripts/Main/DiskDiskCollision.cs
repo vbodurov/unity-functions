@@ -52,7 +52,7 @@ namespace Main
             Vector3 collision;
             var hasCollision = 
                 fun.intersection.BetweenDiskAndDisk(
-                    ref disk1Up, ref disk1Center, Disk1Radius, ref disk2Up, ref disk2Center, Disk2Radius, out collision);
+                    in disk1Up, in disk1Center, Disk1Radius, in disk2Up, in disk2Center, Disk2Radius, out collision);
             // test code ENDS here -------------------------------------------------
 
             _collision.position = hasCollision ? collision : new Vector3(0,999,0);

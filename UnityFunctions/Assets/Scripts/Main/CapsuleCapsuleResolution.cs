@@ -71,8 +71,8 @@ namespace Main
             Quaternion resolvedRot;
             var hasResolution = 
                 fun.resolution.BetweenCapsules(
-                    ref statP0, ref statP1, StaticRadius, 
-                    ref prevP0, ref prevP1, ref nextP0, ref nextP1, ref nextUp, DynamicRadius,
+                    in statP0, in statP1, StaticRadius,
+                    in prevP0, in prevP1, in nextP0, in nextP1, in nextUp, DynamicRadius,
                     out resolvedPos, out resolvedRot);
             // test code ENDS here -------------------------------------------------
             

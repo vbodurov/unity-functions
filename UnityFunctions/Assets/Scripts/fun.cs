@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using UnityEngine;
 using Extensions;
-
+using Utils;
 
 namespace Unianio
 {
@@ -53,7 +54,7 @@ namespace Unianio
             return new Vector3(a.x + (b.x - a.x) * (float)t, a.y + (b.y - a.y) * (float)t, a.z + (b.z - a.z) * (float)t);
         }
 
-        internal static Vector2 lerp2d(ref Vector2 a, ref Vector2 b, double t)
+        internal static Vector2 lerp2d(in Vector2 a, in Vector2 b, double t)
         {
             t = t.Clamp01();
             return new Vector2(a.x + (b.x - a.x) * (float)t, a.y + (b.y - a.y) * (float)t);
@@ -63,12 +64,12 @@ namespace Unianio
             t = t.Clamp01();
             return new Vector2(a.x + (b.x - a.x) * (float)t, a.y + (b.y - a.y) * (float)t);
         }
-        internal static Vector3 lerp(ref Vector3 a, ref Vector3 b, double t)
+        internal static Vector3 lerp(in Vector3 a, in Vector3 b, double t)
         {
             t = t.Clamp01();
             return new Vector3(a.x + (b.x - a.x) * (float)t, a.y + (b.y - a.y) * (float)t, a.z + (b.z - a.z) * (float)t);
         }
-        internal static Vector3 lerpUnclamped(ref Vector3 a, ref Vector3 b, double t)
+        internal static Vector3 lerpUnclamped(in Vector3 a, in Vector3 b, double t)
         {
             return new Vector3(a.x + (b.x - a.x) * (float)t, a.y + (b.y - a.y) * (float)t, a.z + (b.z - a.z) * (float)t);
         }
@@ -88,6 +89,153 @@ namespace Unianio
         {
             return (a + (b - a) * t);
         }
+        internal static float uniFun(double x, Func<double, double> f0,
+            double f1StartX, Func<double, double> f1)
+        {
+            double y;
+            if (x < f1StartX) y = f0(x);
+            else y = f1(x);
+            return (float)Math.Round(y);
+        }
+        internal static Transform[] getGameObjectSequence(string name)
+        {
+            var list = new List<Transform>();
+            var go = GameObject.Find(name);
+            if (go != null) list.Add(go.transform);
+            var i = 0;
+            var numNotFound = 0;
+            while (true)
+            {
+                go = GameObject.Find(name + " (" + i + ")");
+                if (go != null)
+                {
+                    numNotFound = 0;
+                    list.Add(go.transform);
+                }
+                else
+                {
+                    ++numNotFound;
+                }
+                if (numNotFound > 3) break;
+                ++i;
+            }
+            return list.ToArray();
+        }
+        internal static float uniFun(double x, Func<double, double> f0,
+            double f1StartX, Func<double, double> f1,
+            double f2StartX, Func<double, double> f2)
+        {
+            double y;
+            if (x < f1StartX) y = f0(x);
+            else if (x < f2StartX) y = f1(x);
+            else y = f2(x);
+            return (float)Math.Round(y);
+        }
+        internal static float uniFun(double x, Func<double, double> f0,
+            double f1StartX, Func<double, double> f1,
+            double f2StartX, Func<double, double> f2,
+            double f3StartX, Func<double, double> f3)
+        {
+            double y;
+            if (x < f1StartX) y = f0(x);
+            else if (x < f2StartX) y = f1(x);
+            else if (x < f3StartX) y = f2(x);
+            else y = f3(x);
+            return (float)Math.Round(y);
+        }
+        internal static float uniFun(double x, Func<double, double> f0,
+            double f1StartX, Func<double, double> f1,
+            double f2StartX, Func<double, double> f2,
+            double f3StartX, Func<double, double> f3,
+            double f4StartX, Func<double, double> f4)
+        {
+            double y;
+            if (x < f1StartX) y = f0(x);
+            else if (x < f2StartX) y = f1(x);
+            else if (x < f3StartX) y = f2(x);
+            else if (x < f4StartX) y = f3(x);
+            else y = f4(x);
+            return (float)Math.Round(y);
+        }
+        internal static float uniFun(double x, Func<double, double> f0,
+            double f1StartX, Func<double, double> f1,
+            double f2StartX, Func<double, double> f2,
+            double f3StartX, Func<double, double> f3,
+            double f4StartX, Func<double, double> f4,
+            double f5StartX, Func<double, double> f5)
+        {
+            double y;
+            if (x < f1StartX) y = f0(x);
+            else if (x < f2StartX) y = f1(x);
+            else if (x < f3StartX) y = f2(x);
+            else if (x < f4StartX) y = f3(x);
+            else if (x < f5StartX) y = f4(x);
+            else y = f5(x);
+            return (float)Math.Round(y);
+        }
+        internal static float uniFun01(double x, Func<double, double> f0,
+            double f1StartX, Func<double, double> f1)
+        {
+            double y;
+            if (x < f1StartX) y = f0(x.FromRangeTo01(0, f1StartX));
+            else y = f1(x.FromRangeTo01(f1StartX, 1));
+            return (float)Math.Round(y);
+        }
+        internal static float uniFun01(double x, Func<double, double> f0,
+           double f1StartX, Func<double, double> f1,
+           double f2StartX, Func<double, double> f2)
+        {
+            double y;
+            if (x < f1StartX) y = f0(x.FromRangeTo01(0, f1StartX));
+            else if (x < f2StartX) y = f1(x.FromRangeTo01(f1StartX, f2StartX));
+            else y = f2(x.FromRangeTo01(f2StartX, 1));
+            return (float)Math.Round(y);
+        }
+        internal static float uniFun01(double x, Func<double, double> f0,
+           double f1StartX, Func<double, double> f1,
+           double f2StartX, Func<double, double> f2,
+           double f3StartX, Func<double, double> f3)
+        {
+            double y;
+            if (x < f1StartX) y = f0(x.FromRangeTo01(0, f1StartX));
+            else if (x < f2StartX) y = f1(x.FromRangeTo01(f1StartX, f2StartX));
+            else if (x < f3StartX) y = f2(x.FromRangeTo01(f2StartX, f3StartX));
+            else y = f3(x.FromRangeTo01(f3StartX, 1));
+            return (float)Math.Round(y);
+        }
+        internal static float uniFun01(double x, Func<double, double> f0,
+           double f1StartX, Func<double, double> f1,
+           double f2StartX, Func<double, double> f2,
+           double f3StartX, Func<double, double> f3,
+           double f4StartX, Func<double, double> f4)
+        {
+            double y;
+            if (x < f1StartX) y = f0(x.FromRangeTo01(0, f1StartX));
+            else if (x < f2StartX) y = f1(x.FromRangeTo01(f1StartX, f2StartX));
+            else if (x < f3StartX) y = f2(x.FromRangeTo01(f2StartX, f3StartX));
+            else if (x < f4StartX) y = f3(x.FromRangeTo01(f3StartX, f4StartX));
+            else y = f4(x.FromRangeTo01(f4StartX, 1));
+            return (float)Math.Round(y);
+        }
+        internal static float uniFun01(double x, Func<double, double> f0,
+           double f1StartX, Func<double, double> f1,
+           double f2StartX, Func<double, double> f2,
+           double f3StartX, Func<double, double> f3,
+           double f4StartX, Func<double, double> f4,
+           double f5StartX, Func<double, double> f5)
+        {
+            double y;
+            if (x < f1StartX) y = f0(x.FromRangeTo01(0, f1StartX));
+            else if (x < f2StartX) y = f1(x.FromRangeTo01(f1StartX, f2StartX));
+            else if (x < f3StartX) y = f2(x.FromRangeTo01(f2StartX, f3StartX));
+            else if (x < f4StartX) y = f3(x.FromRangeTo01(f3StartX, f4StartX));
+            else if (x < f5StartX) y = f4(x.FromRangeTo01(f4StartX, f5StartX));
+            else y = f5(x.FromRangeTo01(f5StartX, 1));
+            return (float)Math.Round(y);
+        }
+
+
+
 
 
 
@@ -100,7 +248,6 @@ namespace Unianio
         internal const float DegInRadians180 = (float)(Math.PI);
         internal static readonly float[] DotProductByDegree = { 1f, 0.9998477f, 0.9993908f, 0.9986295f, 0.9975641f, 0.9961947f, 0.9945219f, 0.9925461f, 0.9902681f, 0.9876884f, 0.9848077f, 0.9816272f, 0.9781476f, 0.9743701f, 0.9702957f, 0.9659258f, 0.9612617f, 0.9563048f, 0.9510565f, 0.9455186f, 0.9396926f, 0.9335804f, 0.9271839f, 0.9205049f, 0.9135454f, 0.9063078f, 0.8987941f, 0.8910065f, 0.8829476f, 0.8746197f, 0.8660254f, 0.8571673f, 0.8480481f, 0.8386706f, 0.8290376f, 0.8191521f, 0.809017f, 0.7986355f, 0.7880108f, 0.7771459f, 0.7660445f, 0.7547096f, 0.7431449f, 0.7313538f, 0.7193398f, 0.7071067f, 0.6946584f, 0.6819984f, 0.6691306f, 0.656059f, 0.6427876f, 0.6293204f, 0.6156615f, 0.601815f, 0.5877852f, 0.5735765f, 0.5591929f, 0.5446391f, 0.5299193f, 0.5150381f, 0.5f, 0.4848096f, 0.4694716f, 0.4539905f, 0.4383711f, 0.4226182f, 0.4067366f, 0.3907312f, 0.3746066f, 0.3583679f, 0.3420201f, 0.3255681f, 0.309017f, 0.2923717f, 0.2756374f, 0.258819f, 0.2419218f, 0.224951f, 0.2079117f, 0.1908091f, 0.1736482f, 0.1564345f, 0.1391731f, 0.1218693f, 0.1045284f, 0.08715588f, 0.06975645f, 0.05233604f, 0.03489941f, 0.01745242f, 0f, -0.01745248f, -0.03489947f, -0.05233586f, -0.06975651f, -0.0871557f, -0.1045285f, -0.1218693f, -0.139173f, -0.1564344f, -0.1736481f, -0.1908089f, -0.2079116f, -0.224951f, -0.2419218f, -0.258819f, -0.2756375f, -0.2923716f, -0.3090171f, -0.3255682f, -0.3420202f, -0.3583679f, -0.3746065f, -0.3907312f, -0.4067366f, -0.4226184f, -0.4383712f, -0.4539905f, -0.4694716f, -0.4848095f, -0.5000001f, -0.515038f, -0.5299193f, -0.5446391f, -0.5591928f, -0.5735766f, -0.5877852f, -0.601815f, -0.6156615f, -0.6293204f, -0.6427877f, -0.656059f, -0.6691307f, -0.6819984f, -0.6946582f, -0.7071067f, -0.7193398f, -0.7313538f, -0.7431448f, -0.7547096f, -0.7660444f, -0.777146f, -0.7880107f, -0.7986356f, -0.8090171f, -0.819152f, -0.8290374f, -0.8386706f, -0.8480481f, -0.8571672f, -0.8660253f, -0.8746197f, -0.8829476f, -0.8910065f, -0.8987941f, -0.9063078f, -0.9135456f, -0.9205048f, -0.9271837f, -0.9335804f, -0.9396925f, -0.9455187f, -0.9510566f, -0.9563048f, -0.9612616f, -0.9659257f, -0.9702957f, -0.9743701f, -0.9781476f, -0.9816272f, -0.9848078f, -0.9876882f, -0.9902682f, -0.9925461f, -0.9945219f, -0.9961947f, -0.9975641f, -0.9986296f, -0.9993908f, -0.9998477f, -1f };
         internal static readonly Color HandleColor = new Color(0.75f, 0.0f, 0.75f, 1f);
-
 
         internal static bool angleOfDotProductIsLessThan(double dotProduct, double degreesAngle)
         {
@@ -118,21 +265,21 @@ namespace Unianio
             if (degrees > 180) degrees = 180 - (degrees % 180);
             return dotProduct < DotProductByDegree[degrees];
         }
-        internal static bool angleIsLessThan(ref Vector3 dir1, ref Vector3 dir2, double degreesAngle)
+        internal static bool angleIsLessThan(in Vector3 dir1, in Vector3 dir2, double degreesAngle)
         {
             var degrees = (int)Math.Round(degreesAngle);
             if (degrees < 0) degrees *= -1;
             if (degrees > 360) degrees = degrees % 360;
             if (degrees > 180) degrees = 180 - (degrees % 180);
-            return dot(ref dir1, ref dir2) > DotProductByDegree[degrees];
+            return dot(in dir1, in dir2) > DotProductByDegree[degrees];
         }
-        internal static bool angleIsMoreThan(ref Vector3 dir1, ref Vector3 dir2, double degreesAngle)
+        internal static bool angleIsMoreThan(in Vector3 dir1, in Vector3 dir2, double degreesAngle)
         {
             var degrees = (int)Math.Round(degreesAngle);
             if (degrees < 0) degrees *= -1;
             if (degrees > 360) degrees = degrees % 360;
             if (degrees > 180) degrees = 180 - (degrees % 180);
-            return dot(ref dir1, ref dir2) < DotProductByDegree[degrees];
+            return dot(in dir1, in dir2) < DotProductByDegree[degrees];
         }
         internal static bool angleIsLessThan(Vector3 dir1, Vector3 dir2, double degreesAngle)
         {
@@ -140,7 +287,7 @@ namespace Unianio
             if (degrees < 0) degrees *= -1;
             if (degrees > 360) degrees = degrees % 360;
             if (degrees > 180) degrees = 180 - (degrees % 180);
-            return dot(ref dir1, ref dir2) > DotProductByDegree[degrees];
+            return dot(in dir1, in dir2) > DotProductByDegree[degrees];
         }
         internal static bool angleIsMoreThan(Vector3 dir1, Vector3 dir2, double degreesAngle)
         {
@@ -148,7 +295,7 @@ namespace Unianio
             if (degrees < 0) degrees *= -1;
             if (degrees > 360) degrees = degrees % 360;
             if (degrees > 180) degrees = 180 - (degrees % 180);
-            return dot(ref dir1, ref dir2) < DotProductByDegree[degrees];
+            return dot(in dir1, in dir2) < DotProductByDegree[degrees];
         }
         internal static T onesIn<T>(int numberTimes, T state) where T : class
         {
@@ -217,7 +364,18 @@ namespace Unianio
             var x = ((Time.time - iniTime) / duration);
             return (float)func(x);
         }
+        
 
+        internal static double increaseChanceForExtremes1(double x) { return bezier(x, 0.25, 0.00, 0.75, 1.00); }
+        internal static double increaseChanceForExtremes2(double x) { return bezier(x, 0.50, 0.00, 0.50, 1.00); }
+        internal static double increaseChanceForExtremes3(double x) { return bezier(x, 0.75, 0.00, 0.25, 1.00); }
+        internal static double increaseChanceForExtremes4(double x) { return bezier(x, 0.90, 0.00, 0.10, 1.00); }
+        internal static double funFastSlowFast1(double x) { return bezier(x, 0.30, 0.70, 0.70, 0.30); }
+        internal static double funFastSlowFast2(double x) { return bezier(x, 0.20, 0.80, 0.80, 0.20); }
+        internal static double funFastSlowFast3(double x) { return bezier(x, 0.10, 0.90, 0.90, 0.10); }
+        internal static double funSlowFastSlow1(double x) { return bezier(x, 0.70, 0.30, 0.30, 0.70); }
+        internal static double funSlowFastSlow2(double x) { return bezier(x, 0.80, 0.20, 0.20, 0.80); }
+        internal static double funSlowFastSlow3(double x) { return bezier(x, 0.90, 0.10, 0.10, 0.90); }
         internal static double funSlowToFast1(double x) { return pow(x, 2); }
         internal static double funSlowToFast2(double x) { return pow(x, 3); }
         internal static double funSlowToFast3(double x) { return pow(x, 4); }
@@ -251,6 +409,17 @@ namespace Unianio
             if (ifTrue) thenAssign = value;
             else otherwiseAssign = value;
             return value;
+        }
+        internal static void ifElseDo(bool ifTrue, Action thenDo, Action otherwiseDo)
+        {
+            if (ifTrue) thenDo();
+            else otherwiseDo();
+        }
+        internal static void ifElseDo(bool ifTrue, Action thenDo, bool ifElse, Action elseDo, Action otherwiseDo)
+        {
+            if (ifTrue) thenDo();
+            else if (ifElse) elseDo();
+            else otherwiseDo();
         }
         internal static TOutput ifElse<TOutput>(bool ifTrue, TOutput then, TOutput otherwise)
         {
@@ -313,12 +482,21 @@ namespace Unianio
             t = t.Clamp01();
             return new Color(a.r + (b.r - a.r) * (float)t, a.g + (b.g - a.g) * (float)t, a.b + (b.b - a.b) * (float)t, a.a + (b.a - a.a) * (float)t);
         }
-        internal static void lerp(ref Vector3 a, ref Vector3 b, double t, out Vector3 r)
+        internal static void lerp(in Vector3 a, in Vector3 b, double t, out Vector3 r)
         {
             t = t.Clamp01();
             r = new Vector3(a.x + (b.x - a.x) * (float)t, a.y + (b.y - a.y) * (float)t, a.z + (b.z - a.z) * (float)t);
         }
-
+        internal static Vector3 lerpOnBezierControlRelToMiddle(Vector3 start, Vector3 controlRelToMiddle, Vector3 end, double t)
+        {
+            return BezierFunc.GetPointQuadratic(t, start, lerp(in start, in end, 0.5) + controlRelToMiddle, end);
+        }
+        /*
+         toX0 ------
+                    --------- toX1
+                    --------- fromX1
+         fromX0 ----
+         */
         internal static float lerpPlane(double fromX0, double toX0, double fromX1, double toX1, double x01, double fromTo01)
         {
             return lerp(lerp(fromX0, toX0, x01), lerp(fromX1, toX1, x01), fromTo01);
@@ -334,7 +512,7 @@ namespace Unianio
         {
             return vDist(a.position, b.position);
         }
-        internal static float vDist(ref Vector3 a, ref Vector3 b)
+        internal static float vDist(in Vector3 a, in Vector3 b)
         {
             var vectorX = a.x - b.x;
             var vectorY = a.y - b.y;
@@ -355,7 +533,7 @@ namespace Unianio
             var vectorZ = a.z - b.z;
             return (float)((((double)vectorX * (double)vectorX) + ((double)vectorY * (double)vectorY)) + ((double)vectorZ * (double)vectorZ));
         }
-        internal static float vDistSqr(ref Vector3 a, ref Vector3 b)
+        internal static float vDistSqr(in Vector3 a, in Vector3 b)
         {
             var vectorX = a.x - b.x;
             var vectorY = a.y - b.y;
@@ -368,7 +546,7 @@ namespace Unianio
             var vectorZ = a.z - b.z;
             return (float)Math.Sqrt(((double)vectorX * (double)vectorX) + ((double)vectorZ * (double)vectorZ));
         }
-        internal static float vHorzDist(ref Vector3 a, ref Vector3 b)
+        internal static float vHorzDist(in Vector3 a, in Vector3 b)
         {
             var vectorX = a.x - b.x;
             var vectorZ = a.z - b.z;
@@ -380,7 +558,7 @@ namespace Unianio
             var vectorZ = a.z - b.z;
             return (float)(((double)vectorX * (double)vectorX) + ((double)vectorZ * (double)vectorZ));
         }
-        internal static float vHorzDistSqr(ref Vector3 a, ref Vector3 b)
+        internal static float vHorzDistSqr(in Vector3 a, in Vector3 b)
         {
             var vectorX = a.x - b.x;
             var vectorZ = a.z - b.z;
@@ -390,7 +568,7 @@ namespace Unianio
         {
             return ((double)lhs.x * (double)rhs.x + (double)lhs.y * (double)rhs.y + (double)lhs.z * (double)rhs.z);
         }
-        internal static double dotAsDouble(ref Vector3 lhs, ref Vector3 rhs)
+        internal static double dotAsDouble(in Vector3 lhs, in Vector3 rhs)
         {
             return ((double)lhs.x * (double)rhs.x + (double)lhs.y * (double)rhs.y + (double)lhs.z * (double)rhs.z);
         }
@@ -398,7 +576,7 @@ namespace Unianio
         {
             return (float)(lhsX * rhsX + lhsY * rhsY);
         }
-        internal static float dot2D(ref Vector2 lhs, ref Vector2 rhs)
+        internal static float dot2D(in Vector2 lhs, in Vector2 rhs)
         {
             return (float)((double)lhs.x * (double)rhs.x + (double)lhs.y * (double)rhs.y);
         }
@@ -410,7 +588,7 @@ namespace Unianio
         {
             return (float)((double)lhs.x * (double)rhs.x + (double)lhs.y * (double)rhs.y + (double)lhs.z * (double)rhs.z);
         }
-        internal static float dot(ref Vector3 lhs, ref Vector3 rhs)
+        internal static float dot(in Vector3 lhs, in Vector3 rhs)
         {
             return (float)((double)lhs.x * (double)rhs.x + (double)lhs.y * (double)rhs.y + (double)lhs.z * (double)rhs.z);
         }
@@ -418,7 +596,7 @@ namespace Unianio
         {
             return (float)((double)lhs.x * (double)rhs.x + (double)lhs.z * (double)rhs.z);
         }
-        internal static float dotHorz(ref Vector3 lhs, ref Vector3 rhs)
+        internal static float dotHorz(in Vector3 lhs, in Vector3 rhs)
         {
             return (float)((double)lhs.x * (double)rhs.x + (double)lhs.z * (double)rhs.z);
         }
@@ -426,14 +604,14 @@ namespace Unianio
         {
             return (float)((double)a.x * (double)b.x + (double)a.y * (double)b.y + (double)a.z * (double)b.z + (double)a.w * (double)b.w);
         }
-        internal static float dot(ref Quaternion a, ref Quaternion b)
+        internal static float dot(in Quaternion a, in Quaternion b)
         {
             return (float)((double)a.x * (double)b.x + (double)a.y * (double)b.y + (double)a.z * (double)b.z + (double)a.w * (double)b.w);
         }
         internal static Vector3 centroidUnit(Vector3 a, Vector3 b, Vector3 c)
         {
             Vector3 cen;
-            fun.triangle.GetCentroid(ref a, ref b, ref c, out cen);
+            fun.triangle.GetCentroid(in a, in b, in c, out cen);
             return cen.normalized;
         }
 
@@ -464,19 +642,19 @@ namespace Unianio
         {
             return Vector3.SlerpUnclamped(Vector3.SlerpUnclamped(a, b, (float)ab), c, (float)abc);
         }
-        internal static Vector3 slerp(ref Vector3 a, ref Vector3 b, double t)
+        internal static Vector3 slerp(in Vector3 a, in Vector3 b, double t)
         {
             return Vector3.SlerpUnclamped(a, b, (float)t);
         }
-        internal static Vector3 slerp(ref Vector3 a, double t, ref Vector3 b)
+        internal static Vector3 slerp(in Vector3 a, double t, in Vector3 b)
         {
             return Vector3.SlerpUnclamped(a, b, (float)t);
         }
-        internal static Quaternion slerp(ref Quaternion a, ref Quaternion b, double t)
+        internal static Quaternion slerp(in Quaternion a, in Quaternion b, double t)
         {
             return Quaternion.SlerpUnclamped(a, b, (float)t);
         }
-        internal static Quaternion slerp(ref Quaternion a, double t, ref Quaternion b)
+        internal static Quaternion slerp(in Quaternion a, double t, in Quaternion b)
         {
             return Quaternion.SlerpUnclamped(a, b, (float)t);
         }
@@ -488,13 +666,19 @@ namespace Unianio
         {
             return Quaternion.SlerpUnclamped(a, b, (float)t);
         }
-        internal static void slerp(ref Vector3 a, ref Vector3 b, double t, out Vector3 d)
+        internal static void slerp(in Vector3 a, in Vector3 b, double t, out Vector3 d)
         {
             d = Vector3.SlerpUnclamped(a, b, (float)t);
         }
-        internal static Vector3 slerp(ref Vector3 a, double ab, ref Vector3 b, double abc, ref Vector3 c)
+        internal static Vector3 slerp(in Vector3 a, double ab, in Vector3 b, double abc, in Vector3 c)
         {
             return Vector3.SlerpUnclamped(Vector3.SlerpUnclamped(a, b, (float)ab), c, (float)abc);
+        }
+        internal static Quaternion slerp2(in Quaternion a, in Quaternion b, double bStart, in Quaternion c, double t)
+        {
+            if (bStart < 0 || bStart > 1) throw new InvalidEnumArgumentException("Limit must be between 0 and 1 it was = " + bStart);
+            if (t <= bStart) return slerp(in a, in b, t.FromRangeTo01(0, bStart));
+            return slerp(in b, in c, t.FromRangeTo01(bStart, 1));
         }
         internal static Quaternion lookAt(Vector3 fwDir, Vector3 upDir) => Quaternion.LookRotation(fwDir, upDir);
         internal static Quaternion lookAt(Vector3 target, Vector3 source, Vector3 upDir) => Quaternion.LookRotation((target - source).normalized, upDir);
@@ -526,56 +710,56 @@ namespace Unianio
         internal static Vector3 vecNorm(Vector3 lhs, Vector3 rhs)
         {
             Vector3 norm;
-            fun.vector.GetNormal(ref lhs, ref rhs, out norm);
+            fun.vector.GetNormal(in lhs, in rhs, out norm);
             return norm;
         }
-        internal static Vector3 vecNorm(ref Vector3 lhs, ref Vector3 rhs)
+        internal static Vector3 vecNorm(in Vector3 lhs, in Vector3 rhs)
         {
             Vector3 norm;
-            fun.vector.GetNormal(ref lhs, ref rhs, out norm);
+            fun.vector.GetNormal(in lhs, in rhs, out norm);
             return norm;
         }
-        internal static void vecNorm(ref Vector3 lhs, ref Vector3 rhs, out Vector3 norm)
+        internal static void vecNorm(in Vector3 lhs, in Vector3 rhs, out Vector3 norm)
         {
-            fun.vector.GetNormal(ref lhs, ref rhs, out norm);
+            fun.vector.GetNormal(in lhs, in rhs, out norm);
         }
 
 
         internal static Vector3 pntNorm(Vector3 a, Vector3 b, Vector3 c)
         {
             Vector3 norm;
-            fun.point.GetNormal(ref a, ref b, ref c, out norm);
+            fun.point.GetNormal(in a, in b, in c, out norm);
             return norm;
         }
-        internal static Vector3 pntNorm(ref Vector3 a, ref Vector3 b, ref Vector3 c)
+        internal static Vector3 pntNorm(in Vector3 a, in Vector3 b, in Vector3 c)
         {
             Vector3 norm;
-            fun.point.GetNormal(ref a, ref b, ref c, out norm);
+            fun.point.GetNormal(in a, in b, in c, out norm);
             return norm;
         }
-        internal static void pntNorm(ref Vector3 a, ref Vector3 b, ref Vector3 c, out Vector3 norm)
+        internal static void pntNorm(in Vector3 a, in Vector3 b, in Vector3 c, out Vector3 norm)
         {
-            fun.point.GetNormal(ref a, ref b, ref c, out norm);
+            fun.point.GetNormal(in a, in b, in c, out norm);
         }
 
         internal static Vector3 pntNormSameSideAs(Vector3 a, Vector3 b, Vector3 c, Vector3 sideDir)
         {
             Vector3 norm;
-            fun.point.GetNormal(ref a, ref b, ref c, out norm);
-            fun.vector.EnsurePointSameDirAs(ref norm, ref sideDir, out norm);
+            fun.point.GetNormal(in a, in b, in c, out norm);
+            fun.vector.EnsurePointSameDirAs(in norm, in sideDir, out norm);
             return norm;
         }
-        internal static Vector3 pntNormSameSideAs(ref Vector3 a, ref Vector3 b, ref Vector3 c, ref Vector3 sideDir)
+        internal static Vector3 pntNormSameSideAs(in Vector3 a, in Vector3 b, in Vector3 c, in Vector3 sideDir)
         {
             Vector3 norm;
-            fun.point.GetNormal(ref a, ref b, ref c, out norm);
-            fun.vector.EnsurePointSameDirAs(ref norm, ref sideDir, out norm);
+            fun.point.GetNormal(in a, in b, in c, out norm);
+            fun.vector.EnsurePointSameDirAs(in norm, in sideDir, out norm);
             return norm;
         }
-        internal static void pntNormSameSideAs(ref Vector3 a, ref Vector3 b, ref Vector3 c, ref Vector3 sideDir, out Vector3 norm)
+        internal static void pntNormSameSideAs(in Vector3 a, in Vector3 b, in Vector3 c, in Vector3 sideDir, out Vector3 norm)
         {
-            fun.point.GetNormal(ref a, ref b, ref c, out norm);
-            fun.vector.EnsurePointSameDirAs(ref norm, ref sideDir, out norm);
+            fun.point.GetNormal(in a, in b, in c, out norm);
+            fun.vector.EnsurePointSameDirAs(in norm, in sideDir, out norm);
         }
 
 
@@ -641,7 +825,63 @@ namespace Unianio
         {
             return fun.random.Bool(probability);
         }
+        internal static float bezier(double x, double bx, double by, double cx, double cy)
+        {
+            return (float)BezierFunc.GetY(x, bx, by, cx, cy);
+        }
+        internal static float bezier(double x, double ax, double ay, double bx, double by, double cx, double cy, double dx, double dy)
+        {
+            return (float)BezierFunc.GetY(x, ax, ay, bx, by, cx, cy, dx, dy);
+        }
+        internal static float bezier2parts(double x,
+            double ax1, double ay1, double bx1, double by1, double cx1, double cy1,
+            double ax2, double ay2, double bx2, double by2, double cx2, double cy2,
+            double dx2, double dy2)
+        {
+            if (x <= ax2)
+            {
+                return (float)BezierFunc.GetY(x, ax1, ay1, bx1, by1, cx1, cy1, ax2, ay2);
+            }
+            return (float)BezierFunc.GetY(x, ax2, ay2, bx2, by2, cx2, cy2, dx2, dy2);
+        }
+        internal static float bezier3parts(double x,
+            double ax1, double ay1, double bx1, double by1, double cx1, double cy1,
+            double ax2, double ay2, double bx2, double by2, double cx2, double cy2,
+            double ax3, double ay3, double bx3, double by3, double cx3, double cy3,
+            double dx3, double dy3)
+        {
+            if (x <= ax2)
+            {
+                return (float)BezierFunc.GetY(x, ax1, ay1, bx1, by1, cx1, cy1, ax2, ay2);
+            }
+            if (x <= ax3)
+            {
+                return (float)BezierFunc.GetY(x, ax2, ay2, bx2, by2, cx2, cy2, ax3, ay3);
+            }
+            return (float)BezierFunc.GetY(x, ax3, ay3, bx3, by3, cx3, cy3, dx3, dy3);
+        }
+        internal static float bezier4parts(double x,
+            double ax1, double ay1, double bx1, double by1, double cx1, double cy1,
+            double ax2, double ay2, double bx2, double by2, double cx2, double cy2,
+            double ax3, double ay3, double bx3, double by3, double cx3, double cy3,
+            double ax4, double ay4, double bx4, double by4, double cx4, double cy4,
+            double dx4, double dy4)
+        {
 
+            if (x <= ax2)
+            {
+                return (float)BezierFunc.GetY(x, ax1, ay1, bx1, by1, cx1, cy1, ax2, ay2);
+            }
+            if (x <= ax3)
+            {
+                return (float)BezierFunc.GetY(x, ax2, ay2, bx2, by2, cx2, cy2, ax3, ay3);
+            }
+            if (x <= ax4)
+            {
+                return (float)BezierFunc.GetY(x, ax3, ay3, bx3, by3, cx3, cy3, ax4, ay4);
+            }
+            return (float)BezierFunc.GetY(x, ax4, ay4, bx4, by4, cx4, cy4, dx4, dy4);
+        }
         internal static int round(double d)
         {
             return (int)Math.Round(d);
@@ -699,7 +939,6 @@ namespace Unianio
             return (float)(clamp ? ratioRaw.From01ToMin11().ClampMin11() : ratioRaw.From01ToMin11());
         }
 
-
         #region angle
         internal static class angle
         {
@@ -710,42 +949,34 @@ namespace Unianio
             /// </summary>
             internal static float Between(Quaternion a, Quaternion b)
             {
-                return (float)((double)Math.Acos(Math.Min(Math.Abs(dot(ref a, ref b)), 1f)) * TwiseRadiansToDegrees);
+                return (float)((double)Math.Acos(Math.Min(Math.Abs(dot(in a, in b)), 1f)) * TwiseRadiansToDegrees);
             }
             /// <summary>
             /// Angle between rotations in degrees
             /// </summary>
-            internal static float Between(ref Quaternion a, ref Quaternion b)
+            internal static float Between(in Quaternion a, in Quaternion b)
             {
-                return (float)((double)Math.Acos(Math.Min(Math.Abs(dot(ref a, ref b)), 1f)) * TwiseRadiansToDegrees);
+                return (float)((double)Math.Acos(Math.Min(Math.Abs(dot(in a, in b)), 1f)) * TwiseRadiansToDegrees);
             }
-            internal static float BetweenVectorsUnSignedInRadians(ref Vector3 from, ref Vector3 to)
-            {
-                return Mathf.Acos(Mathf.Clamp(Vector3.Dot(from.normalized, to.normalized), -1f, 1f));
-            }
-            internal static float BetweenVectorsUnSignedInDegrees(ref Vector3 from, ref Vector3 to)
-            {
-                return Mathf.Acos(Mathf.Clamp(Vector3.Dot(from.normalized, to.normalized), -1f, 1f)) * RTD;
-            }
-            internal static float BetweenVectorsUnSignedInRadians(Vector3 from, Vector3 to)
+            internal static float BetweenVectorsUnSignedInRadians(in Vector3 from, in Vector3 to)
             {
                 return Mathf.Acos(Mathf.Clamp(Vector3.Dot(from.normalized, to.normalized), -1f, 1f));
             }
-            internal static float BetweenVectorsUnSignedInDegrees(Vector3 from, Vector3 to)
+            internal static float BetweenVectorsUnSignedInDegrees(in Vector3 from, in Vector3 to)
             {
                 return Mathf.Acos(Mathf.Clamp(Vector3.Dot(from.normalized, to.normalized), -1f, 1f)) * RTD;
             }
-            internal static float BetweenVectorsSigned2D(ref Vector2 lhs, ref Vector2 rhs)
+            internal static float BetweenVectorsSigned2D(in Vector2 lhs, in Vector2 rhs)
             {
                 var perpDot = lhs.x * rhs.y - lhs.y * rhs.x;
 
-                return -RTD * (float)Math.Atan2(perpDot, dot2D(ref lhs, ref rhs));
+                return -RTD * (float)Math.Atan2(perpDot, dot2D(in lhs, in rhs));
             }
             internal static float BetweenVectorsSigned2D(Vector2 lhs, Vector2 rhs)
             {
                 var perpDot = lhs.x * rhs.y - lhs.y * rhs.x;
 
-                return -RTD * (float)Math.Atan2(perpDot, dot2D(ref lhs, ref rhs));
+                return -RTD * (float)Math.Atan2(perpDot, dot2D(in lhs, in rhs));
             }
             internal static float BetweenVectorsSigned2D(double v1x, double v1y, double v2x, double v2y)
             {
@@ -753,12 +984,12 @@ namespace Unianio
 
                 return -RTD * (float)Math.Atan2(perpDot, dot2D(v1x, v1y, v2x, v2y));
             }
-            internal static float ShortestBetweenVectorsSigned(ref Vector3 lhs, ref Vector3 rhs)
+            internal static float ShortestBetweenVectorsSigned(in Vector3 lhs, in Vector3 rhs)
             {
                 Vector3 normal;
-                fun.vector.GetNormal(ref lhs, ref rhs, out normal);
-                var x = cross.Product(ref lhs, ref rhs);
-                return (float)Math.Atan2(dot(ref normal, ref x), dot(ref lhs, ref rhs)) * RTD;
+                fun.vector.GetNormal(in lhs, in rhs, out normal);
+                var x = cross.Product(in lhs, in rhs);
+                return (float)Math.Atan2(dot(in normal, in x), dot(in lhs, in rhs)) * RTD;
             }
             internal static float BetweenPointsSignedIgnoreY(Vector3 lhsPoint, Vector3 centerPoint, Vector3 rhsPoint)
             {
@@ -766,7 +997,7 @@ namespace Unianio
                 var rhs = rhsPoint - centerPoint;
                 return BetweenVectorsSigned2D(lhs.x, lhs.z, rhs.x, rhs.z);
             }
-            internal static float BetweenPointsSignedIgnoreY(ref Vector3 lhsPoint, ref Vector3 centerPoint, ref Vector3 rhsPoint)
+            internal static float BetweenPointsSignedIgnoreY(in Vector3 lhsPoint, in Vector3 centerPoint, in Vector3 rhsPoint)
             {
                 var lhs = lhsPoint - centerPoint;
                 var rhs = rhsPoint - centerPoint;
@@ -776,51 +1007,51 @@ namespace Unianio
             /// <summary>
             /// angle in degrees, left to right angle will be positive, right to left negative
             /// </summary>
-            internal static float BetweenVectorsSigned(ref Vector3 lhs, ref Vector3 rhs, ref Vector3 normal)
+            internal static float BetweenVectorsSignedInDegrees(in Vector3 lhs, in Vector3 rhs, in Vector3 normal)
             {
-                var x = fun.cross.Product(ref lhs, ref rhs);
-                return (float)Math.Atan2(fun.dot(ref normal, ref x), fun.dot(ref lhs, ref rhs)) * RTD;
+                var x = fun.cross.Product(in lhs, in rhs);
+                return (float)Math.Atan2(fun.dot(in normal, in x), fun.dot(in lhs, in rhs)) * RTD;
             }
             /// <summary>
             /// angle in degrees, left to right angle will be positive, right to left negative
             /// </summary>
-            internal static float BetweenVectorsSigned(Vector3 lhs, Vector3 rhs, Vector3 normal)
+            internal static float BetweenVectorsSignedInDegrees(Vector3 lhs, Vector3 rhs, Vector3 normal)
             {
-                var x = fun.cross.Product(ref lhs, ref rhs);
-                return (float)Math.Atan2(fun.dot(ref normal, ref x), fun.dot(ref lhs, ref rhs)) * RTD;
+                var x = fun.cross.Product(in lhs, in rhs);
+                return (float)Math.Atan2(fun.dot(in normal, in x), fun.dot(in lhs, in rhs)) * RTD;
             }
-            internal static float BetweenPointsSigned(ref Vector3 lhsPoint, ref Vector3 centerPoint, ref Vector3 rhsPoint)
+            internal static float BetweenPointsSignedInDegrees(in Vector3 lhsPoint, in Vector3 centerPoint, in Vector3 rhsPoint)
             {
                 Vector3 normal;
-                fun.point.GetNormal(ref lhsPoint, ref centerPoint, ref rhsPoint, out normal);
+                fun.point.GetNormal(in lhsPoint, in centerPoint, in rhsPoint, out normal);
                 var lhs = lhsPoint - centerPoint;
                 var rhs = rhsPoint - centerPoint;
-                return BetweenVectorsSigned(ref lhs, ref rhs, ref normal);
+                return BetweenVectorsSignedInDegrees(in lhs, in rhs, in normal);
             }
-            internal static float BetweenPointsSigned(Vector3 lhsPoint, Vector3 centerPoint, Vector3 rhsPoint)
+            internal static float BetweenPointsSignedInDegrees(Vector3 lhsPoint, Vector3 centerPoint, Vector3 rhsPoint)
             {
                 Vector3 normal;
-                fun.point.GetNormal(ref lhsPoint, ref centerPoint, ref rhsPoint, out normal);
+                fun.point.GetNormal(in lhsPoint, in centerPoint, in rhsPoint, out normal);
                 var lhs = lhsPoint - centerPoint;
                 var rhs = rhsPoint - centerPoint;
-                return BetweenVectorsSigned(ref lhs, ref rhs, ref normal);
+                return BetweenVectorsSignedInDegrees(in lhs, in rhs, in normal);
             }
-            internal static float BetweenPointsSigned(ref Vector3 lhsPoint, ref Vector3 centerPoint, ref Vector3 rhsPoint, ref Vector3 normal)
+            internal static float BetweenPointsSignedInDegrees(in Vector3 lhsPoint, in Vector3 centerPoint, in Vector3 rhsPoint, in Vector3 normal)
             {
                 var lhs = lhsPoint - centerPoint;
                 var rhs = rhsPoint - centerPoint;
-                return BetweenVectorsSigned(ref lhs, ref rhs, ref normal);
+                return BetweenVectorsSignedInDegrees(in lhs, in rhs, in normal);
             }
-            internal static float BetweenPointsSigned(Vector3 lhsPoint, Vector3 centerPoint, Vector3 rhsPoint, Vector3 normal)
+            internal static float BetweenPointsSignedInDegrees(Vector3 lhsPoint, Vector3 centerPoint, Vector3 rhsPoint, Vector3 normal)
             {
                 var lhs = lhsPoint - centerPoint;
                 var rhs = rhsPoint - centerPoint;
-                return BetweenVectorsSigned(ref lhs, ref rhs, ref normal);
+                return BetweenVectorsSignedInDegrees(in lhs, in rhs, in normal);
             }
             /// <summary>
             /// signed degrees difference for each axis
             /// </summary>
-            internal static void DifferenceForEachAxis(ref Quaternion original, ref Quaternion changed, out Vector3 diffEuler)
+            internal static void DifferenceForEachAxis(in Quaternion original, in Quaternion changed, out Vector3 diffEuler)
             {
                 var aFw = original * Vector3.forward;
                 var aUp = original * Vector3.up;
@@ -830,28 +1061,40 @@ namespace Unianio
                 var bRt = changed * Vector3.right;
                 Vector3 bFwProj, bUpProj, bRtProj;
 
-                vector.ProjectOnPlane(ref bRt, ref aUp, out bRtProj);
-                vector.ProjectOnPlane(ref bUp, ref aFw, out bUpProj);
-                vector.ProjectOnPlane(ref bFw, ref aRt, out bFwProj);
+                vector.ProjectOnPlane(in bRt, in aUp, out bRtProj);
+                vector.ProjectOnPlane(in bUp, in aFw, out bUpProj);
+                vector.ProjectOnPlane(in bFw, in aRt, out bFwProj);
                 var x = 0f;
                 var y = 0f;
                 var z = 0f;
                 if (bRtProj.sqrMagnitude > 0.000001)
                 {
                     bRtProj.Normalize();
-                    x = BetweenVectorsSigned(ref bRtProj, ref aRt, ref aUp);
+                    x = BetweenVectorsSignedInDegrees(in bRtProj, in aRt, in aUp);
                 }
                 if (bUpProj.sqrMagnitude > 0.000001)
                 {
                     bUpProj.Normalize();
-                    y = BetweenVectorsSigned(ref bUpProj, ref aUp, ref aFw);
+                    y = BetweenVectorsSignedInDegrees(in bUpProj, in aUp, in aFw);
                 }
                 if (bFwProj.sqrMagnitude > 0.000001)
                 {
                     bFwProj.Normalize();
-                    z = BetweenVectorsSigned(ref bFwProj, ref aFw, ref aRt);
+                    z = BetweenVectorsSignedInDegrees(in bFwProj, in aFw, in aRt);
                 }
                 diffEuler = new Vector3(x, y, z);
+            }
+            /// <summary>
+            /// returns angle in degrees
+            /// </summary>
+            internal static float BetweenVectorsProjectedOnPlane(in Vector3 vec1, in Vector3 vec2, in Vector3 planeNormal)
+            {
+                Vector3 proj1, proj2;
+                fun.vector.ProjectOnPlane(in vec1, in planeNormal, out proj1);
+                fun.vector.ProjectOnPlane(in vec2, in planeNormal, out proj2);
+                proj1.Normalize();
+                proj2.Normalize();
+                return fun.angle.BetweenVectorsUnSignedInDegrees(in proj1, in proj2);
             }
         }
 
@@ -860,18 +1103,18 @@ namespace Unianio
         internal static class circle2d
         {
             internal static bool Overlap(
-                ref Vector3 circleCenter1, double circleRadius1,
-                ref Vector3 circleCenter2, double circleRadius2)
+                in Vector3 circleCenter1, double circleRadius1,
+                in Vector3 circleCenter2, double circleRadius2)
             {
-                return distance.BetweenIgnoreY(ref circleCenter1, ref circleCenter2) <= (circleRadius1 + circleRadius2);
+                return distance.BetweenIgnoreY(in circleCenter1, in circleCenter2) <= (circleRadius1 + circleRadius2);
             }
 
             internal static void Join(
-                ref Vector3 circleCenter1, double circleRadius1,
-                ref Vector3 circleCenter2, double circleRadius2,
+                in Vector3 circleCenter1, double circleRadius1,
+                in Vector3 circleCenter2, double circleRadius2,
                 out Vector3 combinedCirCen, out float combinedCirRad)
             {
-                var dist = distance.BetweenIgnoreY(ref circleCenter1, ref circleCenter2);
+                var dist = distance.BetweenIgnoreY(in circleCenter1, in circleCenter2);
                 // circle 2 is inside circle 1
                 if ((dist + circleRadius2) <= circleRadius1)
                 {
@@ -893,11 +1136,11 @@ namespace Unianio
             }
 
             internal static bool JoinIfOverlap(
-                ref Vector3 circleCenter1, double circleRadius1,
-                ref Vector3 circleCenter2, double circleRadius2,
+                in Vector3 circleCenter1, double circleRadius1,
+                in Vector3 circleCenter2, double circleRadius2,
                 out Vector3 combinedCirCen, out float combinedCirRad)
             {
-                var dist = distance.BetweenIgnoreY(ref circleCenter1, ref circleCenter2);
+                var dist = distance.BetweenIgnoreY(in circleCenter1, in circleCenter2);
                 // they don't overlap
                 if (dist > (circleRadius1 + circleRadius2))
                 {
@@ -928,7 +1171,45 @@ namespace Unianio
         }
 
         #endregion
+        #region bezierFunc
+        internal static class bezierFunc
+        {
+            internal static float GetY(double x, double bx, double by, double cx, double cy)
+            {
+                return (float)BezierFunc.GetY(x, bx, by, cx, cy);
+            }
+            internal static float GetY(double x, double ax, double ay, double bx, double by, double cx, double cy, double dx, double dy)
+            {
+                return (float)BezierFunc.GetY(x, ax, ay, bx, by, cx, cy, dx, dy);
+            }
+            internal static Vector3 GetPoint2D(double x, Vector2 start, Vector2 control1, Vector2 control2, Vector2 end)
+            {
+                return BezierFunc.GetPointCubic2D(x, start, control1, control2, end);
+            }
+            internal static Vector3 GetPoint(double x, Vector3 start, Vector3 control1, Vector3 control2, Vector3 end)
+            {
+                return BezierFunc.GetPointCubic(x, start, control1, control2, end);
+            }
+            internal static Vector3 GetPoint(double x, in Vector3 start, in Vector3 control1, in Vector3 control2, in Vector3 end)
+            {
+                return BezierFunc.GetPointCubic(x, in start, in control1, in control2, in end);
+            }
 
+            internal static Vector3 GetPoint2D(double x, Vector2 start, Vector2 control, Vector2 end)
+            {
+                return BezierFunc.GetPointQuadratic2D(x, start, control, end);
+            }
+            internal static Vector3 GetPoint(double x, Vector3 start, Vector3 control, Vector3 end)
+            {
+                return BezierFunc.GetPointQuadratic(x, start, control, end);
+            }
+            internal static Vector3 GetPoint(double x, in Vector3 start, in Vector3 control, in Vector3 end)
+            {
+                return BezierFunc.GetPointQuadratic(x, in start, in control, in end);
+            }
+        }
+
+        #endregion
         #region color
         internal static class color
         {
@@ -940,13 +1221,72 @@ namespace Unianio
                 byte a = (byte)(color >> 0);
                 return new Color(r / (float)0xFF, g / (float)0xFF, b / (float)0xFF, a / (float)0xFF);
             }
+            internal static Color FromHueSaturationLuminance(float hue, float saturation, float luminance)
+            {
+                float v;
+                float r, g, b;
+                // default to gray
+                r = luminance;
+                g = luminance;
+                b = luminance;
+                v = (luminance <= 0.5) ? (luminance * (1.0f + saturation)) : (luminance + saturation - luminance * saturation);
+                if (v > 0)
+                {
+                    float m;
+                    float sv;
+                    int sextant;
+                    float fract, vsf, mid1, mid2;
+                    m = luminance + luminance - v;
+                    sv = (v - m) / v;
+                    hue *= 6.0f;
+                    sextant = (int)hue;
+                    fract = hue - sextant;
+                    vsf = v * sv * fract;
+                    mid1 = m + vsf;
+                    mid2 = v - vsf;
+                    switch (sextant)
+                    {
+                        case 0:
+                            r = v;
+                            g = mid1;
+                            b = m;
+                            break;
+                        case 1:
+                            r = mid2;
+                            g = v;
+                            b = m;
+                            break;
+                        case 2:
+                            r = m;
+                            g = v;
+                            b = mid1;
+                            break;
+                        case 3:
+                            r = m;
+                            g = mid2;
+                            b = v;
+                            break;
+                        case 4:
+                            r = mid1;
+                            g = m;
+                            b = v;
+                            break;
+                        case 5:
+                            r = v;
+                            g = m;
+                            b = mid2;
+                            break;
+                    }
+                }
+                return new Color(r, g, b);
+            }
         }
         #endregion
         #region cross
 
         internal static class cross
         {
-            internal static Vector3 Product(ref Vector3 leftVector, ref Vector3 rightVector)
+            internal static Vector3 Product(in Vector3 leftVector, in Vector3 rightVector)
             {
                 return new Vector3(leftVector.y * rightVector.z - leftVector.z * rightVector.y, leftVector.z * rightVector.x - leftVector.x * rightVector.z, leftVector.x * rightVector.y - leftVector.y * rightVector.x);
             }
@@ -954,7 +1294,7 @@ namespace Unianio
             {
                 return new Vector3(leftVector.y * rightVector.z - leftVector.z * rightVector.y, leftVector.z * rightVector.x - leftVector.x * rightVector.z, leftVector.x * rightVector.y - leftVector.y * rightVector.x);
             }
-            internal static void Product(ref Vector3 leftVector, ref Vector3 rightVector, out Vector3 result)
+            internal static void Product(in Vector3 leftVector, in Vector3 rightVector, out Vector3 result)
             {
                 result = new Vector3(leftVector.y * rightVector.z - leftVector.z * rightVector.y, leftVector.z * rightVector.x - leftVector.x * rightVector.z, leftVector.x * rightVector.y - leftVector.y * rightVector.x);
             }
@@ -969,18 +1309,18 @@ namespace Unianio
                 var vectorY = a.y - b.y;
                 return (float)Math.Sqrt((((double)vectorX * (double)vectorX) + ((double)vectorY * (double)vectorY)));
             }
-            internal static float Between(ref Vector2 a, ref Vector2 b)
+            internal static float Between(in Vector2 a, in Vector2 b)
             {
                 var vectorX = a.x - b.x;
                 var vectorY = a.y - b.y;
                 return (float)Math.Sqrt((((double)vectorX * (double)vectorX) + ((double)vectorY * (double)vectorY)));
             }
-            internal static float Between(ref Vector2 a, float bx, float by)
+            internal static float Between(in Vector2 a, float bx, float by)
             {
                 var vector = new Vector2(a.x - bx, a.y - by);
                 return (float)Math.Sqrt((((double)vector.x * (double)vector.x) + ((double)vector.y * (double)vector.y)));
             }
-            internal static float Between(ref Vector3 a, ref Vector3 b)
+            internal static float Between(in Vector3 a, in Vector3 b)
             {
                 var vectorX = a.x - b.x;
                 var vectorY = a.y - b.y;
@@ -1000,7 +1340,7 @@ namespace Unianio
                 var vectorZ = a.z - b.z;
                 return (float)Math.Sqrt(((double)vectorX * (double)vectorX) + ((double)vectorZ * (double)vectorZ));
             }
-            internal static float BetweenIgnoreY(ref Vector3 a, ref Vector3 b)
+            internal static float BetweenIgnoreY(in Vector3 a, in Vector3 b)
             {
                 var vectorX = a.x - b.x;
                 var vectorZ = a.z - b.z;
@@ -1020,16 +1360,16 @@ namespace Unianio
                 return (float)Math.Sqrt((((double)vx * (double)vx) + ((double)vy * (double)vy)) + ((double)vz * (double)vz));
             }
 
-            internal static float FromPointToPlane(ref Vector3 point, ref Vector3 planeNormal, ref Vector3 planePoint)
+            internal static float FromPointToPlane(in Vector3 point, in Vector3 planeNormal, in Vector3 planePoint)
             {
                 var vectorToPlane = point - planePoint;
-                var distance = dot(ref planeNormal, ref vectorToPlane);
+                var distance = dot(in planeNormal, in vectorToPlane);
                 return abs(distance);
             }
             internal static float FromPointToPlane(Vector3 point, Vector3 planeNormal, Vector3 planePoint)
             {
                 var vectorToPlane = point - planePoint;
-                var distance = dot(ref planeNormal, ref vectorToPlane);
+                var distance = dot(in planeNormal, in vectorToPlane);
                 return abs(distance);
             }
         }
@@ -1044,25 +1384,25 @@ namespace Unianio
                 var vectorY = (double)(a.y - b.y);
                 return (float)((vectorX * vectorX) + (vectorY * vectorY));
             }
-            internal static float Between(ref Vector2 a, ref Vector2 b)
+            internal static float Between(in Vector2 a, in Vector2 b)
             {
                 var vectorX = (double)(a.x - b.x);
                 var vectorY = (double)(a.y - b.y);
                 return (float)((vectorX * vectorX) + (vectorY * vectorY));
             }
-            internal static float Between(ref Vector2 a, float bx, float by)
+            internal static float Between(in Vector2 a, float bx, float by)
             {
                 var vector = new Vector2(a.x - bx, a.y - by);
                 return (float)(((double)vector.x * (double)vector.x) + ((double)vector.y * (double)vector.y));
             }
-            internal static float Between(ref Vector3 a, ref Vector3 b)
+            internal static float Between(in Vector3 a, in Vector3 b)
             {
                 var vectorX = (double)(a.x - b.x);
                 var vectorY = (double)(a.y - b.y);
                 var vectorZ = (double)(a.z - b.z);
                 return (float)(((vectorX * vectorX) + (vectorY * vectorY)) + (vectorZ * vectorZ));
             }
-            internal static double BetweenAsDouble(ref Vector3 a, ref Vector3 b)
+            internal static double BetweenAsDouble(in Vector3 a, in Vector3 b)
             {
                 var vectorX = (double)(a.x - b.x);
                 var vectorY = (double)(a.y - b.y);
@@ -1082,7 +1422,7 @@ namespace Unianio
                 var vectorZ = (double)(a.z - b.z);
                 return (float)((vectorX * vectorX) + (vectorZ * vectorZ));
             }
-            internal static float BetweenIgnoreY(ref Vector3 a, ref Vector3 b)
+            internal static float BetweenIgnoreY(in Vector3 a, in Vector3 b)
             {
                 var vectorX = (double)(a.x - b.x);
                 var vectorZ = (double)(a.z - b.z);
@@ -1137,16 +1477,16 @@ namespace Unianio
             /// <param name="resolvedRot"></param>
             /// <returns></returns>
             internal static bool BetweenCapsules(
-                ref Vector3 staticP0, ref Vector3 staticP1, double staticRadius,
-                ref Vector3 prevP0, ref Vector3 prevP1,
-                ref Vector3 nextP0, ref Vector3 nextP1, ref Vector3 nextUp, double dynamicRadius,
+                in Vector3 staticP0, in Vector3 staticP1, double staticRadius,
+                in Vector3 prevP0, in Vector3 prevP1,
+                in Vector3 nextP0, in Vector3 nextP1, in Vector3 nextUp, double dynamicRadius,
                 out Vector3 resolvedPos, out Quaternion resolvedRot)
             {
                 var staRad = (float)staticRadius;
                 var dynRad = (float)dynamicRadius;
                 var minDist = staRad + dynRad;
 
-                var hasNext = intersection.BetweenCapsules(ref staticP0, ref staticP1, staRad, ref nextP0, ref nextP1, dynRad);
+                var hasNext = intersection.BetweenCapsules(in staticP0, in staticP1, staRad, in nextP0, in nextP1, dynRad);
 
                 var prevDir = (prevP1 - prevP0).normalized;
                 var prevRadVec = prevDir * dynRad;
@@ -1162,14 +1502,14 @@ namespace Unianio
                 var t2 = nextPos;
                 var t3 = prevTip;
                 Vector3 triCol;
-                var hasTri = intersection.BetweenTriangleAndLineSegment(ref t1, ref t2, ref t3, ref staticP0, ref staticP1, out triCol);
+                var hasTri = intersection.BetweenTriangleAndLineSegment(in t1, in t2, in t3, in staticP0, in staticP1, out triCol);
 
                 if (!hasTri)
                 {
                     t1 = nextPos;
                     t2 = prevPos;
                     t3 = prevTip;
-                    hasTri = intersection.BetweenTriangleAndLineSegment(ref t1, ref t2, ref t3, ref staticP0, ref staticP1, out triCol);
+                    hasTri = intersection.BetweenTriangleAndLineSegment(in t1, in t2, in t3, in staticP0, in staticP1, out triCol);
                 }
 
                 if (!hasNext && !hasTri)
@@ -1181,27 +1521,27 @@ namespace Unianio
                 }
 
                 Vector3 onStat, onPrev;
-                point.ClosestOnTwoLineSegments(ref staticP0, ref staticP1, ref prevPos, ref prevTip, out onStat, out onPrev);
+                point.ClosestOnTwoLineSegments(in staticP0, in staticP1, in prevPos, in prevTip, out onStat, out onPrev);
 
                 resolvedPos = nextPos;
                 var statDir = (staticP1 - staticP0).normalized;
 
                 Vector3 target;
-                if (point.IsAbovePlane(ref onPrev, ref statDir, ref staticP1))
+                if (point.IsAbovePlane(in onPrev, in statDir, in staticP1))
                 {
                     target = prevP1 + (onPrev - prevP1).normalized * minDist;
                     resolvedRot = Quaternion.LookRotation((target - resolvedPos).normalized, nextUp);
                     return true;
                 }
                 var minStatDir = -statDir;
-                if (point.IsAbovePlane(ref onPrev, ref minStatDir, ref staticP0))
+                if (point.IsAbovePlane(in onPrev, in minStatDir, in staticP0))
                 {
                     target = prevP0 + (onPrev - prevP0).normalized * minDist;
                     resolvedRot = Quaternion.LookRotation((target - resolvedPos).normalized, nextUp);
                     return true;
                 }
                 var backDir = (onPrev - onStat).normalized;
-                var radians = angle.BetweenVectorsUnSignedInRadians(ref backDir, ref statDir);
+                var radians = angle.BetweenVectorsUnSignedInRadians(in backDir, in statDir);
                 target = onStat + backDir * abs(minDist / sin(radians));
                 resolvedRot = Quaternion.LookRotation((target - resolvedPos).normalized, nextUp);
                 return true;
@@ -1220,14 +1560,14 @@ namespace Unianio
             /// <param name="center2">center of the second box</param>
             /// <param name="size2">width of each dimension of the second bounding box</param>
             /// <returns>return true if they overlap</returns>
-            internal static bool BetweenAxisAlignedBoxes(ref Vector3 center1, ref Vector3 size1, ref Vector3 center2, ref Vector3 size2)
+            internal static bool BetweenAxisAlignedBoxes(in Vector3 center1, in Vector3 size1, in Vector3 center2, in Vector3 size2)
             {
                 var hasOverlapOnX = Math.Abs(center1.x - center2.x) <= ((size1.x / 2f) + (size2.x / 2f));
                 var hasOverlapOnY = Math.Abs(center1.y - center2.y) <= ((size1.y / 2f) + (size2.y / 2f));
                 var hasOverlapOnZ = Math.Abs(center1.z - center2.z) <= ((size1.z / 2f) + (size2.z / 2f));
-                var has = hasOverlapOnX && hasOverlapOnY && hasOverlapOnZ;
-                return has;
+                return hasOverlapOnX && hasOverlapOnY && hasOverlapOnZ;
             }
+
 
             /// <summary>
             /// intersection between two spheres is a circle
@@ -1239,15 +1579,15 @@ namespace Unianio
             /// <param name="intersectCircleCenter">intersection circle center</param>
             /// <param name="intersectCircleRadius">intersection circle radius</param>
             /// <returns>return true if the 2 spheres intersect their surfaces, if one is inside the other returns false</returns>
-            internal static bool BetweenSpheres(ref Vector3 sphere1Center, double sphere1Radius, ref Vector3 sphere2Center, double sphere2Radius, out Vector3 intersectCircleCenter, out float intersectCircleRadius)
+            internal static bool BetweenSpheres(in Vector3 sphere1Center, double sphere1Radius, in Vector3 sphere2Center, double sphere2Radius, out Vector3 intersectCircleCenter, out float intersectCircleRadius)
             {
                 var r1 = (float)sphere1Radius;
                 var r2 = (float)sphere2Radius;
-                var d = distance.Between(ref sphere1Center, ref sphere2Center);
+                var d = distance.Between(in sphere1Center, in sphere2Center);
                 // Two separate spheres
                 if (d > (r1 + r2))
                 {
-                    intersectCircleCenter = lerp(ref sphere1Center, ref sphere2Center, sphere1Radius / sphere2Radius);
+                    intersectCircleCenter = lerp(in sphere1Center, in sphere2Center, sphere1Radius / sphere2Radius);
                     intersectCircleRadius = 0;
                     return false;
                 }
@@ -1271,7 +1611,7 @@ namespace Unianio
                 // One sphere inside the other
                 if (d < abs(r1 - r2))
                 {
-                    intersectCircleCenter = lerp(ref sphere1Center, ref sphere2Center, 0.5);
+                    intersectCircleCenter = lerp(in sphere1Center, in sphere2Center, 0.5);
                     intersectCircleRadius = 0;
                     return false;
                 }
@@ -1293,11 +1633,11 @@ namespace Unianio
             /// <param name="sphereRadius">sphere radius</param>
             /// <param name="collision">collision point</param>
             /// <returns></returns>
-            internal static bool BetweenPlaneAndSphere(ref Vector3 planeNormal, ref Vector3 planePoint, ref Vector3 sphereCenter, float sphereRadius, out Vector3 collision)
+            internal static bool BetweenPlaneAndSphere(in Vector3 planeNormal, in Vector3 planePoint, in Vector3 sphereCenter, float sphereRadius, out Vector3 collision)
             {
                 Vector3 sphereCenterProj;
-                point.ProjectOnPlane(ref sphereCenter, ref planeNormal, ref planePoint, out sphereCenterProj);
-                var h = distance.Between(ref sphereCenter, ref sphereCenterProj);
+                point.ProjectOnPlane(in sphereCenter, in planeNormal, in planePoint, out sphereCenterProj);
+                var h = distance.Between(in sphereCenter, in sphereCenterProj);
                 if (h > sphereRadius)
                 {
                     // sphere does not intersect the plane
@@ -1319,11 +1659,11 @@ namespace Unianio
             /// <param name="sphereRadius">sphere radius</param>
             /// <param name="intersectPoint">collision point</param>
             /// <returns></returns>
-            internal static bool BetweenPlaneAndSphere(ref Vector3 p1, ref Vector3 p2, ref Vector3 p3, ref Vector3 sphereCenter, float sphereRadius, out Vector3 intersectPoint)
+            internal static bool BetweenPlaneAndSphere(in Vector3 p1, in Vector3 p2, in Vector3 p3, in Vector3 sphereCenter, float sphereRadius, out Vector3 intersectPoint)
             {
                 Vector3 planeNormal;
-                point.GetNormal(ref p1, ref p2, ref p3, out planeNormal);
-                return BetweenPlaneAndSphere(ref planeNormal, ref p1, ref sphereCenter, sphereRadius, out intersectPoint);
+                point.GetNormal(in p1, in p2, in p3, out planeNormal);
+                return BetweenPlaneAndSphere(in planeNormal, in p1, in sphereCenter, sphereRadius, out intersectPoint);
             }
 
             /// <summary>
@@ -1336,18 +1676,18 @@ namespace Unianio
             /// <param name="sphereRadius">sphere radius</param>
             /// <param name="collision">collision point</param>
             /// <returns></returns>
-            internal static bool BetweenDiskAndSphere(ref Vector3 diskPlaneNormal, ref Vector3 diskCenter, float diskRadius, ref Vector3 sphereCenter, float sphereRadius, out Vector3 collision)
+            internal static bool BetweenDiskAndSphere(in Vector3 diskPlaneNormal, in Vector3 diskCenter, float diskRadius, in Vector3 sphereCenter, float sphereRadius, out Vector3 collision)
             {
                 Vector3 sphereCenterProj;
-                point.ProjectOnPlane(ref sphereCenter, ref diskPlaneNormal, ref diskCenter, out sphereCenterProj);
-                var h = distance.Between(ref sphereCenter, ref sphereCenterProj);
+                point.ProjectOnPlane(in sphereCenter, in diskPlaneNormal, in diskCenter, out sphereCenterProj);
+                var h = distance.Between(in sphereCenter, in sphereCenterProj);
                 if (h > sphereRadius)
                 {
                     // sphere does not intersect disk plane
                     collision = Vector3.zero;
                     return false;
                 }
-                var projCirCenDist = distance.Between(ref sphereCenterProj, ref diskCenter);
+                var projCirCenDist = distance.Between(in sphereCenterProj, in diskCenter);
                 if (projCirCenDist > (diskRadius + sphereRadius))
                 {
                     // maximum extent sphere circle interection with disk plane cannot reach disk plane
@@ -1363,7 +1703,7 @@ namespace Unianio
                     return false;
                 }
                 var overlap = diskRadius + projCirRad - projCirCenDist;
-                point.MoveAbs(ref sphereCenterProj, ref diskCenter, projCirRad - overlap * 0.5f, out collision);
+                point.MoveAbs(in sphereCenterProj, in diskCenter, projCirRad - overlap * 0.5f, out collision);
                 return true;
             }
 
@@ -1379,12 +1719,12 @@ namespace Unianio
             /// <param name="collision">returns the collision point</param>
             /// <returns></returns>
             internal static bool BetweenDiskAndDisk(
-                ref Vector3 disk1PlaneNormal, ref Vector3 disk1Center, double disk1Radius,
-                ref Vector3 disk2PlaneNormal, ref Vector3 disk2Center, double disk2Radius,
+                in Vector3 disk1PlaneNormal, in Vector3 disk1Center, double disk1Radius,
+                in Vector3 disk2PlaneNormal, in Vector3 disk2Center, double disk2Radius,
                 out Vector3 collision)
             {
                 var max = (float)(disk1Radius + disk2Radius);
-                var distBetweenCenters = distance.Between(ref disk1Center, ref disk2Center);
+                var distBetweenCenters = distance.Between(in disk1Center, in disk2Center);
                 // the centers are too far and the disks could not overlap
                 if (distBetweenCenters > max)
                 {
@@ -1392,7 +1732,7 @@ namespace Unianio
                     return false;
                 }
 
-                var dpOfDir = dot(ref disk1PlaneNormal, ref disk2PlaneNormal);
+                var dpOfDir = dot(in disk1PlaneNormal, in disk2PlaneNormal);
                 // if disks point up same or opposite direction
                 if (dpOfDir > 0.99999 || dpOfDir < -0.99999)
                 {
@@ -1404,7 +1744,7 @@ namespace Unianio
                         return true;
                     }
                     centerToCenter = centerToCenter.normalized;
-                    var dpOf2 = dot(ref disk1PlaneNormal, ref centerToCenter);
+                    var dpOf2 = dot(in disk1PlaneNormal, in centerToCenter);
                     // if the vector between centers and the up vectors are orthogonal (90 degrees) or dot product = 0
                     if (dpOf2 < 0.000001f && dpOf2 > -0.000001f)
                     {
@@ -1417,27 +1757,27 @@ namespace Unianio
                 }
 
                 Vector3 normal;
-                BetweenPlanes(ref disk1PlaneNormal, ref disk1Center, ref disk2PlaneNormal, ref disk2Center, out collision, out normal);
+                BetweenPlanes(in disk1PlaneNormal, in disk1Center, in disk2PlaneNormal, in disk2Center, out collision, out normal);
 
                 var collisionPlusNorm = collision + normal;
 
                 Vector3 norm1X, norm1Y;
-                vector.ComputeRandomXYAxesForPlane(ref disk1PlaneNormal, out norm1X, out norm1Y);
-                var a = (collision - disk1Center).As2d(ref norm1X, ref norm1Y);
-                var b = (collisionPlusNorm - disk1Center).As2d(ref norm1X, ref norm1Y);
+                vector.ComputeRandomXYAxesForPlane(in disk1PlaneNormal, out norm1X, out norm1Y);
+                var a = (collision - disk1Center).As2d(in norm1X, in norm1Y);
+                var b = (collisionPlusNorm - disk1Center).As2d(in norm1X, in norm1Y);
                 Vector2 projection1;
-                var has1 = IsLineGettingCloserToOriginThan(ref a, ref b, (float)disk1Radius, out projection1);
+                var has1 = IsLineGettingCloserToOriginThan(in a, in b, (float)disk1Radius, out projection1);
                 if (!has1)
                 {
                     collision = Vector3.zero;
                     return false;
                 }
                 Vector3 norm2X, norm2Y;
-                vector.ComputeRandomXYAxesForPlane(ref disk2PlaneNormal, out norm2X, out norm2Y);
-                a = (collision - disk2Center).As2d(ref norm2X, ref norm2Y);
-                b = (collisionPlusNorm - disk2Center).As2d(ref norm2X, ref norm2Y);
+                vector.ComputeRandomXYAxesForPlane(in disk2PlaneNormal, out norm2X, out norm2Y);
+                a = (collision - disk2Center).As2d(in norm2X, in norm2Y);
+                b = (collisionPlusNorm - disk2Center).As2d(in norm2X, in norm2Y);
                 Vector2 projection2;
-                var has2 = IsLineGettingCloserToOriginThan(ref a, ref b, (float)disk2Radius, out projection2);
+                var has2 = IsLineGettingCloserToOriginThan(in a, in b, (float)disk2Radius, out projection2);
                 if (!has2)
                 {
                     collision = Vector3.zero;
@@ -1445,8 +1785,8 @@ namespace Unianio
                 }
 
                 Vector3 perp1, perp2;
-                projection1.As3d(ref disk1Center, ref norm1X, ref norm1Y, out perp1);
-                projection2.As3d(ref disk2Center, ref norm2X, ref norm2Y, out perp2);
+                projection1.As3d(in disk1Center, in norm1X, in norm1Y, out perp1);
+                projection2.As3d(in disk2Center, in norm2X, in norm2Y, out perp2);
                 //Debug.DrawLine(perp1,disk1Center,Color.yellow,0,false);
                 //Debug.DrawLine(perp2,disk2Center,Color.white,0,false);
                 //Debug.DrawLine(collision,collision+normal,Color.blue,0,false);
@@ -1466,7 +1806,7 @@ namespace Unianio
 
                 if (perp1to2.magnitude <= (absPerpToEdge1 + absPerpToEdge2))
                 {
-                    collision = point.Lerp(ref perp1, ref perp2, disk1Radius / max);
+                    collision = point.Lerp(in perp1, in perp2, disk1Radius / max);
                     return true;
                 }
 
@@ -1486,15 +1826,15 @@ namespace Unianio
             /// <param name="diskRadius">disk radius</param>
             /// <returns></returns>
             internal static bool BetweenCapsuleAndDisk(
-                ref Vector3 csb, ref Vector3 csa, double capsuleRadius,
-                ref Vector3 diskNormal, ref Vector3 diskCenter, double diskRadius)
+                in Vector3 csb, in Vector3 csa, double capsuleRadius,
+                in Vector3 diskNormal, in Vector3 diskCenter, double diskRadius)
             {
                 // see if disk center is within the capsule cylinder
                 Vector3 diskCenterOnAxis;
                 var diskCenIsWithinCylPl =
-                    point.TryProjectOnLineSegment(ref diskCenter, ref csb, ref csa, out diskCenterOnAxis);
+                    point.TryProjectOnLineSegment(in diskCenter, in csb, in csa, out diskCenterOnAxis);
                 if (diskCenIsWithinCylPl &&
-                    distance.Between(ref diskCenterOnAxis, ref diskCenter) <= capsuleRadius)
+                    distance.Between(in diskCenterOnAxis, in diskCenter) <= capsuleRadius)
                 {
                     return true;
                 }
@@ -1503,14 +1843,14 @@ namespace Unianio
 
                 // middle part
                 Vector3 diskCenOnCapPl;
-                point.ProjectOnPlane(ref diskCenter, ref capsuleUp, ref csb, out diskCenOnCapPl);
+                point.ProjectOnPlane(in diskCenter, in capsuleUp, in csb, out diskCenOnCapPl);
                 var capToDisk = (diskCenOnCapPl - csb).normalized * (float)capsuleRadius;
                 var csaShifted = csa + capToDisk;
                 var csbShifted = csb + capToDisk;
                 Vector3 c1;
-                if (BetweenPlaneAndLineSegment(ref diskNormal, ref diskCenter, ref csaShifted, ref csbShifted, out c1))
+                if (BetweenPlaneAndLineSegment(in diskNormal, in diskCenter, in csaShifted, in csbShifted, out c1))
                 {
-                    if (distance.Between(ref c1, ref diskCenter) <= diskRadius)
+                    if (distance.Between(in c1, in diskCenter) <= diskRadius)
                     {
                         return true;
                     }
@@ -1519,12 +1859,12 @@ namespace Unianio
 
                 // test collision with below sphere
                 Vector3 capEndOnDiskPl;
-                point.ProjectOnPlane(ref csb, ref diskNormal, ref diskCenter, out capEndOnDiskPl);
+                point.ProjectOnPlane(in csb, in diskNormal, in diskCenter, out capEndOnDiskPl);
                 var diskToSph = capEndOnDiskPl - diskCenter;
-                var diskToSphMag = vector.Magnitude(ref diskToSph);
+                var diskToSphMag = vector.Magnitude(in diskToSph);
                 if (diskToSphMag < 0.00001f)
                 {
-                    if (distance.Between(ref csb, ref diskCenter) < maxDistance)
+                    if (distance.Between(in csb, in diskCenter) < maxDistance)
                     {
                         return true;
                     }
@@ -1533,21 +1873,21 @@ namespace Unianio
                 {
                     diskToSph = diskToSph / diskToSphMag;//normalize
                     Vector3 c2;
-                    if (BetweenRayAndSphere(ref diskToSph, ref diskCenter, ref csb, capsuleRadius, out c2))
+                    if (BetweenRayAndSphere(in diskToSph, in diskCenter, in csb, capsuleRadius, out c2))
                     {
-                        if (distance.Between(ref c2, ref diskCenter) <= diskRadius)
+                        if (distance.Between(in c2, in diskCenter) <= diskRadius)
                         {
                             return true;
                         }
                     }
                 }
                 // test collision with above sphere
-                point.ProjectOnPlane(ref csa, ref diskNormal, ref diskCenter, out capEndOnDiskPl);
+                point.ProjectOnPlane(in csa, in diskNormal, in diskCenter, out capEndOnDiskPl);
                 diskToSph = capEndOnDiskPl - diskCenter;
-                diskToSphMag = vector.Magnitude(ref diskToSph);
+                diskToSphMag = vector.Magnitude(in diskToSph);
                 if (diskToSphMag < 0.00001f)
                 {
-                    if (distance.Between(ref csa, ref diskCenter) < maxDistance)
+                    if (distance.Between(in csa, in diskCenter) < maxDistance)
                     {
                         return true;
                     }
@@ -1556,9 +1896,9 @@ namespace Unianio
                 {
                     diskToSph = diskToSph / diskToSphMag;//normalize
                     Vector3 c3;
-                    if (BetweenRayAndSphere(ref diskToSph, ref diskCenter, ref csa, capsuleRadius, out c3))
+                    if (BetweenRayAndSphere(in diskToSph, in diskCenter, in csa, capsuleRadius, out c3))
                     {
-                        if (distance.Between(ref c3, ref diskCenter) <= diskRadius)
+                        if (distance.Between(in c3, in diskCenter) <= diskRadius)
                         {
                             return true;
                         }
@@ -1580,15 +1920,15 @@ namespace Unianio
             /// <param name="collision">the point best describing the collision point - might not be precise!</param>
             /// <returns></returns>
             internal static bool BetweenCapsuleAndDisk(
-                ref Vector3 csb, ref Vector3 csa, float capsuleRadius,
-                ref Vector3 diskNormal, ref Vector3 diskCenter, float diskRadius, out Vector3 collision)
+                in Vector3 csb, in Vector3 csa, float capsuleRadius,
+                in Vector3 diskNormal, in Vector3 diskCenter, float diskRadius, out Vector3 collision)
             {
                 // see if disk center is within the capsule cylinder
                 Vector3 diskCenterOnAxis;
                 var diskCenIsWithinCylPl =
-                    point.TryProjectOnLineSegment(ref diskCenter, ref csb, ref csa, out diskCenterOnAxis);
+                    point.TryProjectOnLineSegment(in diskCenter, in csb, in csa, out diskCenterOnAxis);
                 if (diskCenIsWithinCylPl &&
-                    distance.Between(ref diskCenterOnAxis, ref diskCenter) <= capsuleRadius)
+                    distance.Between(in diskCenterOnAxis, in diskCenter) <= capsuleRadius)
                 {
                     collision = diskCenter;
                     return true;
@@ -1598,13 +1938,13 @@ namespace Unianio
 
                 // middle part
                 Vector3 diskCenOnCapPl;
-                point.ProjectOnPlane(ref diskCenter, ref capsuleUp, ref csb, out diskCenOnCapPl);
+                point.ProjectOnPlane(in diskCenter, in capsuleUp, in csb, out diskCenOnCapPl);
                 var capToDisk = (diskCenOnCapPl - csb).normalized * capsuleRadius;
                 var csaShifted = csa + capToDisk;
                 var csbShifted = csb + capToDisk;
-                if (BetweenPlaneAndLineSegment(ref diskNormal, ref diskCenter, ref csaShifted, ref csbShifted, out collision))
+                if (BetweenPlaneAndLineSegment(in diskNormal, in diskCenter, in csaShifted, in csbShifted, out collision))
                 {
-                    if (distance.Between(ref collision, ref diskCenter) <= diskRadius)
+                    if (distance.Between(in collision, in diskCenter) <= diskRadius)
                     {
                         return true;
                     }
@@ -1613,15 +1953,15 @@ namespace Unianio
 
                 // test collision with below sphere
                 Vector3 capEndOnDiskPl;
-                point.ProjectOnPlane(ref csb, ref diskNormal, ref diskCenter, out capEndOnDiskPl);
+                point.ProjectOnPlane(in csb, in diskNormal, in diskCenter, out capEndOnDiskPl);
                 var diskToSph = capEndOnDiskPl - diskCenter;
-                var diskToSphMag = vector.Magnitude(ref diskToSph);
+                var diskToSphMag = vector.Magnitude(in diskToSph);
                 if (diskToSphMag < 0.00001f)
                 {
-                    if (distance.Between(ref csb, ref diskCenter) < maxDistance)
+                    if (distance.Between(in csb, in diskCenter) < maxDistance)
                     {
                         var diff = (csb - diskCenter);
-                        var diffMag = vector.Magnitude(ref diff);
+                        var diffMag = vector.Magnitude(in diff);
                         collision = (diffMag < 0.00001) ? diskCenter : diskCenter + (diff / diffMag) * min(diffMag / 2, diskRadius);
                         return true;
                     }
@@ -1629,15 +1969,15 @@ namespace Unianio
                 else
                 {
                     diskToSph = diskToSph / diskToSphMag;//normalize
-                    if (BetweenRayAndSphere(ref diskToSph, ref diskCenter, ref csb, capsuleRadius, out collision))
+                    if (BetweenRayAndSphere(in diskToSph, in diskCenter, in csb, capsuleRadius, out collision))
                     {
-                        if (distance.Between(ref collision, ref diskCenter) <= diskRadius)
+                        if (distance.Between(in collision, in diskCenter) <= diskRadius)
                         {
                             Vector3 collisionOnAxis;
-                            if (point.TryProjectOnLineSegment(ref collision, ref csb, ref csa, out collisionOnAxis))
+                            if (point.TryProjectOnLineSegment(in collision, in csb, in csa, out collisionOnAxis))
                             {
                                 Vector3 diskOnPlane;
-                                point.ProjectOnPlane(ref diskCenter, ref capsuleUp, ref collisionOnAxis, out diskOnPlane);
+                                point.ProjectOnPlane(in diskCenter, in capsuleUp, in collisionOnAxis, out diskOnPlane);
                                 collision = (diskOnPlane - collisionOnAxis).normalized * capsuleRadius + collisionOnAxis;
                             }
                             return true;
@@ -1645,15 +1985,15 @@ namespace Unianio
                     }
                 }
                 // test collision with above sphere
-                point.ProjectOnPlane(ref csa, ref diskNormal, ref diskCenter, out capEndOnDiskPl);
+                point.ProjectOnPlane(in csa, in diskNormal, in diskCenter, out capEndOnDiskPl);
                 diskToSph = capEndOnDiskPl - diskCenter;
-                diskToSphMag = vector.Magnitude(ref diskToSph);
+                diskToSphMag = vector.Magnitude(in diskToSph);
                 if (diskToSphMag < 0.00001f)
                 {
-                    if (distance.Between(ref csa, ref diskCenter) < maxDistance)
+                    if (distance.Between(in csa, in diskCenter) < maxDistance)
                     {
                         var diff = (csa - diskCenter);
-                        var diffMag = vector.Magnitude(ref diff);
+                        var diffMag = vector.Magnitude(in diff);
                         collision = diffMag < 0.00001 ? diskCenter : diskCenter + (diff / diffMag) * min(diffMag / 2, diskRadius);
                         return true;
                     }
@@ -1661,15 +2001,15 @@ namespace Unianio
                 else
                 {
                     diskToSph = diskToSph / diskToSphMag;//normalize
-                    if (BetweenRayAndSphere(ref diskToSph, ref diskCenter, ref csa, capsuleRadius, out collision))
+                    if (BetweenRayAndSphere(in diskToSph, in diskCenter, in csa, capsuleRadius, out collision))
                     {
-                        if (distance.Between(ref collision, ref diskCenter) <= diskRadius)
+                        if (distance.Between(in collision, in diskCenter) <= diskRadius)
                         {
                             Vector3 collisionOnAxis;
-                            if (point.TryProjectOnLineSegment(ref collision, ref csb, ref csa, out collisionOnAxis))
+                            if (point.TryProjectOnLineSegment(in collision, in csb, in csa, out collisionOnAxis))
                             {
                                 Vector3 diskOnPlane;
-                                point.ProjectOnPlane(ref diskCenter, ref capsuleUp, ref collisionOnAxis, out diskOnPlane);
+                                point.ProjectOnPlane(in diskCenter, in capsuleUp, in collisionOnAxis, out diskOnPlane);
                                 collision = (diskOnPlane - collisionOnAxis).normalized * capsuleRadius + collisionOnAxis;
                             }
                             return true;
@@ -1683,14 +2023,14 @@ namespace Unianio
 
 
             internal static bool BetweenRayAndSphere(
-                ref Vector3 rayFw, ref Vector3 rayOr,
-                ref Vector3 sphereCenter, double sphereRadius,
+                in Vector3 rayFw, in Vector3 rayOr,
+                in Vector3 sphereCenter, double sphereRadius,
                 out Vector3 collision)
             {
                 var radiusSquared = sphereRadius * sphereRadius;
                 var rayToSphere = sphereCenter - rayOr;
-                var tca = fun.dot(ref rayToSphere, ref rayFw);
-                var d2 = fun.dot(ref rayToSphere, ref rayToSphere) - tca * tca;
+                var tca = fun.dot(in rayToSphere, in rayFw);
+                var d2 = fun.dot(in rayToSphere, in rayToSphere) - tca * tca;
                 if (d2 > radiusSquared)
                 {
                     collision = Vector3.zero;
@@ -1724,32 +2064,32 @@ namespace Unianio
                 return true;
             }
             internal static bool BetweenRayAndCapsule(
-                ref Vector3 rayFw, ref Vector3 rayOr,
-                ref Vector3 cpu, ref Vector3 cpd, float capsuleRadius,
+                in Vector3 rayFw, in Vector3 rayOr,
+                in Vector3 cpu, in Vector3 cpd, float capsuleRadius,
                 out Vector3 collision)
             {
                 var capDir = (cpu - cpd);
                 if (capDir.sqrMagnitude < 0.00001f)
                 {
                     // the two capsule ends are so close so it is esencially a sphere
-                    return BetweenRayAndSphere(ref rayFw, ref rayOr, ref cpu, capsuleRadius, out collision);
+                    return BetweenRayAndSphere(in rayFw, in rayOr, in cpu, capsuleRadius, out collision);
                 }
                 capDir.Normalize();
                 Vector3 pl1, pl2;
-                point.ClosestOnTwoLinesByPointAndDirection(ref rayOr, ref rayFw, ref cpd, ref capDir, out pl1, out pl2);
-                if (!point.IsOnSegment(ref cpu, ref pl2, ref cpd))
+                point.ClosestOnTwoLinesByPointAndDirection(in rayOr, in rayFw, in cpd, in capDir, out pl1, out pl2);
+                if (!point.IsOnSegment(in cpu, in pl2, in cpd))
                 {
-                    if (BetweenRayAndSphere(ref rayFw, ref rayOr, ref cpu, capsuleRadius, out collision)) return true;
-                    if (BetweenRayAndSphere(ref rayFw, ref rayOr, ref cpd, capsuleRadius, out collision)) return true;
+                    if (BetweenRayAndSphere(in rayFw, in rayOr, in cpu, capsuleRadius, out collision)) return true;
+                    if (BetweenRayAndSphere(in rayFw, in rayOr, in cpd, capsuleRadius, out collision)) return true;
                     return false;
                 }
 
-                var d = distance.Between(ref pl1, ref pl2);
+                var d = distance.Between(in pl1, in pl2);
                 var hasCollision = d <= capsuleRadius;
                 if (hasCollision)
                 {
                     var n = Math.Sqrt(capsuleRadius * capsuleRadius - d * d);
-                    point.MoveAbs(ref pl1, ref rayOr, (float)n, out collision);
+                    point.MoveAbs(in pl1, in rayOr, (float)n, out collision);
                     return true;
                 }
                 collision = Vector3.zero;
@@ -1766,27 +2106,27 @@ namespace Unianio
             /// <param name="sphereRadius">sphere radius</param>
             /// <returns></returns>
             internal static bool BetweenCapsuleAndSphere(
-                ref Vector3 csb, ref Vector3 csa, double capsuleRadius,
-                ref Vector3 sphereCenter, double sphereRadius)
+                in Vector3 csb, in Vector3 csa, double capsuleRadius,
+                in Vector3 sphereCenter, double sphereRadius)
             {
                 var maxDistance = capsuleRadius + sphereRadius;
                 // is in the middle
                 Vector3 proj;
-                if (point.TryProjectOnLineSegment(ref sphereCenter, ref csb, ref csa, out proj))
+                if (point.TryProjectOnLineSegment(in sphereCenter, in csb, in csa, out proj))
                 {
-                    return distance.Between(ref sphereCenter, ref proj) <= maxDistance;
+                    return distance.Between(in sphereCenter, in proj) <= maxDistance;
                 }
                 var aboveVec = (csa - csb).normalized;
                 // is above
-                if (point.IsAbovePlane(ref sphereCenter, ref aboveVec, ref csa))
+                if (point.IsAbovePlane(in sphereCenter, in aboveVec, in csa))
                 {
-                    return distance.Between(ref sphereCenter, ref csa) <= maxDistance;
+                    return distance.Between(in sphereCenter, in csa) <= maxDistance;
                 }
                 var belowVec = -aboveVec;
                 // is below
-                if (point.IsAbovePlane(ref sphereCenter, ref belowVec, ref csb))
+                if (point.IsAbovePlane(in sphereCenter, in belowVec, in csb))
                 {
-                    return distance.Between(ref sphereCenter, ref csb) <= maxDistance;
+                    return distance.Between(in sphereCenter, in csb) <= maxDistance;
                 }
                 return false;
             }
@@ -1802,45 +2142,45 @@ namespace Unianio
             /// <param name="collision">the point of collision</param>
             /// <returns></returns>
             internal static bool BetweenCapsuleAndSphere(
-                ref Vector3 csb, ref Vector3 csa, double capsuleRadius,
-                ref Vector3 sphereCenter, double sphereRadius, out Vector3 collision)
+                in Vector3 csb, in Vector3 csa, double capsuleRadius,
+                in Vector3 sphereCenter, double sphereRadius, out Vector3 collision)
             {
                 var maxDistance = capsuleRadius + sphereRadius;
                 // is in the middle
                 Vector3 proj;
-                if (point.TryProjectOnLineSegment(ref sphereCenter, ref csb, ref csa, out proj))
+                if (point.TryProjectOnLineSegment(in sphereCenter, in csb, in csa, out proj))
                 {
                     return HasOverlapOfTwoSpheres(
-                        ref sphereCenter, ref proj, maxDistance, sphereRadius, out collision);
+                        in sphereCenter, in proj, maxDistance, sphereRadius, out collision);
                 }
                 var aboveVec = (csa - csb).normalized;
                 // is above
-                if (point.IsAbovePlane(ref sphereCenter, ref aboveVec, ref csa))
+                if (point.IsAbovePlane(in sphereCenter, in aboveVec, in csa))
                 {
                     return HasOverlapOfTwoSpheres(
-                        ref sphereCenter, ref csa, maxDistance, sphereRadius, out collision);
+                        in sphereCenter, in csa, maxDistance, sphereRadius, out collision);
                 }
                 var belowVec = -aboveVec;
                 // is below
-                if (point.IsAbovePlane(ref sphereCenter, ref belowVec, ref csb))
+                if (point.IsAbovePlane(in sphereCenter, in belowVec, in csb))
                 {
                     return HasOverlapOfTwoSpheres(
-                        ref sphereCenter, ref csb, maxDistance, sphereRadius, out collision);
+                        in sphereCenter, in csb, maxDistance, sphereRadius, out collision);
                 }
                 collision = Vector3.zero;
                 return false;
             }
 
             private static bool HasOverlapOfTwoSpheres(
-                ref Vector3 sphereCenter1, ref Vector3 sphereCenter2,
+                in Vector3 sphereCenter1, in Vector3 sphereCenter2,
                 double sumOfRadii, double sphereRadius1, out Vector3 collision)
             {
-                var d = distance.Between(ref sphereCenter1, ref sphereCenter2);
+                var d = distance.Between(in sphereCenter1, in sphereCenter2);
                 var has = d <= sumOfRadii;
                 if (has)
                 {
                     var ratio = sphereRadius1 / sumOfRadii;
-                    point.TryMoveAbs(ref sphereCenter1, ref sphereCenter2, d * ratio, out collision);
+                    point.TryMoveAbs(in sphereCenter1, in sphereCenter2, d * ratio, out collision);
                     return true;
                 }
                 collision = Vector3.zero;
@@ -1859,12 +2199,12 @@ namespace Unianio
             /// <param name="radius2">radius of capsule 2 sphere</param>
             /// <returns>true if there is overlap false otherwise</returns>
             internal static bool BetweenCapsules(
-                ref Vector3 c1sb, ref Vector3 c1sa, double radius1,
-                ref Vector3 c2sb, ref Vector3 c2sa, double radius2)
+                in Vector3 c1sb, in Vector3 c1sa, double radius1,
+                in Vector3 c2sb, in Vector3 c2sa, double radius2)
             {
                 Vector3 closest1, closest2;
-                point.ClosestOnTwoLineSegments(ref c1sb, ref c1sa, ref c2sb, ref c2sa, out closest1, out closest2);
-                var dist = distance.Between(ref closest1, ref closest2);
+                point.ClosestOnTwoLineSegments(in c1sb, in c1sa, in c2sb, in c2sa, out closest1, out closest2);
+                var dist = distance.Between(in closest1, in closest2);
                 if (dist < (radius1 + radius2))
                 {
                     return true;
@@ -1884,12 +2224,12 @@ namespace Unianio
             /// <param name="collision">The point of collision</param>
             /// <returns>true if there is overlap false otherwise</returns>
             internal static bool BetweenCapsules(
-                ref Vector3 c1sb, ref Vector3 c1sa, double radius1,
-                ref Vector3 c2sb, ref Vector3 c2sa, double radius2, out Vector3 collision)
+                in Vector3 c1sb, in Vector3 c1sa, double radius1,
+                in Vector3 c2sb, in Vector3 c2sa, double radius2, out Vector3 collision)
             {
                 Vector3 closest1, closest2;
-                point.ClosestOnTwoLineSegments(ref c1sb, ref c1sa, ref c2sb, ref c2sa, out closest1, out closest2);
-                var dist = distance.Between(ref closest1, ref closest2);
+                point.ClosestOnTwoLineSegments(in c1sb, in c1sa, in c2sb, in c2sa, out closest1, out closest2);
+                var dist = distance.Between(in closest1, in closest2);
                 if (dist < (radius1 + radius2))
                 {
                     if (dist < 0.000001)
@@ -1906,21 +2246,21 @@ namespace Unianio
             }
 
             internal static bool BetweenSpheres(
-                ref Vector3 sphereCenter1, double radius1,
-                ref Vector3 sphereCenter2, double radius2)
+                in Vector3 sphereCenter1, double radius1,
+                in Vector3 sphereCenter2, double radius2)
             {
                 var sum = radius1 + radius2;
                 if (sum < 0.0001)
                 {
                     return sphereCenter1.IsEqual(sphereCenter2, 0.0001);
                 }
-                var dist = fun.distance.Between(ref sphereCenter1, ref sphereCenter2);
+                var dist = fun.distance.Between(in sphereCenter1, in sphereCenter2);
                 return dist <= (radius1 + radius2);
             }
 
             internal static bool BetweenSpheres(
-                ref Vector3 sphereCenter1, double radius1,
-                ref Vector3 sphereCenter2, double radius2, out Vector3 middle)
+                in Vector3 sphereCenter1, double radius1,
+                in Vector3 sphereCenter2, double radius2, out Vector3 middle)
             {
                 var sum = radius1 + radius2;
                 if (sum < 0.0001)
@@ -1928,14 +2268,14 @@ namespace Unianio
                     middle = sphereCenter1;
                     return sphereCenter1.IsEqual(sphereCenter2, 0.0001);
                 }
-                var dist = fun.distance.Between(ref sphereCenter1, ref sphereCenter2);
+                var dist = fun.distance.Between(in sphereCenter1, in sphereCenter2);
                 middle = sphereCenter1.MoveTowards(sphereCenter2, (radius1 / sum) * dist);
                 return dist <= (radius1 + radius2);
             }
 
 
 
-            private static bool IsLineGettingCloserToOriginThan(ref Vector2 a, ref Vector2 b, float maxDist, out Vector2 projection)
+            private static bool IsLineGettingCloserToOriginThan(in Vector2 a, in Vector2 b, float maxDist, out Vector2 projection)
             {
                 var k = ((b.y - a.y) * -a.x - (b.x - a.x) * -a.y) / ((b.y - a.y) * (b.y - a.y) + (b.x - a.x) * (b.x - a.x));
                 projection = new Vector2(-k * (b.y - a.y), k * (b.x - a.x));
@@ -1947,18 +2287,18 @@ namespace Unianio
 
 
 
-            internal static bool BetweenLines(ref Vector3 ray1Origin, ref Vector3 ray1Dir, ref Vector3 ray2Origin, ref Vector3 ray2Dir, out Vector3 intersection)
+            internal static bool BetweenLines(in Vector3 ray1Origin, in Vector3 ray1Dir, in Vector3 ray2Origin, in Vector3 ray2Dir, out Vector3 intersection)
             {
                 var lineVec3 = ray2Origin - ray1Origin;
-                var crossVec1and2 = cross.Product(ref ray1Dir, ref ray2Dir);
-                var crossVec3and2 = cross.Product(ref lineVec3, ref ray2Dir);
+                var crossVec1and2 = cross.Product(in ray1Dir, in ray2Dir);
+                var crossVec3and2 = cross.Product(in lineVec3, in ray2Dir);
 
-                var planarFactor = dot(ref lineVec3, ref crossVec1and2);
+                var planarFactor = dot(in lineVec3, in crossVec1and2);
 
                 //is coplanar, and not parrallel
                 if (abs(planarFactor) < 0.0001f && crossVec1and2.sqrMagnitude > 0.0001f)
                 {
-                    var s = dot(ref crossVec3and2, ref crossVec1and2) / crossVec1and2.sqrMagnitude;
+                    var s = dot(in crossVec3and2, in crossVec1and2) / crossVec1and2.sqrMagnitude;
                     intersection = ray1Origin + (ray1Dir * s);
                     return true;
                 }
@@ -1967,19 +2307,19 @@ namespace Unianio
             }
 
             internal static bool BetweenTriangleAndLineSegment(
-                ref Vector3 p1, ref Vector3 p2, ref Vector3 p3,
-                ref Vector3 line1, ref Vector3 line2)
+                in Vector3 p1, in Vector3 p2, in Vector3 p3,
+                in Vector3 line1, in Vector3 line2)
             {
                 var diff = line1 - line2;
                 var rayForward = diff.normalized;
                 var rayOrigin = line2;
-                var rayCollides = BetweenTriangleAndRay(ref p1, ref p2, ref p3, ref rayForward, ref rayOrigin);
+                var rayCollides = BetweenTriangleAndRay(in p1, in p2, in p3, in rayForward, in rayOrigin);
                 if (rayCollides)
                 {
                     Vector3 planeNormal;
-                    point.GetNormal(ref p1, ref p2, ref p3, out planeNormal);
+                    point.GetNormal(in p1, in p2, in p3, out planeNormal);
                     Vector3 collision;
-                    if (BetweenPlaneAndRay(ref planeNormal, ref p1, ref rayForward, ref rayOrigin, out collision))
+                    if (BetweenPlaneAndRay(in planeNormal, in p1, in rayForward, in rayOrigin, out collision))
                     {
                         return (collision - rayOrigin).sqrMagnitude <= diff.sqrMagnitude;
                     }
@@ -1988,18 +2328,18 @@ namespace Unianio
             }
 
             internal static bool BetweenTriangleAndLineSegment(
-                ref Vector3 p1, ref Vector3 p2, ref Vector3 p3,
-                ref Vector3 line1, ref Vector3 line2, out Vector3 collision)
+                in Vector3 p1, in Vector3 p2, in Vector3 p3,
+                in Vector3 line1, in Vector3 line2, out Vector3 collision)
             {
                 var diff = line1 - line2;
                 var rayForward = diff.normalized;
                 var rayOrigin = line2;
-                var rayCollides = BetweenTriangleAndRay(ref p1, ref p2, ref p3, ref rayForward, ref rayOrigin);
+                var rayCollides = BetweenTriangleAndRay(in p1, in p2, in p3, in rayForward, in rayOrigin);
                 if (rayCollides)
                 {
                     Vector3 planeNormal;
-                    point.GetNormal(ref p1, ref p2, ref p3, out planeNormal);
-                    if (BetweenPlaneAndRay(ref planeNormal, ref p1, ref rayForward, ref rayOrigin, out collision))
+                    point.GetNormal(in p1, in p2, in p3, out planeNormal);
+                    if (BetweenPlaneAndRay(in planeNormal, in p1, in rayForward, in rayOrigin, out collision))
                     {
                         return (collision - rayOrigin).sqrMagnitude <= diff.sqrMagnitude;
                     }
@@ -2007,38 +2347,18 @@ namespace Unianio
                 collision = Vector3.zero;
                 return false;
             }
-            public static bool BetweenTriangleAndLine(
-                ref Vector3 p1, ref Vector3 p2, ref Vector3 p3,
-                ref Vector3 line1, ref Vector3 line2)
-            {
-                var diff = line1 - line2;
-                var rayForward = diff.normalized;
-                var rayOrigin = line2;
-                var rayCollides = BetweenTriangleAndRay(ref p1, ref p2, ref p3, ref rayForward, ref rayOrigin);
-                if (rayCollides)
-                {
-                    Vector3 planeNormal;
-                    point.GetNormal(ref p1, ref p2, ref p3, out planeNormal);
-                    Vector3 collision;
-                    if (BetweenPlaneAndRay(ref planeNormal, ref p1, ref rayForward, ref rayOrigin, out collision))
-                    {
-                        return (collision - rayOrigin).sqrMagnitude <= diff.sqrMagnitude;
-                    }
-                }
-                return false;
-            }
 
-            internal static bool BetweenTriangleAndRay(ref Vector3 p1, ref Vector3 p2, ref Vector3 p3, ref Vector3 rayForward, ref Vector3 rayOrigin)
+            internal static bool BetweenTriangleAndRay(in Vector3 p1, in Vector3 p2, in Vector3 p3, in Vector3 rayForward, in Vector3 rayOrigin)
             {
                 //Find vectors for two edges sharing vertex/point p1
                 var e1 = p2 - p1;
                 var e2 = p3 - p1;
 
                 // calculating determinant 
-                var p = cross.Product(ref rayForward, ref e2);
+                var p = cross.Product(in rayForward, in e2);
 
                 //Calculate determinat
-                var det = dot(ref e1, ref p);
+                var det = dot(in e1, in p);
 
                 //if determinant is near zero, ray lies in plane of triangle otherwise not
                 if (det > -0.000001 && det < 0.000001) { return false; }
@@ -2048,21 +2368,21 @@ namespace Unianio
                 var t = rayOrigin - p1;
 
                 //Calculate u parameter
-                var u = dot(ref t, ref p) * invDet;
+                var u = dot(in t, in p) * invDet;
 
                 //Check for ray hit
                 if (u < 0 || u > 1) { return false; }
 
                 //Prepare to test v parameter
-                var q = cross.Product(ref t, ref e1);
+                var q = cross.Product(in t, in e1);
 
                 //Calculate v parameter
-                var v = dot(ref rayForward, ref q) * invDet;
+                var v = dot(in rayForward, in q) * invDet;
 
                 //Check for ray hit
                 if (v < 0 || u + v > 1) { return false; }
 
-                if ((dot(ref e2, ref q) * invDet) > 0.000001)
+                if ((dot(in e2, in q) * invDet) > 0.000001)
                 {
                     //ray does intersect
                     return true;
@@ -2073,8 +2393,8 @@ namespace Unianio
             }
 
             internal static bool BetweenPlaneAndLine(
-                ref Vector3 planeNormal, ref Vector3 planePoint,
-                ref Vector3 lineA, ref Vector3 lineB, out Vector3 intersection)
+                in Vector3 planeNormal, in Vector3 planePoint,
+                in Vector3 lineA, in Vector3 lineB, out Vector3 intersection)
             {
                 planeNormal.Normalize();// that changes state but plane normal should always be normal
                 var rayOrigin = lineA;
@@ -2082,13 +2402,13 @@ namespace Unianio
                 // if line points are the same
                 if (rayNormal.sqrMagnitude < 0.00001)
                 {
-                    point.ProjectOnPlane(ref lineA, ref planeNormal, ref planePoint, out intersection);
+                    point.ProjectOnPlane(in lineA, in planeNormal, in planePoint, out intersection);
                     return true;
                 }
                 rayNormal.Normalize();
-                var planeDistance = -dot(ref planeNormal, ref planePoint);
-                var a = dot(ref rayNormal, ref planeNormal);
-                var num = -dot(ref rayOrigin, ref planeNormal) - planeDistance;
+                var planeDistance = -dot(in planeNormal, in planePoint);
+                var a = dot(in rayNormal, in planeNormal);
+                var num = -dot(in rayOrigin, in planeNormal) - planeDistance;
                 // if line is parallel to the plane
                 if (a < 0.000001 && a > -0.000001)
                 {
@@ -2101,13 +2421,13 @@ namespace Unianio
             }
 
             internal static bool BetweenPlaneAndRay(
-                ref Vector3 planeNormal, ref Vector3 planePoint,
-                ref Vector3 rayNormal, ref Vector3 rayOrigin, out float distanceToCollision)
+                in Vector3 planeNormal, in Vector3 planePoint,
+                in Vector3 rayNormal, in Vector3 rayOrigin, out float distanceToCollision)
             {
-                planeNormal = planeNormal.normalized;
-                var planeDistance = -dot(ref planeNormal, ref planePoint);
-                var a = dot(ref rayNormal, ref planeNormal);
-                var num = -dot(ref rayOrigin, ref planeNormal) - planeDistance;
+                var norm = planeNormal.normalized;
+                var planeDistance = -dot(in norm, in planePoint);
+                var a = dot(in rayNormal, in norm);
+                var num = -dot(in rayOrigin, in norm) - planeDistance;
                 if (a < 0.000001f && a > -0.000001f)
                 {
                     distanceToCollision = 0.0f;
@@ -2118,14 +2438,14 @@ namespace Unianio
             }
 
             internal static bool BetweenPlaneAndRay(
-                ref Vector3 planeNormal, ref Vector3 planePoint,
-                ref Vector3 rayNormal, ref Vector3 rayOrigin,
+                in Vector3 planeNormal, in Vector3 planePoint,
+                in Vector3 rayNormal, in Vector3 rayOrigin,
                 out Vector3 collisionPoint)
             {
-                planeNormal = planeNormal.normalized;
-                var planeDistance = -dot(ref planeNormal, ref planePoint);
-                var a = dot(ref rayNormal, ref planeNormal);
-                var num = -dot(ref rayOrigin, ref planeNormal) - planeDistance;
+                var norm = planeNormal.normalized;
+                var planeDistance = -dot(in norm, in planePoint);
+                var a = dot(in rayNormal, in norm);
+                var num = -dot(in rayOrigin, in norm) - planeDistance;
                 if (a < 0.000001f && a > -0.000001f)
                 {
                     collisionPoint = Vector3.zero;
@@ -2142,14 +2462,14 @@ namespace Unianio
             }
 
             internal static bool BetweenPlaneAndRay(
-                ref Vector3 planeNormal, ref Vector3 planePoint,
-                ref Vector3 rayNormal, ref Vector3 rayOrigin,
+                in Vector3 planeNormal, in Vector3 planePoint,
+                in Vector3 rayNormal, in Vector3 rayOrigin,
                 out float distanceToCollision, out Vector3 collisionPoint)
             {
-                planeNormal = planeNormal.normalized;
-                var planeDistance = -dot(ref planeNormal, ref planePoint);
-                var a = dot(ref rayNormal, ref planeNormal);
-                var num = -dot(ref rayOrigin, ref planeNormal) - planeDistance;
+                var norm = planeNormal.normalized;
+                var planeDistance = -dot(in norm, in planePoint);
+                var a = dot(in rayNormal, in norm);
+                var num = -dot(in rayOrigin, in norm) - planeDistance;
                 if (a < 0.000001f && a > -0.000001f)
                 {
                     collisionPoint = Vector3.zero;
@@ -2168,24 +2488,24 @@ namespace Unianio
             }
 
             internal static bool BetweenPlaneAndLineSegment(
-                ref Vector3 planeNormal, ref Vector3 planePoint,
-                ref Vector3 line1, ref Vector3 line2, out Vector3 collisionPoint)
+                in Vector3 planeNormal, in Vector3 planePoint,
+                in Vector3 line1, in Vector3 line2, out Vector3 collisionPoint)
             {
                 var distanceToCollision = 0f;
                 return
-                    BetweenPlaneAndLineSegment(ref planeNormal, ref planePoint,
-                        ref line1, ref line2,
+                    BetweenPlaneAndLineSegment(in planeNormal, in planePoint,
+                        in line1, in line2,
                         out distanceToCollision, out collisionPoint);
             }
             internal static bool BetweenPlaneAndLineSegment(
-                ref Vector3 planeNormal, ref Vector3 planePoint,
-                ref Vector3 line1, ref Vector3 line2, out float distanceToCollision, out Vector3 collisionPoint)
+                in Vector3 planeNormal, in Vector3 planePoint,
+                in Vector3 line1, in Vector3 line2, out float distanceToCollision, out Vector3 collisionPoint)
             {
                 var rayNormal = (line2 - line1).normalized;
-                planeNormal = planeNormal.normalized;
-                var planeDistance = -dot(ref planeNormal, ref planePoint);
-                var a = dot(ref rayNormal, ref planeNormal);
-                var num = -dot(ref line1, ref planeNormal) - planeDistance;
+                var norm = planeNormal.normalized;
+                var planeDistance = -dot(in norm, in planePoint);
+                var a = dot(in rayNormal, in norm);
+                var num = -dot(in line1, in norm) - planeDistance;
                 if (a < 0.000001f && a > -0.000001f)
                 {
                     collisionPoint = Vector3.zero;
@@ -2196,7 +2516,7 @@ namespace Unianio
                 if (distanceToCollision > 0.0000001 || distanceToCollision < -0.0000001)
                 {
                     collisionPoint = line1 + rayNormal * distanceToCollision;
-                    if (!point.IsOnSegment(ref line1, ref collisionPoint, ref line2))
+                    if (!point.IsOnSegment(in line1, in collisionPoint, in line2))
                     {
                         collisionPoint = Vector3.zero;
                         distanceToCollision = 0;
@@ -2287,8 +2607,8 @@ namespace Unianio
             }
 
             internal static int BetweenLineAndCircle2d(
-                ref Vector2 circleCenter, double circleRadius,
-                ref Vector2 point1, ref Vector2 point2,
+                in Vector2 circleCenter, double circleRadius,
+                in Vector2 point1, in Vector2 point2,
                 out Vector2 intersection1, out Vector2 intersection2)
             {
                 float t;
@@ -2326,8 +2646,8 @@ namespace Unianio
             }
 
             internal static bool BetweenLinesIgnoreY(
-                   ref Vector3 line1point1, ref Vector3 line1point2,
-                   ref Vector3 line2point1, ref Vector3 line2point2,
+                   in Vector3 line1point1, in Vector3 line1point2,
+                   in Vector3 line2point1, in Vector3 line2point2,
                    out Vector3? intersection)
             {
                 var a1 = line1point2.z - line1point1.z;
@@ -2367,15 +2687,15 @@ namespace Unianio
                        z >= minZ2 && z <= maxZ2;
             }
 
-            internal static bool BetweenPlanes(ref Vector3 plane1Normal, ref Vector3 plane2Normal, out Vector3 intersectionNormal)
+            internal static bool BetweenPlanes(in Vector3 plane1Normal, in Vector3 plane2Normal, out Vector3 intersectionNormal)
             {
-                intersectionNormal = cross.Product(ref plane1Normal, ref plane2Normal);
+                intersectionNormal = cross.Product(in plane1Normal, in plane2Normal);
                 intersectionNormal = intersectionNormal.normalized;
                 return true;
             }
             internal static bool BetweenPlanes(
-                ref Vector3 plane1Normal, ref Vector3 plane1Position,
-                ref Vector3 plane2Normal, ref Vector3 plane2Position,
+                in Vector3 plane1Normal, in Vector3 plane1Position,
+                in Vector3 plane2Normal, in Vector3 plane2Position,
                 out Vector3 intersectionPoint, out Vector3 intersectionNormal)
             {
                 intersectionPoint = Vector3.zero;
@@ -2383,7 +2703,7 @@ namespace Unianio
                 //We can get the direction of the line of intersection of the two planes by calculating the 
                 //cross product of the normals of the two planes. Note that this is just a direction and the line
                 //is not fixed in space yet. We need a point for that to go with the line vector.
-                cross.Product(ref plane1Normal, ref plane2Normal, out intersectionNormal);
+                cross.Product(in plane1Normal, in plane2Normal, out intersectionNormal);
                 intersectionNormal.Normalize();
 
 
@@ -2391,15 +2711,15 @@ namespace Unianio
                 //the plane2 location, moving parallel to it's plane, and intersecting plane1. To prevent rounding
                 //errors, this vector also has to be perpendicular to lineDirection. To get this vector, calculate
                 //the cross product of the normal of plane2 and the lineDirection.		
-                Vector3 ldir = cross.Product(ref plane2Normal, ref intersectionNormal);
+                Vector3 ldir = cross.Product(in plane2Normal, in intersectionNormal);
 
-                var denominator = dot(ref plane1Normal, ref ldir);
+                var denominator = dot(in plane1Normal, in ldir);
                 //Prevent divide by zero
                 if (abs(denominator) > 0.00001f)
                 {
 
                     var plane1ToPlane2 = plane1Position - plane2Position;
-                    var t = dot(ref plane1Normal, ref plane1ToPlane2) / denominator;
+                    var t = dot(in plane1Normal, in plane1ToPlane2) / denominator;
                     intersectionPoint = plane2Position + t * ldir;
                     intersectionNormal = intersectionNormal.normalized;
                     return true;
@@ -2448,9 +2768,9 @@ namespace Unianio
             }
 
             internal static float BetweenRayAndSphere(
-                ref Vector3 rayDirection,
-                ref Vector3 rayOrigin,
-                ref Vector3 sphereCenter,
+                in Vector3 rayDirection,
+                in Vector3 rayOrigin,
+                in Vector3 sphereCenter,
                 double radius)
             {
                 var xDiff = sphereCenter.x - rayOrigin.x;
@@ -2476,9 +2796,9 @@ namespace Unianio
             }
 
             internal static bool TryBetweenRayAndSphere(
-                ref Vector3 rayDirection,
-                ref Vector3 rayOrigin,
-                ref Vector3 sphereCenter,
+                in Vector3 rayDirection,
+                in Vector3 rayOrigin,
+                in Vector3 sphereCenter,
                 double radius)
             {
                 var xDiff = sphereCenter.x - rayOrigin.x;
@@ -2504,38 +2824,38 @@ namespace Unianio
             }
 
             internal static bool BetweenRayAndDisk(
-                ref Vector3 rayDirection,
-                ref Vector3 rayOrigin,
-                ref Vector3 diskNormal,
-                ref Vector3 diskCenter,
+                in Vector3 rayDirection,
+                in Vector3 rayOrigin,
+                in Vector3 diskNormal,
+                in Vector3 diskCenter,
                 double diskRadius,
                 out Vector3 crossPoint)
             {
                 Vector3 intersectPlane;
                 var hasIntersection =
                     BetweenPlaneAndRay(
-                        ref diskNormal, ref diskCenter,
-                        ref rayDirection, ref rayOrigin, out intersectPlane);
+                        in diskNormal, in diskCenter,
+                        in rayDirection, in rayOrigin, out intersectPlane);
 
                 // if ray lies in the disk plane, then turn it into 2d problem
-                if (abs(dot(ref diskNormal, ref rayDirection)) < 0.0001f)
+                if (abs(dot(in diskNormal, in rayDirection)) < 0.0001f)
                 {
                     Vector3 x2d, y2d;
-                    vector.ComputeRandomXYAxesForPlane(ref diskNormal, out x2d, out y2d);
+                    vector.ComputeRandomXYAxesForPlane(in diskNormal, out x2d, out y2d);
 
-                    var line1 = rayOrigin.As2d(ref diskCenter, ref x2d, ref y2d);
-                    var line2 = (rayOrigin + rayDirection).As2d(ref diskCenter, ref x2d, ref y2d);
+                    var line1 = rayOrigin.As2d(in diskCenter, in x2d, in y2d);
+                    var line2 = (rayOrigin + rayDirection).As2d(in diskCenter, in x2d, in y2d);
 
                     var cirCen = Vector2.zero;
                     Vector2 int1, int2;
 
-                    var found = BetweenLineAndCircle2d(ref cirCen, diskRadius, ref line1, ref line2, out int1, out int2) > 0;
+                    var found = BetweenLineAndCircle2d(in cirCen, diskRadius, in line1, in line2, out int1, out int2) > 0;
 
                     if (found)
                     {
-                        var ds1 = distanceSquared.Between(ref int1, ref line1);
-                        var ds2 = distanceSquared.Between(ref int2, ref line1);
-                        crossPoint = (ds1 > ds2 ? int1 : int2).As3d(ref diskCenter, ref x2d, ref y2d);
+                        var ds1 = distanceSquared.Between(in int1, in line1);
+                        var ds2 = distanceSquared.Between(in int2, in line1);
+                        crossPoint = (ds1 > ds2 ? int1 : int2).As3d(in diskCenter, in x2d, in y2d);
                     }
                     else
                     {
@@ -2552,7 +2872,7 @@ namespace Unianio
                 }
 
                 // the ray is intersecting disk plane in a point outside the disk
-                if (distance.Between(ref intersectPlane, ref diskCenter) > diskRadius)
+                if (distance.Between(in intersectPlane, in diskCenter) > diskRadius)
                 {
                     crossPoint = Vector3.zero;
                     return false;
@@ -2564,8 +2884,8 @@ namespace Unianio
 
             // https://searchcode.com/codesearch/view/16225010/
             internal static bool BetweenLineSegmentAndCone(
-                ref Vector3 lineStart, ref Vector3 lineEnd,
-                ref Vector3 coneBase, ref Vector3 coneUp, double coneRadius, double coneHeight,
+                in Vector3 lineStart, in Vector3 lineEnd,
+                in Vector3 coneBase, in Vector3 coneUp, double coneRadius, double coneHeight,
                 out Vector3 collision)
             {
                 const float epsilon = 0.000001f;
@@ -2574,23 +2894,23 @@ namespace Unianio
                     if (coneRadius < epsilon)
                     {
                         Vector3 coneBaseOnLine;
-                        point.ProjectOnLine(ref coneBase, ref lineEnd, ref lineStart, out coneBaseOnLine);
+                        point.ProjectOnLine(in coneBase, in lineEnd, in lineStart, out coneBaseOnLine);
 
-                        var hasCollision = distance.Between(ref coneBaseOnLine, ref coneBase) < epsilon;
+                        var hasCollision = distance.Between(in coneBaseOnLine, in coneBase) < epsilon;
                         collision = hasCollision ? coneBaseOnLine : Vector3.zero;
                         return hasCollision;
                     }
 
-                    return BetweenLineSegmentAndDisk(ref lineEnd, ref lineStart, ref coneUp, ref coneBase, coneRadius, out collision);
+                    return BetweenLineSegmentAndDisk(in lineEnd, in lineStart, in coneUp, in coneBase, coneRadius, out collision);
                 }
                 var coneNor = coneUp.normalized;
                 var coneTop = coneBase + coneNor * (float)coneHeight;
                 if (coneRadius < epsilon)
                 {
                     Vector3 closest1, closest2;
-                    point.ClosestOnTwoLineSegments(ref lineEnd, ref lineStart, ref coneBase, ref coneTop, out closest1, out closest2);
+                    point.ClosestOnTwoLineSegments(in lineEnd, in lineStart, in coneBase, in coneTop, out closest1, out closest2);
 
-                    var hasCollision = distance.Between(ref closest1, ref closest2) < epsilon;
+                    var hasCollision = distance.Between(in closest1, in closest2) < epsilon;
                     collision = hasCollision ? closest1 : Vector3.zero;
                     return hasCollision;
                 }
@@ -2602,7 +2922,7 @@ namespace Unianio
 
                 var rayOr = lineStart;
                 var rayVec = lineEnd - lineStart;
-                var rayMag = vector.Magnitude(ref rayVec);
+                var rayMag = vector.Magnitude(in rayVec);
                 var rayFw = rayMag < 0.000001 ? Vector3.up : rayVec / rayMag;
 
 
@@ -2642,7 +2962,7 @@ namespace Unianio
                                 {
                                     t_near = t[i];
                                     near = tempNear;
-                                    if (point.IsOnSegment(ref lineEnd, ref near, ref lineStart))
+                                    if (point.IsOnSegment(in lineEnd, in near, in lineStart))
                                     {
                                         break;
                                     }
@@ -2657,9 +2977,9 @@ namespace Unianio
                 var capNor = new Vector3(0, -1, 0);
 
                 Vector3 col;
-                var hit = BetweenRayAndCircle(ref rayFw, ref rayOr, ref capCen, coneRadius, ref capNor, out col);
+                var hit = BetweenRayAndCircle(in rayFw, in rayOr, in capCen, coneRadius, in capNor, out col);
                 //if(hit) Debug.DrawLine(Vector3.one*999,col, Color.magenta);
-                var t_cap = distance.Between(ref rayOr, ref col);
+                var t_cap = distance.Between(in rayOr, in col);
 
                 if (hit)
                 {
@@ -2678,15 +2998,15 @@ namespace Unianio
                 if (t_near < float.MaxValue)
                 {
                     //Debug.DrawLine(Vector3.one*999,near, Color.magenta,9999,false);
-                    if (point.IsOnSegment(ref lineEnd, ref near, ref lineStart))
+                    if (point.IsOnSegment(in lineEnd, in near, in lineStart))
                     {
                         collision = near;
                         return true;
                     }
                 }
 
-                if (BetweenPointAndCone(ref lineStart, ref coneBase, ref coneNor, coneRadius, coneHeight) &&
-                    BetweenPointAndCone(ref lineEnd, ref coneBase, ref coneNor, coneRadius, coneHeight))
+                if (BetweenPointAndCone(in lineStart, in coneBase, in coneNor, coneRadius, coneHeight) &&
+                    BetweenPointAndCone(in lineEnd, in coneBase, in coneNor, coneRadius, coneHeight))
                 {
                     collision = lineStart;
                     return true;
@@ -2696,26 +3016,26 @@ namespace Unianio
                 return false;
             }
 
-            private static bool BetweenPointAndCone(ref Vector3 testPoint, ref Vector3 coneBase, ref Vector3 coneNor, double coneRadius, double coneHeight)
+            private static bool BetweenPointAndCone(in Vector3 testPoint, in Vector3 coneBase, in Vector3 coneNor, double coneRadius, double coneHeight)
             {
                 var coneTop = coneBase + coneNor * (float)coneHeight;
                 Vector3 testPointProj;
-                point.ProjectOnLine(ref testPoint, ref coneBase, ref coneTop, out testPointProj);
+                point.ProjectOnLine(in testPoint, in coneBase, in coneTop, out testPointProj);
 
-                var ratio = (1f - (distance.Between(ref testPointProj, ref coneBase) / (float)coneHeight)).Clamp01();
+                var ratio = (1f - (distance.Between(in testPointProj, in coneBase) / (float)coneHeight)).Clamp01();
                 var currRadius = coneRadius * ratio;
 
-                return distance.Between(ref testPoint, ref testPointProj) <= currRadius;
+                return distance.Between(in testPoint, in testPointProj) <= currRadius;
             }
 
             // https://searchcode.com/file/16224990/src/utils.cpp
             internal static bool BetweenRayAndCircle(
-                ref Vector3 rayDirection, ref Vector3 rayOrigin,
-                ref Vector3 circleCenter, double circleRadius, ref Vector3 circleNormal, out Vector3 collision)
+                in Vector3 rayDirection, in Vector3 rayOrigin,
+                in Vector3 circleCenter, double circleRadius, in Vector3 circleNormal, out Vector3 collision)
             {
-                var denom = dot(ref rayDirection, ref circleNormal);
+                var denom = dot(in rayDirection, in circleNormal);
                 var v1 = circleCenter - rayOrigin;
-                var num = dot(ref v1, ref circleNormal);
+                var num = dot(in v1, in circleNormal);
 
                 const float epsilon = 0.00001f;
 
@@ -2740,10 +3060,10 @@ namespace Unianio
 
 
             internal static bool BetweenLineSegmentAndDisk(
-                ref Vector3 lineEnd1,
-                ref Vector3 lineEnd2,
-                ref Vector3 diskNormal,
-                ref Vector3 diskCenter,
+                in Vector3 lineEnd1,
+                in Vector3 lineEnd2,
+                in Vector3 diskNormal,
+                in Vector3 diskCenter,
                 double diskRadius,
                 out Vector3 crossPoint)
             {
@@ -2753,8 +3073,8 @@ namespace Unianio
                 if (rayDirection.sqrMagnitude < 0.00001)
                 {
                     Vector3 projection;
-                    point.ProjectOnPlane(ref lineEnd1, ref diskNormal, ref diskCenter, out projection);
-                    if (distanceSquared.Between(ref projection, ref lineEnd1) < 0.0001)
+                    point.ProjectOnPlane(in lineEnd1, in diskNormal, in diskCenter, out projection);
+                    if (distanceSquared.Between(in projection, in lineEnd1) < 0.0001)
                     {
                         crossPoint = lineEnd1;
                         return true;
@@ -2764,10 +3084,10 @@ namespace Unianio
                 }
                 var hasIntersection =
                     BetweenRayAndDisk(
-                        ref rayDirection,
-                        ref lineEnd2,
-                        ref diskNormal,
-                        ref diskCenter,
+                        in rayDirection,
+                        in lineEnd2,
+                        in diskNormal,
+                        in diskCenter,
                         diskRadius,
                         out rayDiskIntersection);
                 if (!hasIntersection)
@@ -2776,7 +3096,7 @@ namespace Unianio
                     return false;
                 }
                 // the ray is intersecting disk within that line segment
-                if (point.IsOnSegment(ref lineEnd1, ref rayDiskIntersection, ref lineEnd2))
+                if (point.IsOnSegment(in lineEnd1, in rayDiskIntersection, in lineEnd2))
                 {
                     crossPoint = rayDiskIntersection;
                     return true;
@@ -2786,10 +3106,10 @@ namespace Unianio
             }
 
             internal static bool BetweenLineSegmentAndDisk(
-                ref Vector3 lineEnd1,
-                ref Vector3 lineEnd2,
-                ref Vector3 diskNormal,
-                ref Vector3 diskCenter,
+                in Vector3 lineEnd1,
+                in Vector3 lineEnd2,
+                in Vector3 diskNormal,
+                in Vector3 diskCenter,
                 double diskRadius)
             {
                 Vector3 rayDiskIntersection;
@@ -2798,8 +3118,8 @@ namespace Unianio
                 if (rayDirection.sqrMagnitude < 0.00001)
                 {
                     Vector3 projection;
-                    point.ProjectOnPlane(ref lineEnd1, ref diskNormal, ref diskCenter, out projection);
-                    if (distanceSquared.Between(ref projection, ref lineEnd1) < 0.0001)
+                    point.ProjectOnPlane(in lineEnd1, in diskNormal, in diskCenter, out projection);
+                    if (distanceSquared.Between(in projection, in lineEnd1) < 0.0001)
                     {
                         return true;
                     }
@@ -2807,10 +3127,10 @@ namespace Unianio
                 }
                 var hasIntersection =
                     BetweenRayAndDisk(
-                        ref rayDirection,
-                        ref lineEnd2,
-                        ref diskNormal,
-                        ref diskCenter,
+                        in rayDirection,
+                        in lineEnd2,
+                        in diskNormal,
+                        in diskCenter,
                         diskRadius,
                         out rayDiskIntersection);
                 if (!hasIntersection)
@@ -2818,7 +3138,7 @@ namespace Unianio
                     return false;
                 }
                 // the ray is intersecting disk within that line segment
-                if (point.IsOnSegment(ref lineEnd1, ref rayDiskIntersection, ref lineEnd2))
+                if (point.IsOnSegment(in lineEnd1, in rayDiskIntersection, in lineEnd2))
                 {
                     return true;
                 }
@@ -2826,10 +3146,10 @@ namespace Unianio
             }
 
             internal static bool BetweenLineSegmentAndPlane(
-                ref Vector3 lineEnd1,
-                ref Vector3 lineEnd2,
-                ref Vector3 planeNormal,
-                ref Vector3 planePoint,
+                in Vector3 lineEnd1,
+                in Vector3 lineEnd2,
+                in Vector3 planeNormal,
+                in Vector3 planePoint,
                 out Vector3 crossPoint)
             {
                 Vector3 rayDiskIntersection;
@@ -2838,8 +3158,8 @@ namespace Unianio
                 if (rayDirection.sqrMagnitude < 0.00001)
                 {
                     Vector3 projection;
-                    point.ProjectOnPlane(ref lineEnd1, ref planeNormal, ref planePoint, out projection);
-                    if (distanceSquared.Between(ref projection, ref lineEnd1) < 0.0001)
+                    point.ProjectOnPlane(in lineEnd1, in planeNormal, in planePoint, out projection);
+                    if (distanceSquared.Between(in projection, in lineEnd1) < 0.0001)
                     {
                         crossPoint = lineEnd1;
                         return true;
@@ -2849,10 +3169,10 @@ namespace Unianio
                 }
                 var hasIntersection =
                     BetweenPlaneAndRay(
-                        ref planeNormal,
-                        ref planePoint,
-                        ref rayDirection,
-                        ref lineEnd2,
+                        in planeNormal,
+                        in planePoint,
+                        in rayDirection,
+                        in lineEnd2,
                         out rayDiskIntersection);
                 if (!hasIntersection)
                 {
@@ -2860,7 +3180,7 @@ namespace Unianio
                     return false;
                 }
                 // the ray is intersecting disk within that line segment
-                if (point.IsOnSegment(ref lineEnd1, ref rayDiskIntersection, ref lineEnd2))
+                if (point.IsOnSegment(in lineEnd1, in rayDiskIntersection, in lineEnd2))
                 {
                     crossPoint = rayDiskIntersection;
                     return true;
@@ -2872,29 +3192,29 @@ namespace Unianio
 
             internal static bool Between2DLines(Vector2 line1p1, Vector2 line1p2, Vector2 line2p1, Vector2 line2p2)
             {
-                return Between2DLines(ref line1p1, ref line1p2, ref line2p1, ref line2p2);
+                return Between2DLines(in line1p1, in line1p2, in line2p1, in line2p2);
             }
-            internal static bool Between2DLines(ref Vector2 line1p1, ref Vector2 line1p2, ref Vector2 line2p1, ref Vector2 line2p2)
+            internal static bool Between2DLines(in Vector2 line1p1, in Vector2 line1p2, in Vector2 line2p1, in Vector2 line2p2)
             {
                 // Find the four orientations needed for general and
                 // special cases
-                var o1 = Orientation(ref line1p1, ref line1p2, ref line2p1);
-                var o2 = Orientation(ref line1p1, ref line1p2, ref line2p2);
-                var o3 = Orientation(ref line2p1, ref line2p2, ref line1p1);
-                var o4 = Orientation(ref line2p1, ref line2p2, ref line1p2);
+                var o1 = Orientation(in line1p1, in line1p2, in line2p1);
+                var o2 = Orientation(in line1p1, in line1p2, in line2p2);
+                var o3 = Orientation(in line2p1, in line2p2, in line1p1);
+                var o4 = Orientation(in line2p1, in line2p2, in line1p2);
 
                 // General case
                 if (o1 != o2 && o3 != o4)
                     return true;
 
                 // Special Cases : colinear
-                if (o1 == 0 && point.IsOn2DSegment(ref line1p1, ref line2p1, ref line1p2)) return true;
+                if (o1 == 0 && point.IsOn2DSegment(in line1p1, in line2p1, in line1p2)) return true;
 
-                if (o2 == 0 && point.IsOn2DSegment(ref line1p1, ref line2p2, ref line1p2)) return true;
+                if (o2 == 0 && point.IsOn2DSegment(in line1p1, in line2p2, in line1p2)) return true;
 
-                if (o3 == 0 && point.IsOn2DSegment(ref line2p1, ref line1p1, ref line2p2)) return true;
+                if (o3 == 0 && point.IsOn2DSegment(in line2p1, in line1p1, in line2p2)) return true;
 
-                if (o4 == 0 && point.IsOn2DSegment(ref line2p1, ref line1p2, ref line2p2)) return true;
+                if (o4 == 0 && point.IsOn2DSegment(in line2p1, in line1p2, in line2p2)) return true;
 
                 return false; // Doesn't fall in any of the above cases
             }
@@ -2929,7 +3249,7 @@ namespace Unianio
                     intersect.y >= Mathf.Min(lineB1.y, lineB2.y) &&
                     intersect.y <= Mathf.Max(lineB1.y, lineB2.y);
             }
-            internal static bool Between2DLines(ref Vector2 lineA1, ref Vector2 lineA2, ref Vector2 lineB1, ref Vector2 lineB2, out Vector2 intersect)
+            internal static bool Between2DLines(in Vector2 lineA1, in Vector2 lineA2, in Vector2 lineB1, in Vector2 lineB2, out Vector2 intersect)
             {
                 var a1 = (double)lineA2.y - (double)lineA1.y;
                 var b1 = (double)lineA1.x - (double)lineA2.x;
@@ -2965,7 +3285,7 @@ namespace Unianio
             // 0 --> p, q and r are colinear
             // 1 --> Clockwise
             // 2 --> Counterclockwise
-            private static int Orientation(ref Vector2 p, ref Vector2 q, ref Vector2 r)
+            private static int Orientation(in Vector2 p, in Vector2 q, in Vector2 r)
             {
                 // See http://www.geeksforgeeks.org/orientation-3-ordered-points/
                 // for details of below formula.
@@ -2977,33 +3297,33 @@ namespace Unianio
             }
 
             internal static bool BetweenTriangleAndSphere(
-                ref Vector3 t1, ref Vector3 t2, ref Vector3 t3,
-                ref Vector3 sphereCenter, double sphereRadius,
+                in Vector3 t1, in Vector3 t2, in Vector3 t3,
+                in Vector3 sphereCenter, double sphereRadius,
                 out Vector3 collision)
             {
                 Vector3 triangleNormal;
-                point.GetNormal(ref t1, ref t2, ref t3, out triangleNormal);
+                point.GetNormal(in t1, in t2, in t3, out triangleNormal);
 
                 Vector3 proj;
-                point.ProjectOnPlane(ref sphereCenter, ref triangleNormal, ref t1, out proj);
+                point.ProjectOnPlane(in sphereCenter, in triangleNormal, in t1, out proj);
                 var x2d = (t2 - t1).normalized;
                 Vector3 y2d;
-                vector.GetNormal(ref x2d, ref triangleNormal, out y2d);
+                vector.GetNormal(in x2d, in triangleNormal, out y2d);
 
-                var dist = distance.Between(ref sphereCenter, ref proj);
+                var dist = distance.Between(in sphereCenter, in proj);
                 var ratio = dist / sphereRadius;
                 if (ratio <= 1.0)
                 {
 
                     var t1in2d = Vector2.zero;
-                    var t2in2d = (t2 - t1).As2d(ref x2d, ref y2d);
-                    var t3in2d = (t3 - t1).As2d(ref x2d, ref y2d);
-                    var spin2d = (sphereCenter - t1).As2d(ref x2d, ref y2d);
+                    var t2in2d = (t2 - t1).As2d(in x2d, in y2d);
+                    var t3in2d = (t3 - t1).As2d(in x2d, in y2d);
+                    var spin2d = (sphereCenter - t1).As2d(in x2d, in y2d);
                     var radius2d = (float)Math.Sqrt(1.0 - ratio * ratio) * sphereRadius;
-                    if (HasCircleTriangleCollision2D(ref spin2d, radius2d, ref t1in2d, ref t2in2d, ref t3in2d))
+                    if (HasCircleTriangleCollision2D(in spin2d, radius2d, in t1in2d, in t2in2d, in t3in2d))
                     {
                         Vector2 int2d;
-                        GetCircleTriangle2DIntersectionPoint(ref spin2d, radius2d, ref t1in2d, ref t2in2d, ref t3in2d, out int2d);
+                        GetCircleTriangle2DIntersectionPoint(in spin2d, radius2d, in t1in2d, in t2in2d, in t3in2d, out int2d);
                         //for (var a = 0; a < 360; a += 5)
                         //{
                         //Debug.DrawLine(
@@ -3015,7 +3335,7 @@ namespace Unianio
                         //Debug.DrawLine(t2in2d,t3in2d,Color.black,0, false);
                         //Debug.DrawLine(t3in2d,t1in2d,Color.black,0, false);
                         //Debug.DrawLine(Vector2.one*100,int2d,Color.magenta,0, false);
-                        int2d.As3d(ref t1, ref x2d, ref y2d, out collision);
+                        int2d.As3d(in t1, in x2d, in y2d, out collision);
                         return true;
                     }
                 }
@@ -3024,44 +3344,44 @@ namespace Unianio
             }
 
             internal static bool BetweenTriangleAndDisk(
-                ref Vector3 t1, ref Vector3 t2, ref Vector3 t3,
-                ref Vector3 diskNormal, ref Vector3 diskCenter, float diskRadius,
+                in Vector3 t1, in Vector3 t2, in Vector3 t3,
+                in Vector3 diskNormal, in Vector3 diskCenter, float diskRadius,
                 out Vector3 intersect)
             {
                 Vector3 triangleNormal;
-                point.GetNormal(ref t1, ref t2, ref t3, out triangleNormal);
+                point.GetNormal(in t1, in t2, in t3, out triangleNormal);
                 diskNormal.Normalize(); // ensure disk normal is unit vector
                 // they are parallel
-                if (abs(dot(ref triangleNormal, ref diskNormal)) > 0.999999f)
+                if (abs(dot(in triangleNormal, in diskNormal)) > 0.999999f)
                 {
                     var diskCenterPlus = diskCenter + diskNormal;
                     Vector3 proj;
-                    point.ProjectOnLine(ref t1, ref diskCenter, ref diskCenterPlus, out proj);
+                    point.ProjectOnLine(in t1, in diskCenter, in diskCenterPlus, out proj);
                     // they lie on the same plane
-                    if (distanceSquared.Between(ref proj, ref diskCenter) < 0.0001)
+                    if (distanceSquared.Between(in proj, in diskCenter) < 0.0001)
                     {
                         Vector3 x2d, y2d;
-                        vector.ComputeRandomXYAxesForPlane(ref diskNormal, out x2d, out y2d);
+                        vector.ComputeRandomXYAxesForPlane(in diskNormal, out x2d, out y2d);
 
                         var t1in2d = Vector2.zero;
-                        var t2in2d = (t2 - t1).As2d(ref x2d, ref y2d);
-                        var t3in2d = (t3 - t1).As2d(ref x2d, ref y2d);
-                        var dcin2d = (diskCenter - t1).As2d(ref x2d, ref y2d);
+                        var t2in2d = (t2 - t1).As2d(in x2d, in y2d);
+                        var t3in2d = (t3 - t1).As2d(in x2d, in y2d);
+                        var dcin2d = (diskCenter - t1).As2d(in x2d, in y2d);
 
-                        if (HasCircleTriangleCollision2D(ref dcin2d, diskRadius, ref t1in2d, ref t2in2d, ref t3in2d))
+                        if (HasCircleTriangleCollision2D(in dcin2d, diskRadius, in t1in2d, in t2in2d, in t3in2d))
                         {
                             Vector2 int2d;
-                            GetCircleTriangle2DIntersectionPoint(ref dcin2d, diskRadius, ref t1in2d, ref t2in2d, ref t3in2d, out int2d);
-                            intersect = int2d.As3d(ref t1, ref x2d, ref y2d);
+                            GetCircleTriangle2DIntersectionPoint(in dcin2d, diskRadius, in t1in2d, in t2in2d, in t3in2d, out int2d);
+                            intersect = int2d.As3d(in t1, in x2d, in y2d);
                             return true;
                         }
                     }
                 }
                 Vector3 intPoint, intNorm;
-                var linesIntersect = BetweenPlanes(ref triangleNormal, ref t1, ref diskNormal, ref diskCenter, out intPoint, out intNorm);
+                var linesIntersect = BetweenPlanes(in triangleNormal, in t1, in diskNormal, in diskCenter, out intPoint, out intNorm);
                 if (linesIntersect)
                 {
-                    var distToInt = distance.Between(ref intPoint, ref diskCenter);
+                    var distToInt = distance.Between(in intPoint, in diskCenter);
                     var ratio = distToInt / diskRadius;
                     if (ratio <= 1.0)
                     {
@@ -3072,22 +3392,22 @@ namespace Unianio
 
                         var x2d = intNorm;
                         Vector3 y2d;
-                        vector.GetNormal(ref intNorm, ref triangleNormal, out y2d);
+                        vector.GetNormal(in intNorm, in triangleNormal, out y2d);
 
                         var t1in2d = Vector2.zero;
-                        var t2in2d = (t2 - t1).As2d(ref x2d, ref y2d);
-                        var t3in2d = (t3 - t1).As2d(ref x2d, ref y2d);
-                        var w1in2d = (w1 - t1).As2d(ref x2d, ref y2d);
-                        var w2in2d = (w2 - t1).As2d(ref x2d, ref y2d);
+                        var t2in2d = (t2 - t1).As2d(in x2d, in y2d);
+                        var t3in2d = (t3 - t1).As2d(in x2d, in y2d);
+                        var w1in2d = (w1 - t1).As2d(in x2d, in y2d);
+                        var w2in2d = (w2 - t1).As2d(in x2d, in y2d);
                         //Debug.DrawLine(Vector3.one*100, w1in2d, Color.red, 0, false);
                         //Debug.DrawLine(Vector3.one*100, w2in2d, Color.black, 0, false);
 
                         Vector2 int2d;
                         if (Between2DTriangleAndLineSegment(
-                            ref t1in2d, ref t2in2d, ref t3in2d,
-                            ref w1in2d, ref w2in2d, out int2d))
+                            in t1in2d, in t2in2d, in t3in2d,
+                            in w1in2d, in w2in2d, out int2d))
                         {
-                            intersect = int2d.As3d(ref t1, ref x2d, ref y2d);
+                            intersect = int2d.As3d(in t1, in x2d, in y2d);
                             return true;
                         }
                     }
@@ -3096,8 +3416,8 @@ namespace Unianio
                 return false;
             }
             internal static bool Between2DTriangleAndLineSegment(
-                ref Vector2 t1, ref Vector2 t2, ref Vector2 t3,
-                ref Vector2 line1, ref Vector2 line2,
+                in Vector2 t1, in Vector2 t2, in Vector2 t3,
+                in Vector2 line1, in Vector2 line2,
                 out Vector2 intersect)
             {
                 Vector2 curr;
@@ -3105,17 +3425,17 @@ namespace Unianio
                 var b1 = false;
                 var b2 = false;
                 var b3 = false;
-                if (Between2DLines(ref t1, ref t2, ref line1, ref line2, out curr))
+                if (Between2DLines(in t1, in t2, in line1, in line2, out curr))
                 {
                     b1 = true;
                     c = curr;
                 }
-                if (Between2DLines(ref t2, ref t3, ref line1, ref line2, out curr))
+                if (Between2DLines(in t2, in t3, in line1, in line2, out curr))
                 {
                     b2 = true;
                     c = b1 ? point.Middle2D(c, curr) : curr;
                 }
-                if (Between2DLines(ref t3, ref t1, ref line1, ref line2, out curr))
+                if (Between2DLines(in t3, in t1, in line1, in line2, out curr))
                 {
                     b3 = true;
                     c = b1 || b2 ? point.Middle2D(c, curr) : curr;
@@ -3126,11 +3446,11 @@ namespace Unianio
                     return true;
                 }
 
-                if (triangle.IsPointInside(ref line1, ref t1, ref t2, ref t3) ||
-                    triangle.IsPointInside(ref line2, ref t1, ref t2, ref t3))
+                if (triangle.IsPointInside(in line1, in t1, in t2, in t3) ||
+                    triangle.IsPointInside(in line2, in t1, in t2, in t3))
                 {
                     Vector2 wcin2d;
-                    point.Middle2D(ref line1, ref line2, out wcin2d);
+                    point.Middle2D(in line1, in line2, out wcin2d);
                     intersect = wcin2d;
                     return true;
                 }
@@ -3138,16 +3458,16 @@ namespace Unianio
                 return false;
             }
             private static bool GetCircleTriangle2DIntersectionPoint(
-                ref Vector2 circleCenter, double radius,
-                ref Vector2 t1, ref Vector2 t2, ref Vector2 t3, out Vector2 intersect)
+                in Vector2 circleCenter, double radius,
+                in Vector2 t1, in Vector2 t2, in Vector2 t3, out Vector2 intersect)
             {
                 intersect = Vector2.zero;
                 var n1 = GetLineCircleIntersectionPoint(
-                        false, ref circleCenter, radius, ref t1, ref t2, ref intersect);
+                        false, in circleCenter, radius, in t1, in t2, ref intersect);
                 var n2 = GetLineCircleIntersectionPoint(
-                        n1 > 0, ref circleCenter, radius, ref t2, ref t3, ref intersect);
+                        n1 > 0, in circleCenter, radius, in t2, in t3, ref intersect);
                 var n3 = GetLineCircleIntersectionPoint(
-                        n1 + n2 > 0, ref circleCenter, radius, ref t3, ref t1, ref intersect);
+                        n1 + n2 > 0, in circleCenter, radius, in t3, in t1, ref intersect);
                 var hasIntersection = (n1 + n2 + n3) > 0;
                 if (hasIntersection)
                 {
@@ -3155,49 +3475,49 @@ namespace Unianio
                 }
 
                 // if the circle is inside the triangle
-                if (distanceSquared.Between(ref t1, ref circleCenter) > radius * radius)
+                if (distanceSquared.Between(in t1, in circleCenter) > radius * radius)
                 {
                     intersect = circleCenter;
                     return false;
                 }
                 // if the triangle is inside the circle
                 Vector2 centroid;
-                triangle.GetCentroid2D(ref t1, ref t2, ref t3, out centroid);
+                triangle.GetCentroid2D(in t1, in t2, in t3, out centroid);
                 intersect = centroid;
                 return false;
             }
             private static int GetLineCircleIntersectionPoint(
                 bool hasPrevious,
-                ref Vector2 circleCenter, double curcleRadius,
-                ref Vector2 point1, ref Vector2 point2, ref Vector2 output)
+                in Vector2 circleCenter, double curcleRadius,
+                in Vector2 point1, in Vector2 point2, ref Vector2 output)
             {
                 Vector2 intersection1, intersection2;
                 var num =
                     BetweenLineSegmentAndCircle2D(
-                        ref circleCenter, curcleRadius,
-                        ref point1, ref point2,
+                        in circleCenter, curcleRadius,
+                        in point1, in point2,
                         out intersection1, out intersection2);
                 var current = Vector2.zero;
                 if (num == 1) current = intersection1;
-                else if (num == 2) point.Middle2D(ref intersection1, ref intersection2, out current);
+                else if (num == 2) point.Middle2D(in intersection1, in intersection2, out current);
                 if (num > 0)
                 {
-                    if (hasPrevious) point.Middle2D(ref output, ref current, out output);
+                    if (hasPrevious) point.Middle2D(in output, in current, out output);
                     else output = current;
                 }
                 return num;
             }
             internal static int BetweenLineSegmentAndCircle2D(
-                ref Vector2 circleCenter, double circleRadius,
-                ref Vector2 point1, ref Vector2 point2,
+                in Vector2 circleCenter, double circleRadius,
+                in Vector2 point1, in Vector2 point2,
                 out Vector2 intersection1, out Vector2 intersection2)
             {
                 // test to see if line is inside the circle
-                var dsq = distanceSquared.Between(ref circleCenter, ref point1);
+                var dsq = distanceSquared.Between(in circleCenter, in point1);
                 var circleRadiusSqr = circleRadius * circleRadius;
                 if (dsq < circleRadiusSqr)
                 {
-                    dsq = distanceSquared.Between(ref circleCenter, ref point2);
+                    dsq = distanceSquared.Between(in circleCenter, in point2);
                     if (dsq < circleRadiusSqr)
                     {
                         intersection1 = Vector2.zero;
@@ -3227,7 +3547,7 @@ namespace Unianio
                     // One solution.
                     t = -b / (2 * a);
                     intersection1 = new Vector2(point1.x + t * dx, point1.y + t * dy);
-                    point.EnforceWithin(ref intersection1, ref point1, ref point2);
+                    point.EnforceWithin(ref intersection1, in point1, in point2);
                     intersection2 = Vector2.zero;
                     return 1;
                 }
@@ -3235,13 +3555,13 @@ namespace Unianio
                 // Two solutions.
                 t = (float)((-b + Math.Sqrt(determinate)) / (2 * a));
                 intersection1 = new Vector2(point1.x + t * dx, point1.y + t * dy);
-                point.EnforceWithin(ref intersection1, ref point1, ref point2);
+                point.EnforceWithin(ref intersection1, in point1, in point2);
                 t = (float)((-b - Math.Sqrt(determinate)) / (2 * a));
                 intersection2 = new Vector2(point1.x + t * dx, point1.y + t * dy);
-                point.EnforceWithin(ref intersection2, ref point1, ref point2);
+                point.EnforceWithin(ref intersection2, in point1, in point2);
                 return 2;
             }
-            private static bool HasCircleTriangleCollision2D(ref Vector2 centre, double radius, ref Vector2 t1, ref Vector2 t2, ref Vector2 t3)
+            private static bool HasCircleTriangleCollision2D(in Vector2 centre, double radius, in Vector2 t1, in Vector2 t2, in Vector2 t3)
             {
                 //
                 // TEST 1: Vertex within circle
@@ -3273,7 +3593,7 @@ namespace Unianio
                 //
                 // Calculate edges
                 //
-                if (fun.triangle.IsPointInside(ref centre, ref t1, ref t2, ref t3)) return true;
+                if (fun.triangle.IsPointInside(in centre, in t1, in t2, in t3)) return true;
 
 
                 //
@@ -3335,59 +3655,59 @@ namespace Unianio
             /// note the collision point returned is not precise, but is good enough for my needs
             /// </summary>
             internal static bool BetweenTriangles(
-                ref Vector3 t1p1, ref Vector3 t1p2, ref Vector3 t1p3,
-                ref Vector3 t2p1, ref Vector3 t2p2, ref Vector3 t2p3,
+                in Vector3 t1p1, in Vector3 t1p2, in Vector3 t1p3,
+                in Vector3 t2p1, in Vector3 t2p2, in Vector3 t2p3,
                 out Vector3 collision)
             {
                 if (triangle.Overlap(
-                    ref t1p1, ref t1p2, ref t1p3,
-                    ref t2p1, ref t2p2, ref t2p3))
+                    in t1p1, in t1p2, in t1p3,
+                    in t2p1, in t2p2, in t2p3))
                 {
                     Vector3 normalT1, normalT2;
-                    point.GetNormal(ref t1p1, ref t1p2, ref t1p3, out normalT1);
-                    point.GetNormal(ref t2p1, ref t2p2, ref t2p3, out normalT2);
+                    point.GetNormal(in t1p1, in t1p2, in t1p3, out normalT1);
+                    point.GetNormal(in t2p1, in t2p2, in t2p3, out normalT2);
 
                     // then are on the same plane
-                    if (abs(dot(ref normalT1, ref normalT2)) > 0.999999f)
+                    if (abs(dot(in normalT1, in normalT2)) > 0.999999f)
                     {
                         Vector3 cen1, cen2;
-                        triangle.GetCentroid(ref t1p1, ref t1p2, ref t1p3, out cen1);
-                        triangle.GetCentroid(ref t2p1, ref t2p2, ref t2p3, out cen2);
+                        triangle.GetCentroid(in t1p1, in t1p2, in t1p3, out cen1);
+                        triangle.GetCentroid(in t2p1, in t2p2, in t2p3, out cen2);
 
-                        point.Middle(ref cen1, ref cen2, out collision);
+                        point.Middle(in cen1, in cen2, out collision);
 
                         return true;
                     }
 
                     Vector3 intPoint, intNormal;
-                    BetweenPlanes(ref normalT1, ref t1p1, ref normalT2, ref t2p1, out intPoint, out intNormal);
+                    BetweenPlanes(in normalT1, in t1p1, in normalT2, in t2p1, out intPoint, out intNormal);
 
                     var l1 = (intPoint + intNormal * 999);
                     var l2 = (intPoint - intNormal * 999);
 
                     Vector3 x2d, y2d;
-                    vector.ComputeRandomXYAxesForPlane(ref normalT1, out x2d, out y2d);
+                    vector.ComputeRandomXYAxesForPlane(in normalT1, out x2d, out y2d);
                     var t12d = Vector2.zero;
-                    var t22d = (t1p2 - t1p1).As2d(ref x2d, ref y2d);
-                    var t32d = (t1p3 - t1p1).As2d(ref x2d, ref y2d);
-                    var w12d = (l1 - t1p1).As2d(ref x2d, ref y2d);
-                    var w22d = (l2 - t1p1).As2d(ref x2d, ref y2d);
+                    var t22d = (t1p2 - t1p1).As2d(in x2d, in y2d);
+                    var t32d = (t1p3 - t1p1).As2d(in x2d, in y2d);
+                    var w12d = (l1 - t1p1).As2d(in x2d, in y2d);
+                    var w22d = (l2 - t1p1).As2d(in x2d, in y2d);
 
                     Vector2 int2d;
-                    Between2DTriangleAndLineSegment(ref t12d, ref t22d, ref t32d, ref w12d, ref w22d, out int2d);
-                    var p1 = int2d.As3d(ref t1p1, ref x2d, ref y2d);
+                    Between2DTriangleAndLineSegment(in t12d, in t22d, in t32d, in w12d, in w22d, out int2d);
+                    var p1 = int2d.As3d(in t1p1, in x2d, in y2d);
 
-                    vector.ComputeRandomXYAxesForPlane(ref normalT2, out x2d, out y2d);
-                    t22d = (t2p2 - t2p1).As2d(ref x2d, ref y2d);
-                    t32d = (t2p3 - t2p1).As2d(ref x2d, ref y2d);
-                    w12d = (l1 - t2p1).As2d(ref x2d, ref y2d);
-                    w22d = (l2 - t2p1).As2d(ref x2d, ref y2d);
+                    vector.ComputeRandomXYAxesForPlane(in normalT2, out x2d, out y2d);
+                    t22d = (t2p2 - t2p1).As2d(in x2d, in y2d);
+                    t32d = (t2p3 - t2p1).As2d(in x2d, in y2d);
+                    w12d = (l1 - t2p1).As2d(in x2d, in y2d);
+                    w22d = (l2 - t2p1).As2d(in x2d, in y2d);
 
-                    Between2DTriangleAndLineSegment(ref t12d, ref t22d, ref t32d, ref w12d, ref w22d, out int2d);
-                    var p2 = int2d.As3d(ref t2p1, ref x2d, ref y2d);
+                    Between2DTriangleAndLineSegment(in t12d, in t22d, in t32d, in w12d, in w22d, out int2d);
+                    var p2 = int2d.As3d(in t2p1, in x2d, in y2d);
                     //Debug.DrawLine(Vector3.one*100, p1, Color.red, 0, false);
                     //Debug.DrawLine(Vector3.one*100, p2, Color.black, 0, false);
-                    point.Middle(ref p1, ref p2, out collision);
+                    point.Middle(in p1, in p2, out collision);
                     return true;
                 }
 
@@ -3395,9 +3715,9 @@ namespace Unianio
                 return false;
             }
 
-            internal static bool BetweenCircles2D(ref Vector2 p0, float radius0, ref Vector2 p1, float radius1, out Vector2 cross0, out Vector2 cross1)
+            internal static bool BetweenCircles2D(in Vector2 p0, float radius0, in Vector2 p1, float radius1, out Vector2 cross0, out Vector2 cross1)
             {
-                var d = distance.Between(ref p0, ref p1);
+                var d = distance.Between(in p0, in p1);
                 var radiusesSum = radius0 + radius1;
                 const float delta = 0.00001f;
                 var radiusesDiff = abs(radius0 - radius1);
@@ -3425,6 +3745,21 @@ namespace Unianio
         #region meshes
         internal static class meshes
         {
+            /*private static GameObject CreateGameObject(string prefix, DtBase data, out Mesh mesh)
+            {
+                var gameObject = new GameObject(data.name ?? prefix + "_" + ShortGuid.New().ToString("X"));
+                var renderer = gameObject.AddComponent<MeshRenderer>();
+                renderer.material = GlobalFactory.Default.Get<IResourceManager>().LoadMaterial("materials/" + materials.DynamicMesh);
+                //renderer.material.SetTexture("_DetailAlbedoMap", Resources.Load<Texture>(""));
+                var meshFilter = gameObject.AddComponent<MeshFilter>();
+
+                mesh = meshFilter.mesh;
+                mesh.Clear();
+                mesh.name = prefix;
+                data.mesh = mesh;
+                if (data.set != null) data.set(gameObject.transform);
+                return gameObject;
+            }*/
             private static GameObject CreateGameObject(string prefix, DtBase data, out Mesh mesh)
             {
                 var gameObject = new GameObject(data.name ?? prefix + "_" + Guid.NewGuid().ToString("N"));
@@ -3978,6 +4313,7 @@ namespace Unianio
                 var bottomRadius = (float)dt.bottomRadius;
                 var topRadius = (float)dt.topRadius;
                 var nbSides = dt.numSides;
+                var noseLen = (float)dt.relNoseLen;
                 var nbHeightSeg = 1;
 
                 int nbVerticesCap = nbSides + 1;
@@ -3994,7 +4330,7 @@ namespace Unianio
                 {
                     float rad = (float)vert / nbSides * _2pi;
                     var isXtop = Mathf.Sin(rad) > 0.95f;
-                    var nose = isXtop ? 0.75f * bottomRadius : 0;
+                    var nose = isXtop ? noseLen * bottomRadius : 0;
                     var noseShift = isXtop ? 0 : 1;
                     vertices[vert] = new Vector3(Mathf.Cos(rad) * bottomRadius * noseShift, 0f, Mathf.Sin(rad) * bottomRadius + nose);
                     vert++;
@@ -4018,7 +4354,7 @@ namespace Unianio
                     float rad = (float)v / nbSides * _2pi;
 
                     var isXtop = Mathf.Sin(rad) > 0.95f;
-                    var nose = isXtop ? 0.75f * bottomRadius : 0;
+                    var nose = isXtop ? noseLen * bottomRadius : 0;
                     var noseShift = isXtop ? 0 : 1;
                     vertices[vert] = new Vector3(Mathf.Cos(rad) * topRadius, height, Mathf.Sin(rad) * topRadius);
                     vertices[vert + 1] = new Vector3(Mathf.Cos(rad) * bottomRadius * noseShift, 0, Mathf.Sin(rad) * bottomRadius + nose);
@@ -4285,7 +4621,7 @@ namespace Unianio
                 return CreateCapsule(new DtCapsule());
             }
 
-            public static GameObject CreateCapsule(DtCapsule dt)
+            internal static GameObject CreateCapsule(DtCapsule dt)
             {
                 Mesh m;
                 var gameObject = CreateGameObject("Capsule", dt, out m);
@@ -4425,49 +4761,65 @@ namespace Unianio
         {
             const float epsilon = 0.0000001f;
 
-            internal static bool IsWithinSphere(Vector3 point, Vector3 sphereCenter, double sphereRadius)
-                => IsWithinSphere(ref point, ref sphereCenter, sphereRadius);
+            internal static bool IsWithinAxisAlignedBoundingBox(Vector3 point, Vector3 bbCenter, Vector3 bbSize)
+            {
+                var hasOverlapOnX = Math.Abs(point.x - bbCenter.x) <= (bbSize.x / 2f);
+                var hasOverlapOnY = Math.Abs(point.y - bbCenter.y) <= (bbSize.y / 2f);
+                var hasOverlapOnZ = Math.Abs(point.z - bbCenter.z) <= (bbSize.z / 2f);
+                return hasOverlapOnX && hasOverlapOnY && hasOverlapOnZ;
+            }
 
-            internal static bool IsWithinSphere(ref Vector3 point, ref Vector3 sphereCenter, double sphereRadius)
-                => distance.Between(ref point, ref sphereCenter) <= sphereRadius;
+            internal static bool IsWithinAxisAlignedBoundingBox(in Vector3 point, in Vector3 bbCenter, in Vector3 bbSize)
+            {
+                var hasOverlapOnX = Math.Abs(point.x - bbCenter.x) <= (bbSize.x / 2f);
+                var hasOverlapOnY = Math.Abs(point.y - bbCenter.y) <= (bbSize.y / 2f);
+                var hasOverlapOnZ = Math.Abs(point.z - bbCenter.z) <= (bbSize.z / 2f);
+                return hasOverlapOnX && hasOverlapOnY && hasOverlapOnZ;
+            }
+
+            internal static bool IsWithinSphere(Vector3 point, Vector3 sphereCenter, double sphereRadius)
+                => IsWithinSphere(in point, in sphereCenter, sphereRadius);
+
+            internal static bool IsWithinSphere(in Vector3 point, in Vector3 sphereCenter, double sphereRadius)
+                => distance.Between(in point, in sphereCenter) <= sphereRadius;
 
             internal static bool IsWithinCapsule(Vector3 point, Vector3 cpu, Vector3 cpd, double capsuleRadius)
-                => IsWithinCapsule(ref point, ref cpu, ref cpd, capsuleRadius);
+                => IsWithinCapsule(in point, in cpu, in cpd, capsuleRadius);
             internal static bool IsWithinCapsule(
-                ref Vector3 point, ref Vector3 cpu, ref Vector3 cpd, double capsuleRadius)
+                in Vector3 point, in Vector3 cpu, in Vector3 cpd, double capsuleRadius)
             {
                 Vector3 closest;
-                ProjectOnLineSegmentOrGetClosest(ref point, ref cpu, ref cpd, out closest);
+                ProjectOnLineSegmentOrGetClosest(in point, in cpu, in cpd, out closest);
 
-                return distance.Between(ref point, ref closest) <= capsuleRadius;
+                return distance.Between(in point, in closest) <= capsuleRadius;
             }
-            internal static float DistanceToLine(ref Vector3 point, ref Vector3 line1, ref Vector3 line2)
+            internal static float DistanceToLine(in Vector3 point, in Vector3 line1, in Vector3 line2)
             {
                 Vector3 proj;
-                ProjectOnLine(ref point, ref line1, ref line2, out proj);
-                return distance.Between(ref point, ref proj);
+                ProjectOnLine(in point, in line1, in line2, out proj);
+                return distance.Between(in point, in proj);
             }
             internal static void GetClosestBetweenLineAndDisk(
-                ref Vector3 diskNormal, ref Vector3 diskCenter, double diskRadius,
-                ref Vector3 line1, ref Vector3 line2, out Vector3 closestOnDisk, out Vector3 closestOnLine)
+                in Vector3 diskNormal, in Vector3 diskCenter, double diskRadius,
+                in Vector3 line1, in Vector3 line2, out Vector3 closestOnDisk, out Vector3 closestOnLine)
             {
-                ProjectOnLine(ref diskCenter, ref line1, ref line2, out closestOnLine);
+                ProjectOnLine(in diskCenter, in line1, in line2, out closestOnLine);
                 Vector3 diskCenOnLineProj;
-                ProjectOnPlane(ref closestOnLine, ref diskNormal, ref diskCenter, out diskCenOnLineProj);
-                var distSqrToCen = distanceSquared.Between(ref diskCenOnLineProj, ref diskCenter);
+                ProjectOnPlane(in closestOnLine, in diskNormal, in diskCenter, out diskCenOnLineProj);
+                var distSqrToCen = distanceSquared.Between(in diskCenOnLineProj, in diskCenter);
                 if (distSqrToCen < (diskRadius * diskRadius))
                 {
                     closestOnDisk = diskCenOnLineProj;
                     return;
                 }
-                closestOnDisk = diskCenter.MoveTowards(ref diskCenOnLineProj, diskRadius);
+                closestOnDisk = diskCenter.MoveTowards(in diskCenOnLineProj, diskRadius);
             }
 
-            internal static void ToLocal(ref Vector3 worldPoint, ref Quaternion worldRotation, ref Vector3 worldPosition, out Vector3 localPoint)
+            internal static void ToLocal(in Vector3 worldPoint, in Quaternion worldRotation, in Vector3 worldPosition, out Vector3 localPoint)
             {
                 localPoint = Quaternion.Inverse(worldRotation) * (worldPoint - worldPosition);
             }
-            internal static Vector3 ToLocal(ref Vector3 worldPoint, ref Quaternion worldRotation, ref Vector3 worldPosition)
+            internal static Vector3 ToLocal(in Vector3 worldPoint, in Quaternion worldRotation, in Vector3 worldPosition)
             {
                 return Quaternion.Inverse(worldRotation) * (worldPoint - worldPosition);
             }
@@ -4477,11 +4829,11 @@ namespace Unianio
             }
 
 
-            internal static void ToWorld(ref Vector3 localPoint, ref Quaternion worldRotation, ref Vector3 worldPosition, out Vector3 worldPoint)
+            internal static void ToWorld(in Vector3 localPoint, in Quaternion worldRotation, in Vector3 worldPosition, out Vector3 worldPoint)
             {
                 worldPoint = worldRotation * localPoint + worldPosition;
             }
-            internal static Vector3 ToWorld(ref Vector3 localPoint, ref Quaternion worldRotation, ref Vector3 worldPosition)
+            internal static Vector3 ToWorld(in Vector3 localPoint, in Quaternion worldRotation, in Vector3 worldPosition)
             {
                 return worldRotation * localPoint + worldPosition;
             }
@@ -4490,7 +4842,7 @@ namespace Unianio
                 return worldRotation * localPoint + worldPosition;
             }
 
-            internal static bool IsOn2DSegment(ref Vector2 segStart, ref Vector2 point, ref Vector2 segEnd)
+            internal static bool IsOn2DSegment(in Vector2 segStart, in Vector2 point, in Vector2 segEnd)
             {
                 if (point.x <= max(segStart.x, segEnd.x) + epsilon &&
                     point.x >= min(segStart.x, segEnd.x) - epsilon &&
@@ -4501,7 +4853,7 @@ namespace Unianio
                 return false;
             }
 
-            internal static bool IsOnSegment(ref Vector3 segStart, ref Vector3 point, ref Vector3 segEnd)
+            internal static bool IsOnSegment(in Vector3 segStart, in Vector3 point, in Vector3 segEnd)
             {
                 if (point.x <= max(segStart.x, segEnd.x) + epsilon &&
                     point.x >= min(segStart.x, segEnd.x) - epsilon &&
@@ -4514,32 +4866,32 @@ namespace Unianio
                 return false;
             }
 
-            internal static bool ClosestOnLineSegment(ref Vector3 p, ref Vector3 line1, ref Vector3 line2, out Vector3 closest)
+            internal static bool ClosestOnLineSegment(in Vector3 p, in Vector3 line1, in Vector3 line2, out Vector3 closest)
             {
-                point.ProjectOnLine(ref p, ref line1, ref line2, out closest);
-                if (!IsOnSegment(ref line1, ref closest, ref line2))
+                point.ProjectOnLine(in p, in line1, in line2, out closest);
+                if (!IsOnSegment(in line1, in closest, in line2))
                 {
-                    var d1 = distanceSquared.Between(ref line1, ref closest);
-                    var d2 = distanceSquared.Between(ref line2, ref closest);
+                    var d1 = distanceSquared.Between(in line1, in closest);
+                    var d2 = distanceSquared.Between(in line2, in closest);
                     closest = d1 < d2 ? line1 : line2;
                     return false;
                 }
                 return true;
             }
             internal static void ClosestOnTwoLineSegments(
-                ref Vector3 line1p1, ref Vector3 line1p2,
-                ref Vector3 line2p1, ref Vector3 line2p2,
+                in Vector3 line1p1, in Vector3 line1p2,
+                in Vector3 line2p1, in Vector3 line2p2,
                 out Vector3 closestPointLine1, out Vector3 closestPointLine2)
             {
                 var dir1 = (line1p2 - line1p1).normalized;
                 var dir2 = (line2p2 - line2p1).normalized;
 
                 ClosestOnTwoLinesByPointAndDirection(
-                        ref line1p1, ref dir1, ref line2p1, ref dir2,
+                        in line1p1, in dir1, in line2p1, in dir2,
                         out closestPointLine1, out closestPointLine2);
 
-                var isClosest1Within = IsOnSegment(ref line1p1, ref closestPointLine1, ref line1p2);
-                var isClosest2Within = IsOnSegment(ref line2p1, ref closestPointLine2, ref line2p2);
+                var isClosest1Within = IsOnSegment(in line1p1, in closestPointLine1, in line1p2);
+                var isClosest2Within = IsOnSegment(in line2p1, in closestPointLine2, in line2p2);
 
                 // if the closest points are within finish here
                 if (isClosest1Within && isClosest2Within)
@@ -4549,14 +4901,14 @@ namespace Unianio
 
                 // project each end
                 Vector3 line1p1Proj;
-                ProjectOnLineSegmentOrGetClosest(ref line1p1, ref line2p1, ref line2p2, out line1p1Proj);
-                var line1p1DistSqr = distanceSquared.Between(ref line1p1, ref line1p1Proj);
+                ProjectOnLineSegmentOrGetClosest(in line1p1, in line2p1, in line2p2, out line1p1Proj);
+                var line1p1DistSqr = distanceSquared.Between(in line1p1, in line1p1Proj);
                 var smallestDistSqr = line1p1DistSqr;
                 byte smallestIndex = 0;
 
                 Vector3 line1p2Proj;
-                ProjectOnLineSegmentOrGetClosest(ref line1p2, ref line2p1, ref line2p2, out line1p2Proj);
-                var line1p2DistSqr = distanceSquared.Between(ref line1p2, ref line1p2Proj);
+                ProjectOnLineSegmentOrGetClosest(in line1p2, in line2p1, in line2p2, out line1p2Proj);
+                var line1p2DistSqr = distanceSquared.Between(in line1p2, in line1p2Proj);
                 if (line1p2DistSqr < smallestDistSqr)
                 {
                     smallestDistSqr = line1p2DistSqr;
@@ -4564,8 +4916,8 @@ namespace Unianio
                 }
 
                 Vector3 line2p1Proj;
-                ProjectOnLineSegmentOrGetClosest(ref line2p1, ref line1p1, ref line1p2, out line2p1Proj);
-                var line2p1DistSqr = distanceSquared.Between(ref line2p1, ref line2p1Proj);
+                ProjectOnLineSegmentOrGetClosest(in line2p1, in line1p1, in line1p2, out line2p1Proj);
+                var line2p1DistSqr = distanceSquared.Between(in line2p1, in line2p1Proj);
                 if (line2p1DistSqr < smallestDistSqr)
                 {
                     smallestDistSqr = line2p1DistSqr;
@@ -4573,8 +4925,8 @@ namespace Unianio
                 }
 
                 Vector3 line2p2Proj;
-                ProjectOnLineSegmentOrGetClosest(ref line2p2, ref line1p1, ref line1p2, out line2p2Proj);
-                var line2p2DistSqr = distanceSquared.Between(ref line2p2, ref line2p2Proj);
+                ProjectOnLineSegmentOrGetClosest(in line2p2, in line1p1, in line1p2, out line2p2Proj);
+                var line2p2DistSqr = distanceSquared.Between(in line2p2, in line2p2Proj);
                 if (line2p2DistSqr < smallestDistSqr)
                 {
                     //                    smallestDistSqr = line2p2DistSqr;
@@ -4605,13 +4957,13 @@ namespace Unianio
             }
             // if the lines are parallel then any point is closest so we return false
             internal static bool ClosestOnTwoLinesByPointAndDirection(
-                ref Vector3 line1p1, ref Vector3 line1Direction, ref Vector3 line2p1, ref Vector3 line2Direction,
+                in Vector3 line1p1, in Vector3 line1Direction, in Vector3 line2p1, in Vector3 line2Direction,
                 out Vector3 closestPointLine1, out Vector3 closestPointLine2)
             {
 
-                var a = dot(ref line1Direction, ref line1Direction);
-                var b = dot(ref line1Direction, ref line2Direction);
-                var e = dot(ref line2Direction, ref line2Direction);
+                var a = dot(in line1Direction, in line1Direction);
+                var b = dot(in line1Direction, in line2Direction);
+                var e = dot(in line2Direction, in line2Direction);
 
                 var d = a * e - b * b;
                 //lines are not parallel
@@ -4619,8 +4971,8 @@ namespace Unianio
                 {
 
                     var r = line1p1 - line2p1;
-                    var c = dot(ref line1Direction, ref r);
-                    var f = dot(ref line2Direction, ref r);
+                    var c = dot(in line1Direction, in r);
+                    var f = dot(in line2Direction, in r);
 
                     var s = (b * f - c * e) / d;
                     var t = (a * f - c * b) / d;
@@ -4632,26 +4984,26 @@ namespace Unianio
 
                 closestPointLine1 = line1p1;
                 var line2p2 = line2p1 + line2Direction;
-                point.ProjectOnLine(ref line1p1, ref line2p1, ref line2p2, out closestPointLine2);
+                point.ProjectOnLine(in line1p1, in line2p1, in line2p2, out closestPointLine2);
                 return false;
             }
 
             internal static bool ClosestOnTwoLinesByPoints(
-                ref Vector3 line1p1, ref Vector3 line1p2, ref Vector3 line2p1, ref Vector3 line2p2,
+                in Vector3 line1p1, in Vector3 line1p2, in Vector3 line2p1, in Vector3 line2p2,
                 out Vector3 closestPointLine1, out Vector3 closestPointLine2)
             {
                 var line1Direction = (line1p2 - line1p1).normalized;
                 var line2Direction = (line2p2 - line2p1).normalized;
 
                 return ClosestOnTwoLinesByPointAndDirection(
-                    ref line1p1, ref line1Direction,
-                    ref line2p1, ref line2Direction,
+                    in line1p1, in line1Direction,
+                    in line2p1, in line2Direction,
                     out closestPointLine1, out closestPointLine2);
             }
 
 
 
-            internal static bool IsLeftOfLine2D(ref Vector2 point, ref Vector2 linePoint1, ref Vector2 linePoint2)
+            internal static bool IsLeftOfLine2D(in Vector2 point, in Vector2 linePoint1, in Vector2 linePoint2)
             {
                 return ((linePoint2.x - linePoint1.x) * (point.y - linePoint1.y) - (linePoint2.y - linePoint1.y) * (point.x - linePoint1.x)) > 0;
             }
@@ -4659,111 +5011,111 @@ namespace Unianio
             {
                 return ((linePoint2.x - linePoint1.x) * (point.y - linePoint1.y) - (linePoint2.y - linePoint1.y) * (point.x - linePoint1.x)) > 0;
             }
-            internal static bool IsAbovePlane(ref Vector3 point, ref Vector3 planeNormal, ref Vector3 planePoint)
+            internal static bool IsAbovePlane(in Vector3 point, in Vector3 planeNormal, in Vector3 planePoint)
             {
                 var vectorToPlane = (point - planePoint).normalized;
-                var distance = -dot(ref vectorToPlane, ref planeNormal);
+                var distance = -dot(in vectorToPlane, in planeNormal);
                 return distance < 0;
             }
             internal static bool IsAbovePlane(Vector3 point, Vector3 planeNormal, Vector3 planePoint)
             {
                 var vectorToPlane = (point - planePoint).normalized;
-                var distance = -dot(ref vectorToPlane, ref planeNormal);
+                var distance = -dot(in vectorToPlane, in planeNormal);
                 return distance < 0;
             }
-            internal static bool IsAbovePlane(ref Vector3 point, ref Vector3 planeNormal)
+            internal static bool IsAbovePlane(in Vector3 point, in Vector3 planeNormal)
             {
-                return IsAbovePlane(ref point, ref planeNormal, ref v3.zero);
+                return IsAbovePlane(in point, in planeNormal, in v3.zero);
             }
             internal static bool IsAbovePlane(Vector3 point, Vector3 planeNormal)
             {
-                return IsAbovePlane(ref point, ref planeNormal, ref v3.zero);
+                return IsAbovePlane(in point, in planeNormal, in v3.zero);
             }
 
 
             internal static bool IsBelowPlane(Vector3 point, Vector3 planeNormal, Vector3 planePoint)
             {
                 var vectorToPlane = (point - planePoint).normalized;
-                var distance = -dot(ref vectorToPlane, ref planeNormal);
+                var distance = -dot(in vectorToPlane, in planeNormal);
                 return distance > 0;
             }
-            internal static bool IsBelowPlane(ref Vector3 point, ref Vector3 planeNormal, ref Vector3 planePoint)
+            internal static bool IsBelowPlane(in Vector3 point, in Vector3 planeNormal, in Vector3 planePoint)
             {
                 var vectorToPlane = (point - planePoint).normalized;
-                var distance = -dot(ref vectorToPlane, ref planeNormal);
+                var distance = -dot(in vectorToPlane, in planeNormal);
                 return distance > 0;
             }
-            internal static bool IsBelowPlane(ref Vector3 point, ref Vector3 planeNormal)
+            internal static bool IsBelowPlane(in Vector3 point, in Vector3 planeNormal)
             {
-                return IsBelowPlane(ref point, ref planeNormal, ref v3.zero);
+                return IsBelowPlane(in point, in planeNormal, in v3.zero);
             }
             internal static bool IsBelowPlane(Vector3 point, Vector3 planeNormal)
             {
-                return IsBelowPlane(ref point, ref planeNormal, ref v3.zero);
+                return IsBelowPlane(in point, in planeNormal, in v3.zero);
             }
 
 
-            internal static bool AreOnSameSidesOfPlane(ref Vector3 point1, ref Vector3 point2, ref Vector3 planeNormal, ref Vector3 planePoint)
+            internal static bool AreOnSameSidesOfPlane(in Vector3 point1, in Vector3 point2, in Vector3 planeNormal, in Vector3 planePoint)
             {
-                return IsAbovePlane(ref point1, ref planeNormal, ref planePoint) == IsAbovePlane(ref point2, ref planeNormal, ref planePoint);
+                return IsAbovePlane(in point1, in planeNormal, in planePoint) == IsAbovePlane(in point2, in planeNormal, in planePoint);
             }
 
-            internal static float DistanceToPlane(ref Vector3 point, ref Vector3 planeNormal, ref Vector3 planePoint)
+            internal static float DistanceToPlane(in Vector3 point, in Vector3 planeNormal, in Vector3 planePoint)
             {
                 var vectorToPlane = point - planePoint;
-                var distance = dot(ref planeNormal, ref vectorToPlane);
+                var distance = dot(in planeNormal, in vectorToPlane);
                 return abs(distance);
             }
             internal static float DistanceToPlane(Vector3 point, Vector3 planeNormal, Vector3 planePoint)
             {
                 var vectorToPlane = point - planePoint;
-                var distance = dot(ref planeNormal, ref vectorToPlane);
+                var distance = dot(in planeNormal, in vectorToPlane);
                 return abs(distance);
             }
 
-            internal static bool IsFirstCloser(ref Vector3 first, ref Vector3 second, ref Vector3 reference)
+            internal static bool IsFirstCloser(in Vector3 first, in Vector3 second, in Vector3 reference)
             {
-                var d1 = distanceSquared.Between(ref first, ref reference);
-                var d2 = distanceSquared.Between(ref second, ref reference);
+                var d1 = distanceSquared.Between(in first, in reference);
+                var d2 = distanceSquared.Between(in second, in reference);
                 return d1 < d2;
             }
             internal static bool IsFirstCloser(Vector3 first, Vector3 second, Vector3 reference)
             {
-                var d1 = distanceSquared.Between(ref first, ref reference);
-                var d2 = distanceSquared.Between(ref second, ref reference);
+                var d1 = distanceSquared.Between(in first, in reference);
+                var d2 = distanceSquared.Between(in second, in reference);
                 return d1 < d2;
             }
-            internal static bool IsFirstCloser2d(ref Vector2 first, ref Vector2 second, ref Vector2 reference)
+            internal static bool IsFirstCloser2d(in Vector2 first, in Vector2 second, in Vector2 reference)
             {
-                var d1 = distanceSquared.Between(ref first, ref reference);
-                var d2 = distanceSquared.Between(ref second, ref reference);
+                var d1 = distanceSquared.Between(in first, in reference);
+                var d2 = distanceSquared.Between(in second, in reference);
                 return d1 < d2;
             }
             internal static bool IsFirstCloser2d(Vector2 first, Vector2 second, Vector2 reference)
             {
-                var d1 = distanceSquared.Between(ref first, ref reference);
-                var d2 = distanceSquared.Between(ref second, ref reference);
+                var d1 = distanceSquared.Between(in first, in reference);
+                var d2 = distanceSquared.Between(in second, in reference);
                 return d1 < d2;
             }
 
-            internal static Vector3 ProjectOnPlane(ref Vector3 point, ref Vector3 planeNormal, ref Vector3 planePoint)
+            internal static Vector3 ProjectOnPlane(in Vector3 point, in Vector3 planeNormal, in Vector3 planePoint)
             {
                 var vectorToPlane = point - planePoint;
-                var distance = -dot(ref planeNormal, ref vectorToPlane);
+                var distance = -dot(in planeNormal, in vectorToPlane);
                 return point + planeNormal * distance;
             }
-            internal static void ProjectOnPlane(ref Vector3 point, ref Vector3 planeNormal, ref Vector3 planePoint, out Vector3 projection)
+            internal static void ProjectOnPlane(in Vector3 point, in Vector3 planeNormal, in Vector3 planePoint, out Vector3 projection)
             {
-                planeNormal = planeNormal.normalized;
+                var norm = planeNormal.normalized;
                 var vectorToPlane = point - planePoint;
-                var distance = -dot(ref planeNormal, ref vectorToPlane);
-                projection = point + planeNormal * distance;
+                var distance = -dot(in norm, in vectorToPlane);
+                projection = point + norm * distance;
             }
             internal static Vector3 ProjectOnPlane(Vector3 point, Vector3 planeNormal, Vector3 planePoint)
             {
                 planeNormal = planeNormal.normalized;
                 var vectorToPlane = point - planePoint;
-                var distance = -dot(ref planeNormal, ref vectorToPlane);
+                var distance = -dot(in planeNormal, in vectorToPlane);
                 return point + planeNormal * distance;
             }
             internal static Vector3 ProjectOnLine(Vector3 point, Vector3 line1, Vector3 line2)
@@ -4771,33 +5123,33 @@ namespace Unianio
                 var pointToLine = point - line1;
                 var lineVector = line2 - line1;
                 Vector3 onNormal;
-                vector.ProjectOnNormal(ref pointToLine, ref lineVector, out onNormal);
+                vector.ProjectOnNormal(in pointToLine, in lineVector, out onNormal);
                 return onNormal + line1;
             }
-            internal static Vector3 ProjectOnLine(ref Vector3 point, ref Vector3 line1, ref Vector3 line2)
+            internal static Vector3 ProjectOnLine(in Vector3 point, in Vector3 line1, in Vector3 line2)
             {
                 var pointToLine = point - line1;
                 var lineVector = line2 - line1;
                 Vector3 onNormal;
-                vector.ProjectOnNormal(ref pointToLine, ref lineVector, out onNormal);
+                vector.ProjectOnNormal(in pointToLine, in lineVector, out onNormal);
                 return onNormal + line1;
             }
-            internal static void ProjectOnLine(ref Vector3 point, ref Vector3 line1, ref Vector3 line2, out Vector3 projection)
+            internal static void ProjectOnLine(in Vector3 point, in Vector3 line1, in Vector3 line2, out Vector3 projection)
             {
                 var pointToLine = point - line1;
                 var lineVector = line2 - line1;
                 Vector3 onNormal;
-                vector.ProjectOnNormal(ref pointToLine, ref lineVector, out onNormal);
+                vector.ProjectOnNormal(in pointToLine, in lineVector, out onNormal);
                 projection = onNormal + line1;
             }
-            internal static bool TryProjectOnLineSegment(ref Vector3 point, ref Vector3 line1, ref Vector3 line2, out Vector3 projection)
+            internal static bool TryProjectOnLineSegment(in Vector3 point, in Vector3 line1, in Vector3 line2, out Vector3 projection)
             {
                 var pointToLine = point - line1;
                 var lineVector = line2 - line1;
                 Vector3 onNormal;
-                vector.ProjectOnNormal(ref pointToLine, ref lineVector, out onNormal);
+                vector.ProjectOnNormal(in pointToLine, in lineVector, out onNormal);
                 projection = onNormal + line1;
-                if (!IsOnSegment(ref line1, ref projection, ref line2))
+                if (!IsOnSegment(in line1, in projection, in line2))
                 {
                     projection = Vector3.zero;
                     return false;
@@ -4805,51 +5157,51 @@ namespace Unianio
                 return true;
             }
 
-            internal static void ProjectOnLineSegmentOrGetClosest(ref Vector3 point, ref Vector3 line1, ref Vector3 line2, out Vector3 projection)
+            internal static void ProjectOnLineSegmentOrGetClosest(in Vector3 point, in Vector3 line1, in Vector3 line2, out Vector3 projection)
             {
                 var pointToLine = point - line1;
                 var lineVector = line2 - line1;
                 Vector3 onNormal;
-                vector.ProjectOnNormal(ref pointToLine, ref lineVector, out onNormal);
+                vector.ProjectOnNormal(in pointToLine, in lineVector, out onNormal);
                 projection = onNormal + line1;
-                if (!IsOnSegment(ref line1, ref projection, ref line2))
+                if (!IsOnSegment(in line1, in projection, in line2))
                 {
-                    var d1 = distanceSquared.Between(ref line1, ref projection);
-                    var d2 = distanceSquared.Between(ref line2, ref projection);
+                    var d1 = distanceSquared.Between(in line1, in projection);
+                    var d2 = distanceSquared.Between(in line2, in projection);
                     projection = d1 < d2 ? line1 : line2;
                 }
             }
-            internal static void ProjectOnLine2D(ref Vector2 point, ref Vector2 linePoint1, ref Vector2 linePoint2, out Vector2 result)
+            internal static void ProjectOnLine2D(in Vector2 point, in Vector2 linePoint1, in Vector2 linePoint2, out Vector2 result)
             {
                 var line = linePoint1 - linePoint2;
                 var newPoint = point - linePoint2;
 
-                result = ((dot2D(ref newPoint, ref line) / dot2D(ref line, ref line)) * line) + linePoint2;
+                result = ((dot2D(in newPoint, in line) / dot2D(in line, in line)) * line) + linePoint2;
             }
             internal static Vector3 ReflectOfPlane(Vector3 point, Vector3 planeNormal, Vector3 planePoint)
             {
                 Vector3 projection;
-                ProjectOnPlane(ref point, ref planeNormal, ref planePoint, out projection);
-                var distance = fun.distance.Between(ref point, ref projection);
+                ProjectOnPlane(in point, in planeNormal, in planePoint, out projection);
+                var distance = fun.distance.Between(in point, in projection);
                 Vector3 mirrorPoint;
-                fun.point.TryMoveAbs(ref point, ref projection, distance * 2, out mirrorPoint);
+                fun.point.TryMoveAbs(in point, in projection, distance * 2, out mirrorPoint);
                 return mirrorPoint;
             }
-            internal static Vector3 ReflectOfPlane(ref Vector3 point, ref Vector3 planeNormal, ref Vector3 planePoint)
+            internal static Vector3 ReflectOfPlane(in Vector3 point, in Vector3 planeNormal, in Vector3 planePoint)
             {
                 Vector3 projection;
-                ProjectOnPlane(ref point, ref planeNormal, ref planePoint, out projection);
-                var distance = fun.distance.Between(ref point, ref projection);
+                ProjectOnPlane(in point, in planeNormal, in planePoint, out projection);
+                var distance = fun.distance.Between(in point, in projection);
                 Vector3 mirrorPoint;
-                fun.point.TryMoveAbs(ref point, ref projection, distance * 2, out mirrorPoint);
+                fun.point.TryMoveAbs(in point, in projection, distance * 2, out mirrorPoint);
                 return mirrorPoint;
             }
-            internal static void ReflectOfPlane(ref Vector3 point, ref Vector3 planeNormal, ref Vector3 planePoint, out Vector3 mirrorPoint)
+            internal static void ReflectOfPlane(in Vector3 point, in Vector3 planeNormal, in Vector3 planePoint, out Vector3 mirrorPoint)
             {
                 Vector3 projection;
-                ProjectOnPlane(ref point, ref planeNormal, ref planePoint, out projection);
-                var distance = fun.distance.Between(ref point, ref projection);
-                fun.point.TryMoveAbs(ref point, ref projection, distance * 2, out mirrorPoint);
+                ProjectOnPlane(in point, in planeNormal, in planePoint, out projection);
+                var distance = fun.distance.Between(in point, in projection);
+                fun.point.TryMoveAbs(in point, in projection, distance * 2, out mirrorPoint);
             }
 
             /// <summary>
@@ -4860,7 +5212,7 @@ namespace Unianio
                 var lhs = p1 - p2;
                 var rhs = p3 - p2;
                 Vector3 r;
-                vector.GetNormal(ref lhs, ref rhs, out r);
+                vector.GetNormal(in lhs, in rhs, out r);
                 return r;
             }
             internal static Vector3 GetNormalSameSideAs(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 sameSideAs)
@@ -4868,32 +5220,32 @@ namespace Unianio
                 var lhs = p1 - p2;
                 var rhs = p3 - p2;
                 Vector3 r;
-                vector.GetNormal(ref lhs, ref rhs, out r);
-                vector.EnsurePointSameDirAs(ref r, ref sameSideAs, out r);
+                vector.GetNormal(in lhs, in rhs, out r);
+                vector.EnsurePointSameDirAs(in r, in sameSideAs, out r);
                 return r;
             }
 
             /// <summary>
             /// if you are looking from above the normal: counter clockwise
             /// </summary>
-            internal static void GetNormal(ref Vector3 p1, ref Vector3 p2, ref Vector3 p3, out Vector3 r)
+            internal static void GetNormal(in Vector3 p1, in Vector3 p2, in Vector3 p3, out Vector3 r)
             {
                 var lhs = p1 - p2;
                 var rhs = p3 - p2;
-                vector.GetNormal(ref lhs, ref rhs, out r);
+                vector.GetNormal(in lhs, in rhs, out r);
             }
-            internal static bool TryGetNormal(ref Vector3 p1, ref Vector3 p2, ref Vector3 p3, out Vector3 r)
+            internal static bool TryGetNormal(in Vector3 p1, in Vector3 p2, in Vector3 p3, out Vector3 r)
             {
                 var lhs = p1 - p2;
                 var rhs = p3 - p2;
-                return vector.TryGetNormal(ref lhs, ref rhs, out r);
+                return vector.TryGetNormal(in lhs, in rhs, out r);
             }
-            internal static void GetNormalSameSideAs(ref Vector3 p1, ref Vector3 p2, ref Vector3 p3, ref Vector3 sameSideAs, out Vector3 normal)
+            internal static void GetNormalSameSideAs(in Vector3 p1, in Vector3 p2, in Vector3 p3, in Vector3 sameSideAs, out Vector3 normal)
             {
                 var lhs = p1 - p2;
                 var rhs = p3 - p2;
-                vector.GetNormal(ref lhs, ref rhs, out normal);
-                vector.EnsurePointSameDirAs(ref normal, ref sameSideAs, out normal);
+                vector.GetNormal(in lhs, in rhs, out normal);
+                vector.EnsurePointSameDirAs(in normal, in sameSideAs, out normal);
             }
             internal static Vector2 Lerp2D(Vector2 from, Vector2 to, double ratio)
             {
@@ -4908,7 +5260,7 @@ namespace Unianio
                     y = from.y + (to.y - from.y) * r
                 };
             }
-            internal static void Lerp2D(ref Vector2 from, ref Vector2 to, double ratio, out Vector2 result)
+            internal static void Lerp2D(in Vector2 from, in Vector2 to, double ratio, out Vector2 result)
             {
                 var r = (float)ratio;
                 if (r.IsEqual(0))
@@ -4922,7 +5274,7 @@ namespace Unianio
                     y = from.y + (to.y - from.y) * r
                 };
             }
-            internal static Vector3 Lerp(ref Vector3 from, ref Vector3 to, double ratio)
+            internal static Vector3 Lerp(in Vector3 from, in Vector3 to, double ratio)
             {
                 var r = (float)ratio;
                 if (r.IsEqual(0))
@@ -4931,7 +5283,7 @@ namespace Unianio
                 }
                 return new Vector3(from.x + (to.x - from.x) * r, from.y + (to.y - from.y) * r, from.z + (to.z - from.z) * r);
             }
-            internal static void Lerp(ref Vector3 from, ref Vector3 to, double ratio, out Vector3 result)
+            internal static void Lerp(in Vector3 from, in Vector3 to, double ratio, out Vector3 result)
             {
                 var r = (float)ratio;
                 if (r.IsEqual(0))
@@ -4969,7 +5321,7 @@ namespace Unianio
                 );
             }
 
-            internal static bool TryMoveRel2D(ref Vector2 from, ref Vector2 to, double ratio, out Vector2 result)
+            internal static bool TryMoveRel2D(in Vector2 from, in Vector2 to, double ratio, out Vector2 result)
             {
                 var r = (float)ratio;
                 if (r.IsEqual(0))
@@ -4984,7 +5336,7 @@ namespace Unianio
                 };
                 return true;
             }
-            internal static bool TryMoveRel(ref Vector3 from, ref Vector3 to, double ratio, out Vector3 result)
+            internal static bool TryMoveRel(in Vector3 from, in Vector3 to, double ratio, out Vector3 result)
             {
                 var r = (float)ratio;
                 if (r.IsEqual(0))
@@ -5023,7 +5375,7 @@ namespace Unianio
                 y = fromY + (toY - fromY) * amount;
                 return true;
             }
-            internal static bool TryMoveAbs2D(ref Vector2 from, ref Vector2 to, double distance, out Vector2 result)
+            internal static bool TryMoveAbs2D(in Vector2 from, in Vector2 to, double distance, out Vector2 result)
             {
                 if (distance.IsEqual(0))
                 {
@@ -5031,7 +5383,7 @@ namespace Unianio
                     return false;
                 }
 
-                var preDistance = fun.distance.Between(ref from, ref to);
+                var preDistance = fun.distance.Between(in from, in to);
 
                 if (preDistance.IsEqual(0))
                 {
@@ -5047,7 +5399,7 @@ namespace Unianio
                 };
                 return true;
             }
-            internal static bool TryMoveAbs(ref Vector3 from, ref Vector3 to, double distance, out Vector3 result)
+            internal static bool TryMoveAbs(in Vector3 from, in Vector3 to, double distance, out Vector3 result)
             {
                 if (distance.IsEqual(0))
                 {
@@ -5056,7 +5408,7 @@ namespace Unianio
                 }
 
                 var dir = (to - from);
-                var mag = vector.Magnitude(ref dir);
+                var mag = vector.Magnitude(in dir);
                 if (mag < 0.00001)
                 {
                     result = to;
@@ -5075,7 +5427,7 @@ namespace Unianio
                 }
 
                 var dir = (to - from);
-                var mag = vector.Magnitude2D(ref dir);
+                var mag = vector.Magnitude2D(in dir);
                 if (mag < 0.00001) return to;
 
                 dir = dir / mag;
@@ -5090,7 +5442,7 @@ namespace Unianio
                 }
 
                 var dir = (to - from);
-                var mag = vector.Magnitude(ref dir);
+                var mag = vector.Magnitude(in dir);
                 if (mag < 0.00001)
                 {
                     return to;
@@ -5099,7 +5451,7 @@ namespace Unianio
 
                 return from + dir * (float)distance;
             }
-            internal static Vector3 MoveAbs(ref Vector3 from, ref Vector3 to, double distance)
+            internal static Vector3 MoveAbs(in Vector3 from, in Vector3 to, double distance)
             {
                 if (distance.IsEqual(0))
                 {
@@ -5107,7 +5459,7 @@ namespace Unianio
                 }
 
                 var dir = (to - from);
-                var mag = vector.Magnitude(ref dir);
+                var mag = vector.Magnitude(in dir);
                 if (mag < 0.00001)
                 {
                     return to;
@@ -5116,7 +5468,7 @@ namespace Unianio
 
                 return from + dir * (float)distance;
             }
-            internal static bool MoveAbs(ref Vector3 from, ref Vector3 to, double distance, out Vector3 result)
+            internal static bool MoveAbs(in Vector3 from, in Vector3 to, double distance, out Vector3 result)
             {
                 if (distance.IsEqual(0))
                 {
@@ -5125,7 +5477,7 @@ namespace Unianio
                 }
 
                 var dir = (to - from);
-                var mag = vector.Magnitude(ref dir);
+                var mag = vector.Magnitude(in dir);
                 if (mag < 0.00001)
                 {
                     result = to;
@@ -5141,7 +5493,7 @@ namespace Unianio
             {
                 return new Vector2((b.x - a.x) * 0.5f + a.x, (b.y - a.y) * 0.5f + a.y);
             }
-            internal static void Middle2D(ref Vector2 a, ref Vector2 b, out Vector2 output)
+            internal static void Middle2D(in Vector2 a, in Vector2 b, out Vector2 output)
             {
                 output = new Vector2((b.x - a.x) * 0.5f + a.x, (b.y - a.y) * 0.5f + a.y);
             }
@@ -5149,12 +5501,12 @@ namespace Unianio
             {
                 return new Vector3((b.x - a.x) * 0.5f + a.x, (b.y - a.y) * 0.5f + a.y, (b.z - a.z) * 0.5f + a.z);
             }
-            internal static void Middle(ref Vector3 a, ref Vector3 b, out Vector3 output)
+            internal static void Middle(in Vector3 a, in Vector3 b, out Vector3 output)
             {
                 output = new Vector3((b.x - a.x) * 0.5f + a.x, (b.y - a.y) * 0.5f + a.y, (b.z - a.z) * 0.5f + a.z);
             }
 
-            internal static void EnforceWithin(ref Vector2 current, ref Vector2 start, ref Vector2 end)
+            internal static void EnforceWithin(ref Vector2 current, in Vector2 start, in Vector2 end)
             {
                 var isWithin =
                     current.x <= max(start.x, end.x) + epsilon && current.x >= min(start.x, end.x) - epsilon &&
@@ -5162,19 +5514,19 @@ namespace Unianio
 
                 if (!isWithin)
                 {
-                    var dSq1 = distanceSquared.Between(ref current, ref start);
-                    var dSq2 = distanceSquared.Between(ref current, ref end);
+                    var dSq1 = distanceSquared.Between(in current, in start);
+                    var dSq2 = distanceSquared.Between(in current, in end);
 
                     current = dSq1 < dSq2 ? start : end;
                 }
             }
 
-            internal static void GetPlaneNormalOfTheSideOf(ref Vector3 planeNormal, ref Vector3 planeCenter, ref Vector3 point, out Vector3 planeNormalOfTheSideOfPoint)
+            internal static void GetPlaneNormalOfTheSideOf(in Vector3 planeNormal, in Vector3 planeCenter, in Vector3 point, out Vector3 planeNormalOfTheSideOfPoint)
             {
                 var toPoint = (point - planeCenter).normalized;
                 planeNormal.Normalize();
 
-                var dp = dot(ref toPoint, ref planeNormal);
+                var dp = dot(in toPoint, in planeNormal);
                 if (dp > 0)
                 {
                     planeNormalOfTheSideOfPoint = planeNormal;
@@ -5186,13 +5538,13 @@ namespace Unianio
             }
 
 
-            internal static void LiftAboveTowards(ref Vector3 point, ref Vector3 planeNormal, ref Vector3 planePoint, ref Vector3 towardsPoint, double liftAmount, out Vector3 pointLifted)
+            internal static void LiftAboveTowards(in Vector3 point, in Vector3 planeNormal, in Vector3 planePoint, in Vector3 towardsPoint, double liftAmount, out Vector3 pointLifted)
             {
-                var normal = IsAbovePlane(ref towardsPoint, ref planeNormal, ref planePoint) ? planeNormal : -planeNormal;
+                var normal = IsAbovePlane(in towardsPoint, in planeNormal, in planePoint) ? planeNormal : -planeNormal;
                 pointLifted = point + normal * (float)liftAmount;
             }
 
-            internal static bool IsBetweenTwo(ref Vector3 point, ref Vector3 limitA, ref Vector3 limitB)
+            internal static bool IsBetweenTwo(in Vector3 point, in Vector3 limitA, in Vector3 limitB)
             {
                 var vec = limitA - limitB;
                 var normMag = vec.magnitude;
@@ -5203,41 +5555,41 @@ namespace Unianio
                 var normB = vec / normMag;
                 var normA = -normB;
 
-                return IsAbovePlane(ref point, ref normB, ref limitB) && IsAbovePlane(ref point, ref normA, ref limitA);
+                return IsAbovePlane(in point, in normB, in limitB) && IsAbovePlane(in point, in normA, in limitA);
             }
 
-            internal static Vector3 MidAwayFromAxis(ref Vector3 point1, ref Vector3 point2, double awayMeters, ref Vector3 axis)
+            internal static Vector3 MidAwayFromAxis(in Vector3 point1, in Vector3 point2, double awayMeters, in Vector3 axis)
             {
-                return MidAwayFromAxis(ref point1, ref point2, awayMeters, ref axis, ref v3.zero);
+                return MidAwayFromAxis(in point1, in point2, awayMeters, in axis, in v3.zero);
             }
 
-            internal static Vector3 MidAwayFromAxis(ref Vector3 point1, ref Vector3 point2, double awayMeters, ref Vector3 axis, ref Vector3 axisPoint)
+            internal static Vector3 MidAwayFromAxis(in Vector3 point1, in Vector3 point2, double awayMeters, in Vector3 axis, in Vector3 axisPoint)
             {
                 Vector3 mid;
-                Lerp(ref point1, ref point2, 0.5, out mid);
+                Lerp(in point1, in point2, 0.5, out mid);
 
                 Vector3 proj;
-                ProjectOnLine(ref mid, ref axisPoint, ref axis, out proj);
+                ProjectOnLine(in mid, in axisPoint, in axis, out proj);
 
                 var dir = (mid - proj).normalized;
 
                 return mid + dir * (float)awayMeters;
             }
 
-            internal static bool IsFirstCloserToLine(ref Vector3 first, ref Vector3 second, ref Vector3 linePoint1, ref Vector3 linePoint2)
+            internal static bool IsFirstCloserToLine(in Vector3 first, in Vector3 second, in Vector3 linePoint1, in Vector3 linePoint2)
             {
                 Vector3 firstOnLine, secondOnLine;
-                ProjectOnLine(ref first, ref linePoint1, ref linePoint2, out firstOnLine);
-                ProjectOnLine(ref second, ref linePoint1, ref linePoint2, out secondOnLine);
+                ProjectOnLine(in first, in linePoint1, in linePoint2, out firstOnLine);
+                ProjectOnLine(in second, in linePoint1, in linePoint2, out secondOnLine);
 
-                return distanceSquared.Between(ref first, ref firstOnLine) <
-                       distanceSquared.Between(ref second, ref secondOnLine);
+                return distanceSquared.Between(in first, in firstOnLine) <
+                       distanceSquared.Between(in second, in secondOnLine);
             }
 
-            internal static void GetClosestToPoint(ref Vector3 targetPoint, ref Vector3 p1, ref Vector3 p2, out Vector3 closestToTarget)
+            internal static void GetClosestToPoint(in Vector3 targetPoint, in Vector3 p1, in Vector3 p2, out Vector3 closestToTarget)
             {
-                var dSq1 = fun.distanceSquared.Between(ref targetPoint, ref p1);
-                var dSq2 = fun.distanceSquared.Between(ref targetPoint, ref p2);
+                var dSq1 = fun.distanceSquared.Between(in targetPoint, in p1);
+                var dSq2 = fun.distanceSquared.Between(in targetPoint, in p2);
                 closestToTarget = dSq1 <= dSq2 ? p1 : p2;
             }
         }
@@ -5412,7 +5764,7 @@ namespace Unianio
                 return randomPoint;
             }
 
-            internal static void PointOnPlane(ref Vector3 position, ref Vector3 normal, float radius, out Vector3 result)
+            internal static void PointOnPlane(in Vector3 position, in Vector3 normal, float radius, out Vector3 result)
             {
                 Vector3 randomPoint;
 
@@ -5456,7 +5808,7 @@ namespace Unianio
         #region rotate
         internal static class rotate
         {
-            internal static void AngleAndAxisToQuaternion(float degrees, ref Vector3 axis, out Quaternion quaternion)
+            internal static void AngleAndAxisToQuaternion(float degrees, in Vector3 axis, out Quaternion quaternion)
             {
                 var radians = degrees * DTR;
                 var s = (float)Math.Sin(radians / 2f);
@@ -5469,11 +5821,11 @@ namespace Unianio
             /// <summary>
             /// If looking from axis up towards down the positive angle results in rotation clockwise
             /// </summary>
-            internal static void Vector(ref Vector3 vector, ref Vector3 aboutAxis, double degrees, out Vector3 result)
+            internal static void Vector(in Vector3 vector, in Vector3 aboutAxis, double degrees, out Vector3 result)
             {
                 //var rotation = Quaternion.AngleAxis(degrees, aboutAxis);
                 Quaternion rotation;
-                AngleAndAxisToQuaternion((float)degrees, ref aboutAxis, out rotation);
+                AngleAndAxisToQuaternion((float)degrees, in aboutAxis, out rotation);
 
                 var num1 = rotation.x * 2f;
                 var num2 = rotation.y * 2f;
@@ -5494,7 +5846,7 @@ namespace Unianio
                 result = vector3;
             }
 
-            internal static void Point2dAbout(ref Vector2 pointToRotate, ref Vector2 privotPoint, double degrees, out Vector2 result)
+            internal static void Point2dAbout(in Vector2 pointToRotate, in Vector2 privotPoint, double degrees, out Vector2 result)
             {
                 var s = sin(degrees * DTR);
                 var c = cos(degrees * DTR);
@@ -5515,7 +5867,7 @@ namespace Unianio
                 py = ynew + privotPoint.y;
                 result = new Vector2(px, py);
             }
-            internal static void PointAbout(ref Vector3 rotatePoint, ref Vector3 pivot, ref Vector3 aboutAxis, double degrees, out Vector3 result)
+            internal static void PointAbout(in Vector3 rotatePoint, in Vector3 pivot, in Vector3 aboutAxis, double degrees, out Vector3 result)
             {
                 var rotation = Quaternion.AngleAxis((float)degrees, aboutAxis);
 
@@ -5540,7 +5892,7 @@ namespace Unianio
                 result = vector3 + pivot;
             }
 
-            internal static Vector3 PointAbout(ref Vector3 rotatePoint, ref Vector3 pivot, ref Vector3 aboutAxis, double degrees)
+            internal static Vector3 PointAbout(in Vector3 rotatePoint, in Vector3 pivot, in Vector3 aboutAxis, double degrees)
             {
                 var rotation = Quaternion.AngleAxis((float)degrees, aboutAxis);
 
@@ -5565,7 +5917,7 @@ namespace Unianio
                 return vector3 + pivot;
             }
 
-            internal static void Vector(ref Vector3 vector, ref Vector3 aboutAxis, ref Quaternion rotation, out Vector3 result)
+            internal static void Vector(in Vector3 vector, in Vector3 aboutAxis, in Quaternion rotation, out Vector3 result)
             {
                 var num1 = rotation.x * 2f;
                 var num2 = rotation.y * 2f;
@@ -5586,7 +5938,7 @@ namespace Unianio
                 result = vector3;
             }
 
-            internal static void PointAbout(ref Vector3 rotatePoint, ref Vector3 pivot, ref Vector3 aboutAxis, ref Quaternion rotation, out Vector3 result)
+            internal static void PointAbout(in Vector3 rotatePoint, in Vector3 pivot, in Vector3 aboutAxis, in Quaternion rotation, out Vector3 result)
             {
                 var point = rotatePoint - pivot;
 
@@ -5621,12 +5973,12 @@ namespace Unianio
                 if (count <= 1) return current;
                 return Vector2.Lerp(lastAverage, current, 1 / (float)count);
             }
-            internal static Vector3 LerpAverageV2(ref Vector2 lastAverage, ref Vector2 current, int count)
+            internal static Vector3 LerpAverageV2(in Vector2 lastAverage, in Vector2 current, int count)
             {
                 if (count <= 1) return current;
                 return Vector2.Lerp(lastAverage, current, 1 / (float)count);
             }
-            internal static void LerpAverageV2(ref Vector2 lastAverage, ref Vector2 current, int count, out Vector2 currentAverage)
+            internal static void LerpAverageV2(in Vector2 lastAverage, in Vector2 current, int count, out Vector2 currentAverage)
             {
                 if (count <= 1)
                 {
@@ -5641,12 +5993,12 @@ namespace Unianio
                 if (count <= 1) return current;
                 return Vector3.Lerp(lastAverage, current, 1 / (float)count);
             }
-            internal static Vector3 LerpAverage(ref Vector3 lastAverage, ref Vector3 current, int count)
+            internal static Vector3 LerpAverage(in Vector3 lastAverage, in Vector3 current, int count)
             {
                 if (count <= 1) return current;
                 return Vector3.Lerp(lastAverage, current, 1 / (float)count);
             }
-            internal static void LerpAverage(ref Vector3 lastAverage, ref Vector3 current, int count, out Vector3 currentAverage)
+            internal static void LerpAverage(in Vector3 lastAverage, in Vector3 current, int count, out Vector3 currentAverage)
             {
                 if (count <= 1)
                 {
@@ -5662,12 +6014,12 @@ namespace Unianio
                 if (count <= 1) return current;
                 return Vector3.Slerp(lastAverage, current, 1 / (float)count);
             }
-            internal static Vector3 SlerpAverage(ref Vector3 lastAverage, ref Vector3 current, int count)
+            internal static Vector3 SlerpAverage(in Vector3 lastAverage, in Vector3 current, int count)
             {
                 if (count <= 1) return current;
                 return Vector3.Slerp(lastAverage, current, 1 / (float)count);
             }
-            internal static void SlerpAverage(ref Vector3 lastAverage, ref Vector3 current, int count, out Vector3 currentAverage)
+            internal static void SlerpAverage(in Vector3 lastAverage, in Vector3 current, int count, out Vector3 currentAverage)
             {
                 if (count <= 1)
                 {
@@ -5683,7 +6035,7 @@ namespace Unianio
             }
 
 
-            internal static Quaternion SlerpAverage(ref Quaternion lastAverage, ref Quaternion current, int count)
+            internal static Quaternion SlerpAverage(in Quaternion lastAverage, in Quaternion current, int count)
             {
                 if (count <= 1) return current;
                 return Quaternion.Slerp(lastAverage, current, 1 / (float)count);
@@ -5762,11 +6114,11 @@ namespace Unianio
             {
                 return new Vector3((a.x + b.x + c.x) / 3f, (a.y + b.y + c.y) / 3f, (a.z + b.z + c.z) / 3f);
             }
-            internal static Vector3 GetCentroid(ref Vector3 a, ref Vector3 b, ref Vector3 c)
+            internal static Vector3 GetCentroid(in Vector3 a, in Vector3 b, in Vector3 c)
             {
                 return new Vector3((a.x + b.x + c.x) / 3f, (a.y + b.y + c.y) / 3f, (a.z + b.z + c.z) / 3f);
             }
-            internal static void GetCentroid(ref Vector3 a, ref Vector3 b, ref Vector3 c, out Vector3 output)
+            internal static void GetCentroid(in Vector3 a, in Vector3 b, in Vector3 c, out Vector3 output)
             {
                 output = new Vector3((a.x + b.x + c.x) / 3f, (a.y + b.y + c.y) / 3f, (a.z + b.z + c.z) / 3f);
             }
@@ -5774,11 +6126,11 @@ namespace Unianio
             {
                 return new Vector2((a.x + b.x + c.x) / 3f, (a.y + b.y + c.y) / 3f);
             }
-            internal static Vector2 GetCentroid2D(ref Vector2 a, ref Vector2 b, ref Vector2 c)
+            internal static Vector2 GetCentroid2D(in Vector2 a, in Vector2 b, in Vector2 c)
             {
                 return new Vector2((a.x + b.x + c.x) / 3f, (a.y + b.y + c.y) / 3f);
             }
-            internal static void GetCentroid2D(ref Vector2 a, ref Vector2 b, ref Vector2 c, out Vector2 centroid)
+            internal static void GetCentroid2D(in Vector2 a, in Vector2 b, in Vector2 c, out Vector2 centroid)
             {
                 centroid = new Vector2((a.x + b.x + c.x) / 3f, (a.y + b.y + c.y) / 3f);
             }
@@ -5847,43 +6199,43 @@ namespace Unianio
             }
             internal static bool IsPointInside(Vector2 point, Vector2 t1, Vector2 t2, Vector2 t3)
             {
-                var b1 = Sign3(ref point, ref t1, ref t2) < 0.0f;
-                var b2 = Sign3(ref point, ref t2, ref t3) < 0.0f;
-                var b3 = Sign3(ref point, ref t3, ref t1) < 0.0f;
+                var b1 = Sign3(in point, in t1, in t2) < 0.0f;
+                var b2 = Sign3(in point, in t2, in t3) < 0.0f;
+                var b3 = Sign3(in point, in t3, in t1) < 0.0f;
 
                 return (b1 == b2) && (b2 == b3);
             }
-            internal static bool IsPointInside(ref Vector2 point, ref Vector2 t1, ref Vector2 t2, ref Vector2 t3)
+            internal static bool IsPointInside(in Vector2 point, in Vector2 t1, in Vector2 t2, in Vector2 t3)
             {
-                var b1 = Sign3(ref point, ref t1, ref t2) < 0.0f;
-                var b2 = Sign3(ref point, ref t2, ref t3) < 0.0f;
-                var b3 = Sign3(ref point, ref t3, ref t1) < 0.0f;
+                var b1 = Sign3(in point, in t1, in t2) < 0.0f;
+                var b2 = Sign3(in point, in t2, in t3) < 0.0f;
+                var b3 = Sign3(in point, in t3, in t1) < 0.0f;
 
                 return (b1 == b2) && (b2 == b3);
             }
-            private static float Sign3(ref Vector2 p1, ref Vector2 p2, ref Vector2 p3)
+            private static float Sign3(in Vector2 p1, in Vector2 p2, in Vector2 p3)
             {
                 return (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y);
             }
             internal static bool Overlap(Vector3 t1p1, Vector3 t1p2, Vector3 t1p3, Vector3 t2p1, Vector3 t2p2, Vector3 t2p3)
             {
-                return Overlap(ref t1p1, ref t1p2, ref t1p3, ref t2p1, ref t2p2, ref t2p3);
+                return Overlap(in t1p1, in t1p2, in t1p3, in t2p1, in t2p2, in t2p3);
             }
-            internal static bool Overlap(ref Vector3 t1p1, ref Vector3 t1p2, ref Vector3 t1p3, ref Vector3 t2p1, ref Vector3 t2p2, ref Vector3 t2p3)
+            internal static bool Overlap(in Vector3 t1p1, in Vector3 t1p2, in Vector3 t1p3, in Vector3 t2p1, in Vector3 t2p2, in Vector3 t2p3)
             {
                 Vector2 isect1 = Vector2.zero, isect2 = Vector2.zero;
 
                 // compute plane equation of triangle(v0,v1,v2) 
                 var e1 = t1p2 - t1p1;
                 var e2 = t1p3 - t1p1;
-                var n1 = cross.Product(ref e1, ref e2);
-                var d1 = -dot(ref n1, ref t1p1);
+                var n1 = cross.Product(in e1, in e2);
+                var d1 = -dot(in n1, in t1p1);
                 // plane equation 1: N1.X+d1=0 */
 
                 // put u0,u1,u2 into plane equation 1 to compute signed distances to the plane
-                var du0 = dot(ref n1, ref t2p1) + d1;
-                var du1 = dot(ref n1, ref t2p2) + d1;
-                var du2 = dot(ref n1, ref t2p3) + d1;
+                var du0 = dot(in n1, in t2p1) + d1;
+                var du1 = dot(in n1, in t2p2) + d1;
+                var du2 = dot(in n1, in t2p3) + d1;
 
                 // coplanarity robustness check 
                 if (abs(du0) < Mathf.Epsilon) { du0 = 0.0f; }
@@ -5903,14 +6255,14 @@ namespace Unianio
                 // compute plane of triangle (u0,u1,u2)
                 e1 = t2p2 - t2p1;
                 e2 = t2p3 - t2p1;
-                var n2 = cross.Product(ref e1, ref e2);
-                var d2 = -dot(ref n2, ref t2p1);
+                var n2 = cross.Product(in e1, in e2);
+                var d2 = -dot(in n2, in t2p1);
 
                 // plane equation 2: N2.X+d2=0 
                 // put v0,v1,v2 into plane equation 2
-                var dv0 = dot(ref n2, ref t1p1) + d2;
-                var dv1 = dot(ref n2, ref t1p2) + d2;
-                var dv2 = dot(ref n2, ref t1p3) + d2;
+                var dv0 = dot(in n2, in t1p1) + d2;
+                var dv1 = dot(in n2, in t1p2) + d2;
+                var dv2 = dot(in n2, in t1p3) + d2;
 
                 if (abs(dv0) < Mathf.Epsilon) { dv0 = 0.0f; }
                 if (abs(dv1) < Mathf.Epsilon) { dv1 = 0.0f; }
@@ -5951,14 +6303,14 @@ namespace Unianio
                 float a = 0, b = 0, c = 0, x0 = 0, x1 = 0;
                 if (ComputeIntervals(vp0, vp1, vp2, dv0, dv1, dv2, dv0dv1, dv0dv2, ref a, ref b, ref c, ref x0, ref x1))
                 {
-                    return TriTriCoplanar(ref n1, ref t1p1, ref t1p2, ref t1p3, ref t2p1, ref t2p2, ref t2p3);
+                    return TriTriCoplanar(in n1, in t1p1, in t1p2, in t1p3, in t2p1, in t2p2, in t2p3);
                 }
 
                 // compute interval for triangle 2 
                 float d = 0, e = 0, f = 0, y0 = 0, y1 = 0;
                 if (ComputeIntervals(up0, up1, up2, du0, du1, du2, du0du1, du0du2, ref d, ref e, ref f, ref y0, ref y1))
                 {
-                    return TriTriCoplanar(ref n1, ref t1p1, ref t1p2, ref t1p3, ref t2p1, ref t2p2, ref t2p3);
+                    return TriTriCoplanar(in n1, in t1p1, in t1p2, in t1p3, in t2p1, in t2p2, in t2p3);
                 }
 
                 var xx = x0 * x1;
@@ -6013,7 +6365,7 @@ namespace Unianio
 
                 return false;
             }
-            private static bool TriTriCoplanar(ref Vector3 N, ref Vector3 v0, ref Vector3 v1, ref Vector3 v2, ref Vector3 u0, ref Vector3 u1, ref Vector3 u2)
+            private static bool TriTriCoplanar(in Vector3 N, in Vector3 v0, in Vector3 v1, in Vector3 v2, in Vector3 u0, in Vector3 u1, in Vector3 u2)
             {
                 var A = new float[3];
                 short i0, i1;
@@ -6055,30 +6407,30 @@ namespace Unianio
                 }
 
                 // test all edges of triangle 1 against the edges of triangle 2 
-                if (EdgeAgainstTriEdges(ref v0, ref v1, ref u0, ref u1, ref u2, i0, i1)) { return true; }
-                if (EdgeAgainstTriEdges(ref v1, ref v2, ref u0, ref u1, ref u2, i0, i1)) { return true; }
-                if (EdgeAgainstTriEdges(ref v2, ref v0, ref u0, ref u1, ref u2, i0, i1)) { return true; }
+                if (EdgeAgainstTriEdges(in v0, in v1, in u0, in u1, in u2, i0, i1)) { return true; }
+                if (EdgeAgainstTriEdges(in v1, in v2, in u0, in u1, in u2, i0, i1)) { return true; }
+                if (EdgeAgainstTriEdges(in v2, in v0, in u0, in u1, in u2, i0, i1)) { return true; }
 
                 // finally, test if tri1 is totally contained in tri2 or vice versa 
-                if (PointInTri(ref v0, ref u0, ref u1, ref u2, i0, i1)) { return true; }
-                if (PointInTri(ref u0, ref v0, ref v1, ref v2, i0, i1)) { return true; }
+                if (PointInTri(in v0, in u0, in u1, in u2, i0, i1)) { return true; }
+                if (PointInTri(in u0, in v0, in v1, in v2, i0, i1)) { return true; }
 
                 return false;
             }
-            private static bool EdgeAgainstTriEdges(ref Vector3 v0, ref Vector3 v1, ref Vector3 u0, ref Vector3 u1, ref Vector3 u2, short i0, short i1)
+            private static bool EdgeAgainstTriEdges(in Vector3 v0, in Vector3 v1, in Vector3 u0, in Vector3 u1, in Vector3 u2, short i0, short i1)
             {
                 // test edge u0,u1 against v0,v1
-                if (EdgeEdgeTest(ref v0, ref v1, ref u0, ref u1, i0, i1)) { return true; }
+                if (EdgeEdgeTest(in v0, in v1, in u0, in u1, i0, i1)) { return true; }
 
                 // test edge u1,u2 against v0,v1 
-                if (EdgeEdgeTest(ref v0, ref v1, ref u1, ref u2, i0, i1)) { return true; }
+                if (EdgeEdgeTest(in v0, in v1, in u1, in u2, i0, i1)) { return true; }
 
                 // test edge u2,u1 against v0,v1 
-                if (EdgeEdgeTest(ref v0, ref v1, ref u2, ref u0, i0, i1)) { return true; }
+                if (EdgeEdgeTest(in v0, in v1, in u2, in u0, i0, i1)) { return true; }
 
                 return false;
             }
-            private static bool EdgeEdgeTest(ref Vector3 v0, ref Vector3 v1, ref Vector3 u0, ref Vector3 u1, int i0, int i1)
+            private static bool EdgeEdgeTest(in Vector3 v0, in Vector3 v1, in Vector3 u0, in Vector3 u1, int i0, int i1)
             {
                 var Ax = v1[i0] - v0[i0];
                 var Ay = v1[i1] - v0[i1];
@@ -6104,7 +6456,7 @@ namespace Unianio
 
                 return false;
             }
-            private static bool PointInTri(ref Vector3 v0, ref Vector3 u0, ref Vector3 u1, ref Vector3 u2, short i0, short i1)
+            private static bool PointInTri(in Vector3 v0, in Vector3 u0, in Vector3 u1, in Vector3 u2, short i0, short i1)
             {
                 // is T1 completly inside T2?
                 // check if v0 is inside tri(u0,u1,u2)
@@ -6162,12 +6514,12 @@ namespace Unianio
                     distToTarg = lenAll;
                 }
                 var relDist01 = distToTarg / lenAll;
-                GetPlacementDir(ref oriFw, ref oriUp, ref toTargDir, out chainUpDir);
+                GetPlacementDir(in oriFw, in oriUp, in toTargDir, out chainUpDir);
 
                 var iniDir = chainUpDir.RotateTowards(toTargDir, relDist01.Clamp01().From01ToRange(30, 45));
 
                 //dbg.DrawLine(points.hc(), oriPo, oriPo+ chainUpDir, Color.green);
-                //dbg.DrawLine(points.hc() + 1, oriPo, oriPo + iniDir, Color.magenta);
+                //dbg.DrawLine(points.hc()+1,oriPo, oriPo+ iniDir, Color.magenta);
                 points[0] = oriPo;
                 points[1] = oriPo + iniDir * lengths[0];
                 points[2] = points[1] + iniDir * lengths[1];
@@ -6178,24 +6530,24 @@ namespace Unianio
                 join1 = points[1];
                 join2 = points[2];
             }
-            static void GetPlacementDir(ref Vector3 oriFw, ref Vector3 oriUp, ref Vector3 toTargDir, out Vector3 placementDir)
+            static void GetPlacementDir(in Vector3 oriFw, in Vector3 oriUp, in Vector3 toTargDir, out Vector3 placementDir)
             {
                 /*Vector3 oriRt;
-                fun.vector.GetNormal(ref oriFw, ref oriUp, out oriRt);
-                var dp01 = dot(ref oriUp, ref toTargDir).Abs();
-                var rhsDir = slerp(ref oriUp, ref oriFw, dp01);
+                fun.vector.GetNormal(in oriFw, in oriUp, out oriRt);
+                var dp01 = dot(in oriUp, in toTargDir).Abs();
+                var rhsDir = slerp(in oriUp, in oriFw, dp01);
                 Vector3 planeNorm;
-                fun.vector.GetNormal(ref toTargDir, ref rhsDir, out planeNorm);
-                fun.vector.EnsurePointSameDirAs(ref planeNorm, ref oriRt, out planeNorm);
-                fun.vector.GetNormal(ref planeNorm, ref toTargDir, out placementDir);*/
+                fun.vector.GetNormal(in toTargDir, in rhsDir, out planeNorm);
+                fun.vector.EnsurePointSameDirAs(in planeNorm, in oriRt, out planeNorm);
+                fun.vector.GetNormal(in planeNorm, in toTargDir, out placementDir);*/
                 Vector3 oriRt;
-                fun.vector.GetNormal(ref oriFw, ref oriUp, out oriRt);
+                fun.vector.GetNormal(in oriFw, in oriUp, out oriRt);
                 Vector3 toTargOnRtDir;
-                fun.vector.ProjectOnPlane(ref toTargDir, ref oriRt, out toTargOnRtDir);
-                fun.vector.GetNormal(ref oriRt, ref toTargOnRtDir, out placementDir);
+                fun.vector.ProjectOnPlane(in toTargDir, in oriRt, out toTargOnRtDir);
+                fun.vector.GetNormal(in oriRt, in toTargOnRtDir, out placementDir);
             }
 
-            // fun.invserseKinematics.ThreeJoinOnVertPlane(ref oriPo, ref oriFw, ref oriUp, ref tarPo, len1, len2, out j0, out j1);
+            // fun.invserseKinematics.ThreeJoinOnVertPlane(in oriPo, in oriFw, in oriUp, in tarPo, len1, len2, out j0, out j1);
             internal static void ThreeJoinOnVertPlane(
                 Vector3 oriPo, Vector3 oriFw, Vector3 oriUp, Vector3 tarPo,
                 double len0, double len1, out Vector3 join1, out Vector3 join2)
@@ -6203,14 +6555,14 @@ namespace Unianio
                 float distToTarg;
                 var toTargDir = (tarPo - oriPo).ToUnit(out distToTarg);
 
-                if (dot(ref toTargDir, ref oriUp).Abs() < 0.999)
+                if (dot(in toTargDir, in oriUp).Abs() < 0.999)
                 {
                     Vector3 planeNormToBe;
-                    vector.GetNormal(ref toTargDir, ref oriUp, out planeNormToBe);
-                    vector.ProjectOnPlane(ref oriFw, ref planeNormToBe, out oriFw);
+                    vector.GetNormal(in toTargDir, in oriUp, out planeNormToBe);
+                    vector.ProjectOnPlane(in oriFw, in planeNormToBe, out oriFw);
                 }
 
-                if (point.IsBelowPlane(ref tarPo, ref oriFw, ref oriPo))
+                if (point.IsBelowPlane(in tarPo, in oriFw, in oriPo))
                 {
                     oriUp *= -1;
                     oriFw *= -1;
@@ -6225,16 +6577,16 @@ namespace Unianio
                 }
 
                 Vector3 realUp;
-                vector.GetRealUp(ref toTargDir, ref oriUp, ref oriFw, out realUp);
+                vector.GetRealUp(in toTargDir, in oriUp, in oriFw, out realUp);
 
                 var halfRemaining = ((distToTarg - len1) / 2f);
 
                 var deg = Math.Acos(halfRemaining / len0) * RTD;
 
-                var toJ0 = toTargDir.RotateTowardsCanOvershoot(ref realUp, deg);
+                var toJ0 = toTargDir.RotateTowardsCanOvershoot(in realUp, deg);
                 join1 = oriPo + toJ0 * (float)len0;
 
-                var toJ1 = (-toTargDir).RotateTowardsCanOvershoot(ref realUp, deg);
+                var toJ1 = (-toTargDir).RotateTowardsCanOvershoot(in realUp, deg);
                 join2 = tarPo + toJ1 * (float)len0;
             }
 
@@ -6249,12 +6601,12 @@ namespace Unianio
                     return;
                 }
                 Vector3 realUp;
-                toTargDir.GetRealUp(ref oriUp, ref oriFw, out realUp);
+                toTargDir.GetRealUp(in oriUp, in oriFw, out realUp);
                 Vector3 planeNor;
-                vector.GetNormal(ref toTargDir, ref realUp, out planeNor);
+                vector.GetNormal(in toTargDir, in realUp, out planeNor);
 
                 var degNearLen1 = triangle.GetDegreesBySides(len1, distToTarg, len2);
-                var toJoin = toTargDir.RotateTowardsCanOvershoot(ref realUp, degNearLen1);
+                var toJoin = toTargDir.RotateTowardsCanOvershoot(in realUp, degNearLen1);
                 join = oriPo + toJoin * (float)len1;
             }
 
@@ -6362,11 +6714,11 @@ namespace Unianio
         #region vector
         internal static class vector
         {
-            internal static void RestrictWithinPlane(ref Vector3 dir, ref Vector3 planeDir, out Vector3 restrictedDir)
+            internal static void RestrictWithinPlane(in Vector3 dir, in Vector3 planeDir, out Vector3 restrictedDir)
             {
-                if (IsBelowPlane(ref dir, ref planeDir))
+                if (IsBelowPlane(in dir, in planeDir))
                 {
-                    ProjectOnPlane(ref dir, ref planeDir, out restrictedDir);
+                    ProjectOnPlane(in dir, in planeDir, out restrictedDir);
                     restrictedDir.Normalize();
                 }
                 else
@@ -6374,20 +6726,20 @@ namespace Unianio
                     restrictedDir = dir;
                 }
             }
-            internal static double RestrictMaxAngleFrom(ref Vector3 dir, ref Vector3 axisDir, double maxDegrees, out Vector3 restrictedDir)
+            internal static double RestrictMaxAngleFrom(in Vector3 dir, in Vector3 axisDir, double maxDegrees, out Vector3 restrictedDir)
             {
-                var deg = fun.angle.BetweenVectorsUnSignedInDegrees(ref dir, ref axisDir);
+                var deg = fun.angle.BetweenVectorsUnSignedInDegrees(in dir, in axisDir);
                 restrictedDir = deg > maxDegrees ? axisDir.RotateTowards(dir, maxDegrees) : dir;
                 return deg;
             }
-            internal static void ComputeLinkedJoinsUp(ref Vector3 frontJoinFw, ref Vector3 frontJoinUp, ref Vector3 backJoinFw, out Vector3 backJoinUp)
+            internal static void ComputeLinkedJoinsUp(in Vector3 frontJoinFw, in Vector3 frontJoinUp, in Vector3 backJoinFw, out Vector3 backJoinUp)
             {
-                var dpWithUp = dot(ref frontJoinUp, ref backJoinFw).ClampMin11();
+                var dpWithUp = dot(in frontJoinUp, in backJoinFw).ClampMin11();
                 var handUpRef =
                     dpWithUp < 0
                     ? Vector3.Slerp(frontJoinUp, frontJoinFw, dpWithUp * -1)
                     : Vector3.Slerp(frontJoinUp, -frontJoinFw, dpWithUp);
-                ProjectOnPlane(ref handUpRef, ref backJoinFw, out backJoinUp);
+                ProjectOnPlane(in handUpRef, in backJoinFw, out backJoinUp);
                 backJoinUp.Normalize();
                 backJoinUp = backJoinFw.GetRealUp(backJoinUp);
             }
@@ -6404,28 +6756,28 @@ namespace Unianio
             {
                 return Vector3.SlerpUnclamped(Vector3.SlerpUnclamped(a, b, (float)ab), c, (float)abc);
             }
-            internal static Vector3 Slerp(ref Vector3 a, ref Vector3 b, double t)
+            internal static Vector3 Slerp(in Vector3 a, in Vector3 b, double t)
             {
                 return Vector3.SlerpUnclamped(a, b, (float)t);
             }
-            internal static void Slerp(ref Vector3 a, ref Vector3 b, double t, out Vector3 d)
+            internal static void Slerp(in Vector3 a, in Vector3 b, double t, out Vector3 d)
             {
                 d = Vector3.SlerpUnclamped(a, b, (float)t);
             }
-            internal static Vector3 Slerp(ref Vector3 a, double ab, ref Vector3 b, double abc, ref Vector3 c)
+            internal static Vector3 Slerp(in Vector3 a, double ab, in Vector3 b, double abc, in Vector3 c)
             {
                 return Vector3.SlerpUnclamped(Vector3.SlerpUnclamped(a, b, (float)ab), c, (float)abc);
             }
-            internal static float LengthOnNormal(ref Vector3 vectorToPlane, ref Vector3 planeNormal)
+            internal static float LengthOnNormal(in Vector3 vectorToPlane, in Vector3 planeNormal)
             {
-                var distance = dot(ref planeNormal, ref vectorToPlane);
+                var distance = dot(in planeNormal, in vectorToPlane);
                 return abs(distance);
             }
-            internal static void ToLocal(ref Vector3 worldVector, ref Quaternion worldRotation, out Vector3 localVector)
+            internal static void ToLocal(in Vector3 worldVector, in Quaternion worldRotation, out Vector3 localVector)
             {
                 localVector = Quaternion.Inverse(worldRotation) * worldVector;
             }
-            internal static Vector3 ToLocal(ref Vector3 worldVector, ref Quaternion worldRotation)
+            internal static Vector3 ToLocal(in Vector3 worldVector, in Quaternion worldRotation)
             {
                 return Quaternion.Inverse(worldRotation) * worldVector;
             }
@@ -6435,11 +6787,11 @@ namespace Unianio
             }
 
 
-            internal static void ToWorld(ref Vector3 localVector, ref Quaternion worldRotation, out Vector3 worldPoint)
+            internal static void ToWorld(in Vector3 localVector, in Quaternion worldRotation, out Vector3 worldPoint)
             {
                 worldPoint = worldRotation * localVector;
             }
-            internal static Vector3 ToWorld(ref Vector3 localVector, ref Quaternion worldRotation)
+            internal static Vector3 ToWorld(in Vector3 localVector, in Quaternion worldRotation)
             {
                 return worldRotation * localVector;
             }
@@ -6449,35 +6801,35 @@ namespace Unianio
             }
 
 
-            internal static bool IsAbovePlane(ref Vector3 vectorToPlane, ref Vector3 planeNormal)
+            internal static bool IsAbovePlane(in Vector3 vectorToPlane, in Vector3 planeNormal)
             {
-                var distance = -dot(ref vectorToPlane, ref planeNormal);
+                var distance = -dot(in vectorToPlane, in planeNormal);
                 return distance < 0;
             }
             internal static bool IsAbovePlane(Vector3 vectorToPlane, Vector3 planeNormal)
             {
-                var distance = -dot(ref vectorToPlane, ref planeNormal);
+                var distance = -dot(in vectorToPlane, in planeNormal);
                 return distance < 0;
             }
-            internal static bool IsBelowPlane(ref Vector3 vectorToPlane, ref Vector3 planeNormal)
+            internal static bool IsBelowPlane(in Vector3 vectorToPlane, in Vector3 planeNormal)
             {
-                var distance = -dot(ref vectorToPlane, ref planeNormal);
+                var distance = -dot(in vectorToPlane, in planeNormal);
                 return distance >= 0;
             }
             internal static bool IsBelowPlane(Vector3 vectorToPlane, Vector3 planeNormal)
             {
-                var distance = -dot(ref vectorToPlane, ref planeNormal);
+                var distance = -dot(in vectorToPlane, in planeNormal);
                 return distance >= 0;
             }
-            internal static float ProjectionLength(ref Vector3 ofVector, ref Vector3 ontoVector)
+            internal static float ProjectionLength(in Vector3 ofVector, in Vector3 ontoVector)
             {
                 var unitOntoVector = ontoVector.normalized;
-                return dot(ref ofVector, ref unitOntoVector);
+                return dot(in ofVector, in unitOntoVector);
             }
             internal static float ProjectionLength(Vector3 ofVector, Vector3 ontoVector)
             {
                 var unitOntoVector = ontoVector.normalized;
-                return dot(ref ofVector, ref unitOntoVector);
+                return dot(in ofVector, in unitOntoVector);
             }
             internal static Vector3 ProjectOnNormal(Vector3 vector, Vector3 onNormal)
             {
@@ -6486,14 +6838,14 @@ namespace Unianio
                     return Vector3.zero;
                 return onNormal * Vector3.Dot(vector, onNormal) / (float)dotProduct;
             }
-            internal static Vector3 ProjectOnNormal(ref Vector3 vector, ref Vector3 onNormal)
+            internal static Vector3 ProjectOnNormal(in Vector3 vector, in Vector3 onNormal)
             {
                 var dotProduct = (float)((double)onNormal.x * (double)onNormal.x + (double)onNormal.y * (double)onNormal.y + (double)onNormal.z * (double)onNormal.z); ;
                 if ((double)dotProduct < (double)Mathf.Epsilon)
                     return Vector3.zero;
                 return onNormal * Vector3.Dot(vector, onNormal) / (float)dotProduct;
             }
-            internal static void ProjectOnNormal(ref Vector3 vector, ref Vector3 onNormal, out Vector3 projection)
+            internal static void ProjectOnNormal(in Vector3 vector, in Vector3 onNormal, out Vector3 projection)
             {
                 var dotProduct = (float)((double)onNormal.x * (double)onNormal.x + (double)onNormal.y * (double)onNormal.y + (double)onNormal.z * (double)onNormal.z); ;
                 if ((double)dotProduct < (double)Mathf.Epsilon)
@@ -6501,46 +6853,33 @@ namespace Unianio
                 else
                     projection = onNormal * Vector3.Dot(vector, onNormal) / (float)dotProduct;
             }
-            internal static Vector3 ProjectOnPlane(ref Vector3 vector, ref Vector3 planeNormal)
+            internal static Vector3 ProjectOnPlane(in Vector3 vector, in Vector3 planeNormal)
             {
                 var normPlaneNormal = planeNormal.normalized;
-                var distance = -dot(ref normPlaneNormal, ref vector);
+                var distance = -dot(in normPlaneNormal, in vector);
                 return vector + normPlaneNormal * distance;
             }
-            internal static void ProjectOnPlane(ref Vector3 vector, ref Vector3 planeNormal, out Vector3 projection)
+            internal static void ProjectOnPlane(in Vector3 vector, in Vector3 planeNormal, out Vector3 projection)
             {
                 var normPlaneNormal = planeNormal.normalized;
-                var distance = -dot(ref normPlaneNormal, ref vector);
+                var distance = -dot(in normPlaneNormal, in vector);
                 projection = vector + normPlaneNormal * distance;
             }
-            internal static Vector3 ProjectOnPlane(Vector3 vector, Vector3 planeNormal)
-            {
-                var normPlaneNormal = planeNormal.normalized;
-                var distance = -dot(ref normPlaneNormal, ref vector);
-                return vector + normPlaneNormal * distance;
-            }
-            internal static Vector3 ReflectOfPlane(Vector3 vector, Vector3 planeNormal)
+            internal static Vector3 ReflectOfPlane(in Vector3 vector, in Vector3 planeNormal)
             {
                 Vector3 projection;
-                ProjectOnPlane(ref vector, ref planeNormal, out projection);
+                ProjectOnPlane(in vector, in planeNormal, out projection);
                 projection.Normalize();
                 return Vector3.SlerpUnclamped(vector, projection.normalized, 2);
             }
-            internal static Vector3 ReflectOfPlane(ref Vector3 vector, ref Vector3 planeNormal)
+            internal static void ReflectOfPlane(in Vector3 vector, in Vector3 planeNormal, out Vector3 reflection)
             {
                 Vector3 projection;
-                ProjectOnPlane(ref vector, ref planeNormal, out projection);
-                projection.Normalize();
-                return Vector3.SlerpUnclamped(vector, projection.normalized, 2);
-            }
-            internal static void ReflectOfPlane(ref Vector3 vector, ref Vector3 planeNormal, out Vector3 reflection)
-            {
-                Vector3 projection;
-                ProjectOnPlane(ref vector, ref planeNormal, out projection);
+                ProjectOnPlane(in vector, in planeNormal, out projection);
                 projection.Normalize();
                 reflection = Vector3.SlerpUnclamped(vector, projection.normalized, 2);
             }
-            internal static Vector3 GetNormal(Vector3 lhs, Vector3 rhs)
+            internal static Vector3 GetNormal(in Vector3 lhs, in Vector3 rhs)
             {
                 var normal = new Vector3((lhs.y * rhs.z - lhs.z * rhs.y), (lhs.z * rhs.x - lhs.x * rhs.z), (lhs.x * rhs.y - lhs.y * rhs.x));
 
@@ -6552,7 +6891,7 @@ namespace Unianio
                     normal = new Vector3(0, 0, 0);
                 return normal;
             }
-            internal static Vector3 GetNormal(Vector3 lhs, Vector3 rhs, Vector3 normalIfOnLine)
+            internal static Vector3 GetNormalOrDefault(in Vector3 lhs, in Vector3 rhs, in Vector3 normalIfOnLine)
             {
                 var normal = new Vector3((lhs.y * rhs.z - lhs.z * rhs.y), (lhs.z * rhs.x - lhs.x * rhs.z), (lhs.x * rhs.y - lhs.y * rhs.x));
 
@@ -6564,7 +6903,18 @@ namespace Unianio
                     normal = normalIfOnLine;
                 return normal;
             }
-            internal static void GetNormal(ref Vector3 lhs, ref Vector3 rhs, out Vector3 normal)
+            internal static void GetNormalOrDefault(in Vector3 lhs, in Vector3 rhs, in Vector3 normalIfOnLine, out Vector3 normal)
+            {
+                normal = new Vector3((lhs.y * rhs.z - lhs.z * rhs.y), (lhs.z * rhs.x - lhs.x * rhs.z), (lhs.x * rhs.y - lhs.y * rhs.x));
+
+                // normalize:
+                var len = Math.Sqrt(normal.x * normal.x + normal.y * normal.y + normal.z * normal.z);
+                if (len > 9.99999974737875E-06)
+                    normal = normal / (float)len;
+                else
+                    normal = normalIfOnLine;
+            }
+            internal static void GetNormal(in Vector3 lhs, in Vector3 rhs, out Vector3 normal)
             {
                 normal = new Vector3((lhs.y * rhs.z - lhs.z * rhs.y), (lhs.z * rhs.x - lhs.x * rhs.z), (lhs.x * rhs.y - lhs.y * rhs.x));
 
@@ -6575,7 +6925,7 @@ namespace Unianio
                 else
                     normal = new Vector3(0, 0, 0);
             }
-            internal static bool TryGetNormal(ref Vector3 lhs, ref Vector3 rhs, out Vector3 normal)
+            internal static bool TryGetNormal(in Vector3 lhs, in Vector3 rhs, out Vector3 normal)
             {
                 normal = new Vector3((lhs.y * rhs.z - lhs.z * rhs.y), (lhs.z * rhs.x - lhs.x * rhs.z), (lhs.x * rhs.y - lhs.y * rhs.x));
 
@@ -6589,9 +6939,9 @@ namespace Unianio
                 normal = normal / (float)len;
                 return true;
             }
-            internal static void GetNormalWithAltRhs(ref Vector3 lhs, ref Vector3 mainRhs, ref Vector3 altRhs, out Vector3 normal)
+            internal static void GetNormalWithAltRhs(in Vector3 lhs, in Vector3 mainRhs, in Vector3 altRhs, out Vector3 normal)
             {
-                var dp = dot(ref lhs, ref mainRhs).Clamp(-1.0, 1.0);
+                var dp = dot(in lhs, in mainRhs).Clamp(-1.0, 1.0);
                 var rhs =
                     dp < 0
                     ? Vector3.Slerp(mainRhs, -altRhs, dp * -1)
@@ -6607,7 +6957,7 @@ namespace Unianio
                     normal = new Vector3(0, 0, 0);
             }
 
-            internal static void GetNormal(ref Vector3 lhs, ref Vector3 rhs, ref Vector3 normalIfOnLine, out Vector3 normal)
+            internal static void GetNormal(in Vector3 lhs, in Vector3 rhs, in Vector3 normalIfOnLine, out Vector3 normal)
             {
                 normal = new Vector3((lhs.y * rhs.z - lhs.z * rhs.y), (lhs.z * rhs.x - lhs.x * rhs.z), (lhs.x * rhs.y - lhs.y * rhs.x));
 
@@ -6619,86 +6969,88 @@ namespace Unianio
                     normal = normalIfOnLine;
             }
 
-            internal static void GetRealUp(ref Vector3 forward, ref Vector3 rawUp, out Vector3 realUp)
+            internal static void GetRealUp(in Vector3 forward, in Vector3 rawUp, out Vector3 realUp)
             {
                 Vector3 right;
-                cross.Product(ref rawUp, ref forward, out right);
+                cross.Product(in rawUp, in forward, out right);
                 right.Normalize();
-                cross.Product(ref forward, ref right, out realUp);
+                cross.Product(in forward, in right, out realUp);
                 realUp.Normalize();
             }
-            internal static void GetRealUp(ref Vector3 forward, ref Vector3 originalUp, ref Vector3 originalFw, out Vector3 realUp)
+            internal static void GetRealUp(in Vector3 forward, in Vector3 originalUp, in Vector3 originalFw, out Vector3 realUp)
             {
-                var dpWithFw = dot(ref forward, ref originalFw);
+                var dpWithFw = dot(in forward, in originalFw);
+                var originalFw2 = originalFw;
+                var originalUp2 = originalUp;
                 if (dpWithFw < 0)
                 {
-                    originalFw *= -1;
-                    originalUp *= -1;
+                    originalFw2 *= -1;
+                    originalUp2 *= -1;
                 }
 
-                var dpWithUp = dot(ref forward, ref originalUp).Clamp(-1.0, 1.0);
+                var dpWithUp = dot(in forward, in originalUp2).Clamp(-1.0, 1.0);
                 var rawUp =
                     dpWithUp < 0
-                    ? Vector3.Slerp(originalUp, originalFw, dpWithUp * -1)
-                    : Vector3.Slerp(originalUp, -originalFw, dpWithUp);
+                    ? Vector3.Slerp(originalUp2, originalFw2, dpWithUp * -1)
+                    : Vector3.Slerp(originalUp2, -originalFw2, dpWithUp);
 
                 Vector3 right;
-                cross.Product(ref rawUp, ref forward, out right);
+                cross.Product(in rawUp, in forward, out right);
                 right.Normalize();
-                cross.Product(ref forward, ref right, out realUp);
+                cross.Product(in forward, in right, out realUp);
                 realUp.Normalize();
             }
             internal static Vector3 GetRealUp(Vector3 forward, Vector3 rawUp)
             {
                 Vector3 right, realUp;
-                cross.Product(ref rawUp, ref forward, out right);
+                cross.Product(in rawUp, in forward, out right);
                 right.Normalize();
-                cross.Product(ref forward, ref right, out realUp);
+                cross.Product(in forward, in right, out realUp);
                 return realUp.normalized;
             }
 
-            internal static bool PointSameDirection(ref Vector3 a, ref Vector3 b)
+            internal static bool PointSameDirection(in Vector3 a, in Vector3 b)
             {
-                return dot(ref a, ref b) > 0;
+                return dot(in a, in b) > 0;
             }
             internal static bool PointSameDirection(Vector3 a, Vector3 b)
             {
-                return dot(ref a, ref b) > 0;
+                return dot(in a, in b) > 0;
             }
-            internal static bool PointSameDirection2D(ref Vector2 a, ref Vector2 b)
+            internal static bool PointSameDirection2D(in Vector2 a, in Vector2 b)
             {
-                return dot2D(ref a, ref b) > 0;
+                return dot2D(in a, in b) > 0;
             }
 
-            internal static bool PointDifferentDirection(ref Vector3 a, ref Vector3 b)
+            internal static bool PointDifferentDirection(in Vector3 a, in Vector3 b)
             {
-                return dot(ref a, ref b) <= 0;
+                return dot(in a, in b) <= 0;
             }
             internal static bool PointDifferentDirection(Vector3 a, Vector3 b)
             {
-                return dot(ref a, ref b) <= 0;
+                return dot(in a, in b) <= 0;
             }
-            internal static bool PointDifferentDirection2D(ref Vector2 a, ref Vector2 b)
+            internal static bool PointDifferentDirection2D(in Vector2 a, in Vector2 b)
             {
-                return dot2D(ref a, ref b) <= 0;
+                return dot2D(in a, in b) <= 0;
             }
 
-            internal static void ComputeRandomXYAxesForPlane(ref Vector3 planeNormal, out Vector3 normX, out Vector3 normY)
+            internal static void ComputeRandomXYAxesForPlane(in Vector3 planeNormal, out Vector3 normX, out Vector3 normY)
             {
                 var fw = Vector3.right;
-                cross.Product(ref planeNormal, ref fw, out normX);
+                cross.Product(in planeNormal, in fw, out normX);
                 if (normX.sqrMagnitude < 0.001)
                 {
                     var rt = Vector3.forward;
-                    cross.Product(ref planeNormal, ref rt, out normX);
+                    cross.Product(in planeNormal, in rt, out normX);
                 }
                 normX.Normalize();
-                GetNormal(ref planeNormal, ref normX, out normY);
+                GetNormal(in planeNormal, in normX, out normY);
             }
 
-            internal static void EnsurePointSameDirAs(ref Vector3 direction, ref Vector3 mustBeCodirectionalTo, out Vector3 sameDirection)
+            internal static void EnsurePointSameDirAs(in Vector3 direction, in Vector3 mustBeCodirectionalTo, out Vector3 sameDirection)
             {
-                if (PointSameDirection(ref direction, ref mustBeCodirectionalTo))
+                if (PointSameDirection(in direction, in mustBeCodirectionalTo))
                 {
                     sameDirection = direction;
                 }
@@ -6707,9 +7059,9 @@ namespace Unianio
                     sameDirection = -direction;
                 }
             }
-            internal static void EnsurePointDifferentDirThan(ref Vector3 direction, ref Vector3 mustNotBeCodirectionalTo, out Vector3 sameDirection)
+            internal static void EnsurePointDifferentDirThan(in Vector3 direction, in Vector3 mustNotBeCodirectionalTo, out Vector3 sameDirection)
             {
-                if (PointSameDirection(ref direction, ref mustNotBeCodirectionalTo))
+                if (PointSameDirection(in direction, in mustNotBeCodirectionalTo))
                 {
                     sameDirection = -direction;
                 }
@@ -6718,44 +7070,44 @@ namespace Unianio
                     sameDirection = direction;
                 }
             }
-            internal static bool IsCloserToFirst(ref Vector3 normalizedTargetDir, ref Vector3 normalizedFirst, ref Vector3 normalizedSecond)
+            internal static bool IsCloserToFirst(in Vector3 normalizedTargetDir, in Vector3 normalizedFirst, in Vector3 normalizedSecond)
             {
-                var dp1 = dot(ref normalizedTargetDir, ref normalizedFirst);
-                var dp2 = dot(ref normalizedTargetDir, ref normalizedSecond);
+                var dp1 = dot(in normalizedTargetDir, in normalizedFirst);
+                var dp2 = dot(in normalizedTargetDir, in normalizedSecond);
                 return dp1 > dp2;
             }
-            internal static bool IsWithinCircleFormedBy(ref Vector3 normalInQuestion, ref Vector3 normalBoundary1, ref Vector3 normalBoundary2)
+            internal static bool IsWithinCircleFormedBy(in Vector3 normalInQuestion, in Vector3 normalBoundary1, in Vector3 normalBoundary2)
             {
                 var normalCenter = Vector3.Slerp(normalBoundary1, normalBoundary2, 0.5f);
-                var dpMaxDiff = dot(ref normalCenter, ref normalBoundary1);
-                var dpActDiff = dot(ref normalCenter, ref normalInQuestion);
+                var dpMaxDiff = dot(in normalCenter, in normalBoundary1);
+                var dpActDiff = dot(in normalCenter, in normalInQuestion);
                 return dpActDiff >= dpMaxDiff;// remember dot product is oposit to angle, higher means closer lower further apart
             }
-            internal static float HorzMagnitude(ref Vector3 a)
+            internal static float HorzMagnitude(in Vector3 a)
             {
                 return (float)Math.Sqrt(((double)a.x * (double)a.x + (double)a.z * (double)a.z));
             }
-            internal static float Magnitude(ref Vector3 a)
+            internal static float Magnitude(in Vector3 a)
             {
                 return (float)Math.Sqrt(((double)a.x * (double)a.x + (double)a.y * (double)a.y + (double)a.z * (double)a.z));
             }
-            internal static double MagnitudeAsDouble(ref Vector3 a)
+            internal static double MagnitudeAsDouble(in Vector3 a)
             {
                 return Math.Sqrt(((double)a.x * (double)a.x + (double)a.y * (double)a.y + (double)a.z * (double)a.z));
             }
-            internal static float SqrMagnitude(ref Vector3 a)
+            internal static float SqrMagnitude(in Vector3 a)
             {
                 return (float)((double)a.x * (double)a.x + (double)a.y * (double)a.y + (double)a.z * (double)a.z);
             }
-            internal static float Magnitude2D(ref Vector2 a)
+            internal static float Magnitude2D(in Vector2 a)
             {
                 return (float)Math.Sqrt((double)a.x * (double)a.x + (double)a.y * (double)a.y);
             }
-            internal static float SqrMagnitude2D(ref Vector2 a)
+            internal static float SqrMagnitude2D(in Vector2 a)
             {
                 return (float)((double)a.x * (double)a.x + (double)a.y * (double)a.y);
             }
-            internal static bool TryNormalize(ref Vector3 vector, out Vector3 normal)
+            internal static bool TryNormalize(in Vector3 vector, out Vector3 normal)
             {
                 var mag = Math.Sqrt(((double)vector.x * (double)vector.x + (double)vector.y * (double)vector.y + (double)vector.z * (double)vector.z));
                 if (mag < 0.00001)
@@ -6766,7 +7118,7 @@ namespace Unianio
                 normal = vector / (float)mag;
                 return true;
             }
-            internal static bool TryNormalize(ref Vector3 vector, out float magnitude, out Vector3 normal)
+            internal static bool TryNormalize(in Vector3 vector, out float magnitude, out Vector3 normal)
             {
                 var mag = Math.Sqrt(((double)vector.x * (double)vector.x + (double)vector.y * (double)vector.y + (double)vector.z * (double)vector.z));
                 magnitude = (float)mag;

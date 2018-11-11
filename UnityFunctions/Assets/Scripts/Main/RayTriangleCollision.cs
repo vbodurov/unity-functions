@@ -35,8 +35,8 @@ namespace Main
 
             // test code STARTS here -----------------------------------------------
             Vector3 p;
-            var intersectsPlane = fun.intersection.BetweenPlaneAndRay(ref planeNormal, ref a, ref rayFw, ref rayOr, out p);
-            var isInsideTri = intersectsPlane && fun.intersection.BetweenTriangleAndRay(ref a, ref b, ref c, ref rayFw, ref rayOr);
+            var intersectsPlane = fun.intersection.BetweenPlaneAndRay(in planeNormal, in a, in rayFw, in rayOr, out p);
+            var isInsideTri = intersectsPlane && fun.intersection.BetweenTriangleAndRay(in a, in b, in c, in rayFw, in rayOr);
             // test code ENDS here -------------------------------------------------
 
             if (intersectsPlane)

@@ -37,8 +37,8 @@ namespace Main
             Vector3 collision;
             var hasCollision = 
                 fun.intersection.BetweenTriangleAndSphere(
-                    ref t1, ref t2, ref t3, 
-                    ref spherePos, _sphereRadius, 
+                    in t1, in t2, in t3,
+                    in spherePos, _sphereRadius, 
                     out collision);
             
             // test code ENDS here -------------------------------------------------

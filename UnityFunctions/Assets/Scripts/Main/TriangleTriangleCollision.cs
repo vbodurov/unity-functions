@@ -41,8 +41,8 @@ namespace Main
             Vector3 collision;
             var hasCollision =
                 fun.intersection.BetweenTriangles(
-                    ref t1p1, ref t1p2, ref t1p3,
-                    ref t2p1, ref t2p2, ref t2p3, out collision);
+                    in t1p1, in t1p2, in t1p3,
+                    in t2p1, in t2p2, in t2p3, out collision);
             // test code ENDS here -------------------------------------------------
 
             _collision.position = hasCollision ? collision : new Vector3(0,999,0);

@@ -33,7 +33,7 @@ namespace Main
 
 
             // test code STARTS here -----------------------------------------------
-            var hasCollision = fun.intersection.BetweenAxisAlignedBoxes(ref pos1, ref size1, ref pos2, ref size2);
+            var hasCollision = fun.intersection.BetweenAxisAlignedBoxes(in pos1, in size1, in pos2, in size2);
             // test code ENDS here -------------------------------------------------
 
 

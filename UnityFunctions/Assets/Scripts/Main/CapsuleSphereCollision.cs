@@ -38,7 +38,7 @@ namespace Main
             Vector3 collision;
             var hasCollision = 
                 fun.intersection.BetweenCapsuleAndSphere(
-                    ref c1p1, ref c1p2, CapsuleRadius, ref sp, SphereRadius, out collision);
+                    in c1p1, in c1p2, CapsuleRadius, in sp, SphereRadius, out collision);
             // test code ENDS here -------------------------------------------------
 
             _collision.position = hasCollision ? collision : new Vector3(0,999,0);
