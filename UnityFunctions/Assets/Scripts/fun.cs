@@ -1221,26 +1221,30 @@ namespace Unianio
                 byte a = (byte)(color >> 0);
                 return new Color(r / (float)0xFF, g / (float)0xFF, b / (float)0xFF, a / (float)0xFF);
             }
-            internal static Color FromHueSaturationLuminance(float hue, float saturation, float luminance)
+            internal static Color Rainbow(double x01)
+            {
+                return FromHueSaturationLuminance(x01.Clamp01().From01ToRange(0, 0.9999), 1, 0.5);
+            }
+            internal static Color FromHueSaturationLuminance(double hue, double saturation, double luminance)
             {
                 float v;
                 float r, g, b;
                 // default to gray
-                r = luminance;
-                g = luminance;
-                b = luminance;
-                v = (luminance <= 0.5) ? (luminance * (1.0f + saturation)) : (luminance + saturation - luminance * saturation);
+                r = (float)luminance;
+                g = (float)luminance;
+                b = (float)luminance;
+                v = (float)((luminance <= 0.5) ? (luminance * (1.0 + saturation)) : (luminance + saturation - luminance * saturation));
                 if (v > 0)
                 {
                     float m;
                     float sv;
                     int sextant;
                     float fract, vsf, mid1, mid2;
-                    m = luminance + luminance - v;
+                    m = (float)luminance + (float)luminance - v;
                     sv = (v - m) / v;
                     hue *= 6.0f;
                     sextant = (int)hue;
-                    fract = hue - sextant;
+                    fract = (float)hue - sextant;
                     vsf = v * sv * fract;
                     mid1 = m + vsf;
                     mid2 = v - vsf;
