@@ -5871,6 +5871,27 @@ namespace Unianio
                 py = ynew + privotPoint.y;
                 result = new Vector2(px, py);
             }
+            internal static Vector2 Point2dAbout(in Vector2 pointToRotate, in Vector2 privotPoint, double degrees)
+            {
+                var s = sin(degrees * DTR);
+                var c = cos(degrees * DTR);
+
+                var px = pointToRotate.x;
+                var py = pointToRotate.y;
+
+                // translate point back to origin:
+                px -= privotPoint.x;
+                py -= privotPoint.y;
+
+                // rotate point
+                var xnew = px * c - py * s;
+                var ynew = px * s + py * c;
+
+                // translate point back:
+                px = xnew + privotPoint.x;
+                py = ynew + privotPoint.y;
+                return new Vector2(px, py);
+            }
             internal static void PointAbout(in Vector3 rotatePoint, in Vector3 pivot, in Vector3 aboutAxis, double degrees, out Vector3 result)
             {
                 var rotation = Quaternion.AngleAxis((float)degrees, aboutAxis);
