@@ -6634,7 +6634,26 @@ namespace Unianio
                 var toJoin = toTargDir.RotateTowardsCanOvershoot(in realUp, degNearLen1);
                 join = oriPo + toJoin * (float)len1;
             }
-
+            internal static bool ValidateEllipseConstraint(
+                in Vector3 originalDir, in Vector3 normal, in Vector3 currentDir,
+                double maxDegreesTowardsNormal, double maxDegreesAwayFromNormal,
+                out float maxAllowed)
+            {
+                if (maxDegreesTowardsNormal < 0 || maxDegreesAwayFromNormal < 0)
+                    throw new ArgumentException($"Constraint limits cannot be negative maxDegreesTowardsNormal={maxDegreesTowardsNormal} maxDegreesAwayFromNormal={maxDegreesAwayFromNormal}");
+                var currentDeg = angle.BetweenVectorsUnSignedInDegrees(in originalDir, in currentDir);
+                if (currentDeg < 0.0001)
+                {
+                    maxAllowed = min(maxDegreesTowardsNormal, maxDegreesAwayFromNormal);
+                    return true;
+                }
+                vector.ProjectOnPlane(in currentDir, in originalDir, out var currProj);
+                currProj.Normalize();
+                var realNormal = originalDir.GetRealUp(in normal);
+                var ellipse01 = abs(angle.BetweenVectorsUnSignedInDegrees(in currProj, in realNormal) / 180f).Clamp01();
+                maxAllowed = ellipse01.From01ToRange(maxDegreesTowardsNormal, maxDegreesAwayFromNormal);
+                return maxAllowed >= currentDeg;
+            }
 
             /*
 
