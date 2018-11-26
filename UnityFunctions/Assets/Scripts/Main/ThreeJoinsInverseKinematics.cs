@@ -58,7 +58,7 @@ namespace Main
 
 
             Vector3 j0, j1;
-            fun.invserseKinematics.ThreeJoinOnVertPlane(oriPo, oriFw, oriUp, tarPo, len1, len2, out j0, out j1);
+            fun.inverseKinematics.ThreeJoinOnVertPlane(oriPo, oriFw, oriUp, tarPo, len1, len2, out j0, out j1);
             // test code ENDS here -------------------------------------------------
 
             var toJ0 = (j0 - oriPo).normalized;

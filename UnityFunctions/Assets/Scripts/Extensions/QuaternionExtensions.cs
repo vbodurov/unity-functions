@@ -57,25 +57,25 @@ namespace Extensions
         }
         internal static Quaternion RotateTowards(in this Quaternion from, in Quaternion to, double maxDegreesDelta)
         {
-            var angleDegrees = fun.angle.Between(in from, in to);
+            var angleDegrees = angle.Between(in from, in to);
             if (Math.Abs(angleDegrees) < 0.00001 || maxDegreesDelta >= 180)
                 return to;
-            float t = (float)Math.Min(1f, maxDegreesDelta / angleDegrees);
-            return Quaternion.Slerp(from, to, t);
+            var t = (float)Math.Min(1f, maxDegreesDelta / angleDegrees);
+            return Quaternion.SlerpUnclamped(from, to, t);
         }
         internal static void RotateTowards(in this Quaternion from, in Quaternion to, double maxDegreesDelta, out Quaternion output)
         {
-            var angleDegrees = fun.angle.Between(in from, in to);
+            var angleDegrees = angle.Between(in from, in to);
             if (Math.Abs(angleDegrees) < 0.00001 || maxDegreesDelta >= 180)
             {
                 output = to;
                 return;
             }
-            float t = (float)Math.Min(1f, maxDegreesDelta / angleDegrees);
-            output = Quaternion.Slerp(from, to, t);
+            var t = (float)Math.Min(1f, maxDegreesDelta / angleDegrees);
+            output = Quaternion.SlerpUnclamped(from, to, t);
         }
 
-        private const double TwiseRadiansToDegrees = 2.0 * 57.2957801818848;
+        const double TwiseRadiansToDegrees = 2.0 * 57.2957801818848;
         internal static float DegreesTo(in this Quaternion from, in Quaternion to)
         {
             return (float)((double)Math.Acos(Math.Min(Math.Abs(dot(in from, in to)), 1f)) * TwiseRadiansToDegrees);

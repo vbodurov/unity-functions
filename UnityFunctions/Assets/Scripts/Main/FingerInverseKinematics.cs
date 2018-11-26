@@ -52,7 +52,7 @@ namespace Main
 //            if(_i > 1) return;
             // test code STARTS here -----------------------------------------------
             Vector3 j0, j1, norm;
-            fun.invserseKinematics.Finger(oriPo, oriFw, oriUp, tarPo, _points,_lengths, out j0, out j1, out norm);
+            fun.inverseKinematics.Finger(oriPo, oriFw, oriUp, tarPo, _points,_lengths, out j0, out j1, out norm);
             // test code ENDS here -------------------------------------------------
 
             var toJ0 = (j0 - oriPo).normalized;

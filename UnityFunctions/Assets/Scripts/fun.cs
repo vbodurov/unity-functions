@@ -6519,7 +6519,7 @@ namespace Unianio
         }
         #endregion
         #region invserseKinematics
-        internal static class invserseKinematics
+        internal static class inverseKinematics
         {
             public static void Finger(
                 Vector3 oriPo, Vector3 oriFw, Vector3 oriUp, Vector3 tarPo,

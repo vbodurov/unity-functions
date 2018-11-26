@@ -55,7 +55,7 @@ namespace Main
 //            tarPo = Vector3.Lerp(tarPoOnPlane, tarPo, (float)BezierFunc.GetY(relDistToPlane, 0.20,0.00,0.00,1.00));
 
             Vector3 join;
-            fun.invserseKinematics.TwoJoinsOnVertPlane(oriPo, oriFw, oriUp, tarPo, len1, len2, out join);
+            fun.inverseKinematics.TwoJoinsOnVertPlane(oriPo, oriFw, oriUp, tarPo, len1, len2, out join);
             // test code ENDS here -------------------------------------------------
 
             var toJ0 = (join - oriPo).normalized;
