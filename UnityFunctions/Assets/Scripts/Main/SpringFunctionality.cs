@@ -3,6 +3,7 @@ using Services;
 using Unianio;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityFunctions;
 
 namespace Main
 {
@@ -20,14 +21,16 @@ namespace Main
             _rigid = GameObject.CreatePrimitive(PrimitiveType.Cube).transform
                 .SetScale(1).SetColor(0x0000FFFF).SetPosition(-2.5, 0, 0);
 
-            _ppa = new PendulumPhysicsAgent(0.20, 3.0);
+            _ppa = new PendulumPhysicsAgent();
 
             _log = GameObject.Find("LogText").GetComponent<Text>();
         }
         void Update()
         {
             fun.frame();
-            _soft.position = _ppa.Compute(V3(5,0,0).AsWorldPoint(_rigid));
+            var p = V3(5, 0, 0).AsWorldPoint(_rigid);
+            Debug.DrawLine(p, _rigid.position, Color.yellow, 0, false);
+            _soft.position = _ppa.Compute(p);
 
         }
     }
