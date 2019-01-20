@@ -9,48 +9,54 @@ namespace Services
     internal delegate bool ApplyConstrain(ref Vector3 dynamicPos, ref Vector3 velocity, in Vector3 force);
     internal interface IPendulumPhysicsAgent
     {
-        Vector3 Compute(in Vector3 currRigidPosition, ApplyConstrain constrain = null);
+        Vector3 Compute(in Vector3 currRigidPosition, double gravity01 = 0, ApplyConstrain constrain = null);
     }
     internal class PendulumPhysicsAgent : IPendulumPhysicsAgent
     {
-        Vector3 force, acc, vel, dynamicPos;
-        float bStiffness, bMass, bDamping;
+        Vector3 _force, _acc, _vel, _dynamicPos;
+        readonly float _stiffness, _mass, _damping, _gravity;
 
-        internal PendulumPhysicsAgent(double stiffness = 0.1, double mass = 0.9, double damping = 0.75)
+        internal PendulumPhysicsAgent(
+            double stiffness = 0.1,
+            double mass = 0.9,
+            double damping = 0.75,
+            double gravity = 0.75)
         {
-            bStiffness = (float)stiffness;
-            bMass = (float)mass;
-            bDamping = (float)damping;
+            _stiffness = (float)stiffness;
+            _mass = (float)mass;
+            _damping = (float)damping;
+            _gravity = (float)gravity;
         }
 
-        
-        Vector3 IPendulumPhysicsAgent.Compute(in Vector3 targetPos, ApplyConstrain constrain)
+
+        Vector3 IPendulumPhysicsAgent.Compute(in Vector3 targetPos, double gravity01, ApplyConstrain constrain)
         {
-            force.x = (targetPos.x - dynamicPos.x) * bStiffness;
-            acc.x = force.x / bMass;
-            vel.x += acc.x * (1 - bDamping);
+            gravity01 = clamp01(gravity01);
+            _force.x = (targetPos.x - _dynamicPos.x) * _stiffness;
+            _acc.x = _force.x / _mass;
+            _vel.x += _acc.x * (1 - _damping);
 
-            force.y = (targetPos.y - dynamicPos.y) * bStiffness;
-            // force.y -= bGravity / 10; // Add some gravity
-            acc.y = force.y / bMass;
-            vel.y += acc.y * (1 - bDamping);
+            _force.y = (targetPos.y - _dynamicPos.y) * _stiffness;
+            _force.y -= (_gravity * (float)gravity01) / 10; // Add some gravity
+            _acc.y = _force.y / _mass;
+            _vel.y += _acc.y * (1 - _damping);
 
-            force.z = (targetPos.z - dynamicPos.z) * bStiffness;
-            acc.z = force.z / bMass;
-            vel.z += acc.z * (1 - bDamping);
+            _force.z = (targetPos.z - _dynamicPos.z) * _stiffness;
+            _acc.z = _force.z / _mass;
+            _vel.z += _acc.z * (1 - _damping);
 
-            var moveBy = vel + force;
+            var moveBy = _vel + _force;
 
-            var candidate = dynamicPos + moveBy;
+            var candidate = _dynamicPos + moveBy;
 
-            if (constrain != null && constrain(ref dynamicPos, ref vel, in force))
+            if (constrain != null && constrain(ref _dynamicPos, ref _vel, in _force))
             {
-                candidate = dynamicPos + vel + force;
+                candidate = _dynamicPos + _vel + _force;
             }
 
-            dynamicPos = candidate;
+            _dynamicPos = candidate;
 
-            return dynamicPos;
+            return _dynamicPos;
         }
     }
 }
