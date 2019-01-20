@@ -17,8 +17,9 @@ namespace Services
         internal double Stiffness { get; set; } = 0.10;
         internal double Mass { get; set; } = 0.90;
         internal double Damping { get; set; } = 0.75;
-        internal double MaxAngle { get; set; } = 30;
+        internal double MaxDegrees { get; set; } = 50;
         internal double MaxStretch { get; set; } = 2;
+        internal double MaxSqueeze { get; set; } = 1;
         internal double RelTargetAt { get; set; } = 0.07;
         internal bool SqueezeAndStretch { get; set; } = false;
         internal Transform Bone { get; set; }
@@ -51,8 +52,6 @@ namespace Services
             var staticSource =
                 _relIniPos.AsWorldPoint(_cfg.Bone.parent);
 
-            const float MaxDegrees = 50f;
-
             var dynamicTarget = 
                 _ppa.Compute(in staticTarget,
                     (ref Vector3 dynamicPos, ref Vector3 velocity, in Vector3 force) =>
@@ -60,8 +59,7 @@ namespace Services
                         var candidate = dynamicPos + velocity + force;
                         var curFw = staticSource.DirTo(in candidate, out var dist);
                         var degrees = angle.BetweenVectorsUnSignedInDegrees(in iniFw, in curFw);
-                        var x = degrees / _cfg.MaxAngle;
-//                        var y = bezier(x, 0.70, 0.00, 1.00, 0.00, 1.00, 2.00, 1.30, 2.00);
+                        var x = degrees / _cfg.MaxDegrees;
                         var y = bezier(x, 0.70, 0.00, 1.00, 0.00, 0.80, 1.00, 0.97, 1.00);
                         if (y < 0.001)
                         {
@@ -70,7 +68,7 @@ namespace Services
                         velocity = velocity * (1f - y);
                         if (degrees > 30)
                         {
-                            dynamicPos = staticSource + iniFw.RotateTowards(curFw, MaxDegrees) * dist;
+                            dynamicPos = staticSource + iniFw.RotateTowards(curFw, _cfg.MaxDegrees) * dist;
                         }
 
                         return true;
@@ -86,8 +84,10 @@ namespace Services
 
             var yy = bezier(xx, 0.00, -1.00, 0.00, -0.50, 1.00, 0.50, 1.00, 1.00);
 
+            var span = yy < 0 ? _cfg.MaxSqueeze : _cfg.MaxStretch;
+
             return (
-                position: staticSource + _relIniFw*(yy*(float)_cfg.MaxStretch), 
+                position: staticSource + _relIniFw*(yy*(float)span), 
                 rotation: rotation
                 );
         }
