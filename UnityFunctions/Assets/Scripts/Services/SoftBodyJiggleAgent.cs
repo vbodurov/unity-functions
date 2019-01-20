@@ -60,7 +60,7 @@ namespace Services
                         var candidate = dynamicPos + velocity + force;
                         var curFw = staticSource.DirTo(in candidate, out var dist);
                         var degrees = angle.BetweenVectorsUnSignedInDegrees(in iniFw, in curFw);
-                        var x = degrees / MaxDegrees;
+                        var x = degrees / _cfg.MaxAngle;
 //                        var y = bezier(x, 0.70, 0.00, 1.00, 0.00, 1.00, 2.00, 1.30, 2.00);
                         var y = bezier(x, 0.70, 0.00, 1.00, 0.00, 0.80, 1.00, 0.97, 1.00);
                         if (y < 0.001)
@@ -76,7 +76,7 @@ namespace Services
                         return true;
                     });
 
-Debug.DrawLine(_cfg.Bone.position, staticTarget, Color.black, 0, false);
+//Debug.DrawLine(_cfg.Bone.position, staticTarget, Color.black, 0, false);
 
             var fw = (dynamicTarget - staticSource).ToUnit(out var length);
             var rotation = 
