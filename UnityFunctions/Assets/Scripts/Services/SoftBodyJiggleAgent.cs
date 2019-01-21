@@ -16,6 +16,7 @@ namespace Services
         internal double Stiffness { get; set; } = 0.10;
         internal double Mass { get; set; } = 0.90;
         internal double Damping { get; set; } = 0.75;
+        internal double Gravity { get; set; } = 0.75;
         internal double MaxDegrees { get; set; } = 50;
         internal double MaxStretch { get; set; } = 2;
         internal double MaxSqueeze { get; set; } = 1;
@@ -30,7 +31,7 @@ namespace Services
         readonly Vector3 _relStaticTarget, _relIniPos, _relIniFw, _relIniUp;
         internal SoftBodyJiggleAgent(SoftBodyConfig config)
         {
-            _ppa = new PendulumPhysicsAgent(config.Stiffness, config.Mass, config.Damping);
+            _ppa = new PendulumPhysicsAgent(config.Stiffness, config.Mass, config.Damping, config.Gravity);
             _cfg = config ?? new SoftBodyConfig();
             _relStaticTarget =
                 (_cfg.Bone.position + _cfg.Bone.forward * (float)_cfg.RelTargetAt)
@@ -50,8 +51,13 @@ namespace Services
             var staticSource =
                 _relIniPos.AsWorldPoint(_cfg.Bone.parent);
 
-            var iniUpWo = _relIniUp.AsWorldDir(_cfg.Bone.parent);
-            var gravityFactor01 = dot(in iniUpWo, in v3.dn).FromMin11To01().Clamp01();
+            var gravityFactor01 = 0f;
+            if (abs(_cfg.Gravity) > 0.0001)
+            {
+                var iniUpWo = _relIniUp.AsWorldDir(_cfg.Bone.parent);
+                gravityFactor01 = dot(in iniUpWo, in v3.dn).FromMin11To01().Clamp01();
+            }
+
 
             var dynamicTarget =
                 _ppa.Compute(in staticTarget, gravityFactor01,
