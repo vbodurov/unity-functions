@@ -15,7 +15,7 @@ namespace Main
 
         void Start()
         {
-//            Time.timeScale = 0.1f;
+//            fun.setTimeScale(0.2);
 
             var cone = fun.meshes.CreatePointyCone(
                     new DtCone
@@ -40,7 +40,12 @@ namespace Main
 
             _bone.SetParent(_rigid);
 
-            _sja = new SoftBodyJiggleAgent(new SoftBodyConfig { Bone = _bone, RelTargetAt = 3 });
+            _sja = new SoftBodyJiggleAgent(new SoftBodyConfig
+            {
+                Bone = _bone,
+                RelTargetAt = 3,
+                MaxDegrees = 50
+            });
 
             _log = GameObject.Find("LogText").GetComponent<Text>();
         }

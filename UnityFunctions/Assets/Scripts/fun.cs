@@ -19,8 +19,15 @@ namespace Unianio
         internal static void frame()
         {
             if (_smoothDeltaTimeFrame < 20) ++_smoothDeltaTimeFrame;
-            smoothDeltaTime = statistics.Average(smoothDeltaTime, Time.deltaTime, _smoothDeltaTimeFrame);
+            smoothDeltaTime = statistics.Average(smoothDeltaTime, Time.deltaTime / Time.timeScale, _smoothDeltaTimeFrame);
             framesPerSec = 1 / smoothDeltaTime;
+        }
+
+        internal static void setTimeScale(double scale)
+        {
+            Time.timeScale = (float)scale;
+            Application.targetFrameRate = (int)(90 * Time.timeScale);
+            QualitySettings.vSyncCount = 0;
         }
         internal static float framesIf90Fps(double f)
         {

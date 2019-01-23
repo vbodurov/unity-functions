@@ -13,10 +13,10 @@ namespace Services
     }
     internal class SoftBodyConfig
     {
-        internal double Stiffness { get; set; } = 0.10;
-        internal double Mass { get; set; } = 0.90;
-        internal double Damping { get; set; } = 0.75;
-        internal double Gravity { get; set; } = 0.75;
+        internal double Stiffness { get; set; } = 0.001;
+        internal double Mass { get; set; } = 0.01;
+        internal double Damping { get; set; } = 0.008;
+        internal double Gravity { get; set; } = 0.008;
         internal double MaxDegrees { get; set; } = 50;
         internal double MaxStretch { get; set; } = 2;
         internal double MaxSqueeze { get; set; } = 1;
@@ -58,7 +58,6 @@ namespace Services
                 gravityFactor01 = dot(in iniUpWo, in v3.dn).FromMin11To01().Clamp01();
             }
 
-
             var dynamicTarget =
                 _ppa.Compute(in staticTarget, gravityFactor01,
                     (ref Vector3 dynamicPos, ref Vector3 velocity, in Vector3 force) =>
@@ -67,7 +66,9 @@ namespace Services
                         var curFw = staticSource.DirTo(in candidate, out var dist);
                         var degrees = fun.angle.BetweenVectorsUnSignedInDegrees(in iniFw, in curFw);
                         var x = degrees / _cfg.MaxDegrees;
-                        var y = bezier(x, 0.70, 0.00, 1.00, 0.00, 0.80, 1.00, 0.97, 1.00);
+                        //var y = bezier(x, 0.70, 0.00, 1.00, 0.00, 0.80, 1.00, 0.97, 1.00);
+                        //var y = bezier(x, 0.80, 0.00, 1.00, 0.00, 0.90, 1.00, 1.00, 1.00);
+                        var y = pow(x, 16).Clamp01();
                         if (y < 0.001)
                         {
                             return false;
@@ -81,7 +82,8 @@ namespace Services
                         return true;
                     });
 
-            //Debug.DrawLine(_cfg.Bone.position, staticTarget, Color.black, 0, false);
+//            Debug.DrawLine(_cfg.Bone.position, staticTarget, Color.black, 0, false);
+//            Debug.DrawLine(_cfg.Bone.position, dynamicTarget, Color.magenta, 0, false);
 
             var fw = (dynamicTarget - staticSource).ToUnit(out var length);
             var rotation =
@@ -89,7 +91,7 @@ namespace Services
 
             var xx = (length / _cfg.RelTargetAt).FromRangeTo01(0, 2);
 
-            var yy = bezier(xx, 0.00, -1.00, 0.00, -0.50, 1.00, 0.50, 1.00, 1.00);
+            var yy = bezier(xx, 0.00, -1.00, 0.50, -1.00, 0.50, 1.00, 1.00, 1.00);
 
             var pos = staticSource;
 
