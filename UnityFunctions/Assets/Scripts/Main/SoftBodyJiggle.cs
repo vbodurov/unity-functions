@@ -15,7 +15,11 @@ namespace Main
 
         void Start()
         {
-//            fun.setTimeScale(0.2);
+            //            fun.setTimeScale(0.2);
+
+//            Application.targetFrameRate = 90;
+//            QualitySettings.vSyncCount = 0;
+
 
             var cone = fun.meshes.CreatePointyCone(
                     new DtCone

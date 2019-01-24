@@ -13,10 +13,10 @@ namespace Services
     }
     internal class SoftBodyConfig
     {
-        internal double Stiffness { get; set; } = 0.001;
-        internal double Mass { get; set; } = 0.01;
-        internal double Damping { get; set; } = 0.008;
-        internal double Gravity { get; set; } = 0.008;
+        internal double Stiffness { get; set; } = 0.1;
+        internal double Mass { get; set; } = 0.9;
+        internal double Damping { get; set; } = 0.72;
+        internal double Gravity { get; set; } = 0.72;
         internal double MaxDegrees { get; set; } = 50;
         internal double MaxStretch { get; set; } = 2;
         internal double MaxSqueeze { get; set; } = 1;

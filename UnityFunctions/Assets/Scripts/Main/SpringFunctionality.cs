@@ -17,14 +17,13 @@ namespace Main
         {
 //            fun.setTimeScale(0.2);
 
-
             _soft = GameObject.CreatePrimitive(PrimitiveType.Sphere).transform
                 .SetScale(1.2).SetColor(0xFF0000FF).SetHideFlags(HideFlags.HideInHierarchy);
 
             _rigid = GameObject.CreatePrimitive(PrimitiveType.Cube).transform
                 .SetScale(1).SetColor(0x0000FFFF).SetPosition(-2.5, 0, 0);
 
-            _ppa = new PendulumPhysicsAgent(stiffness: 0.001, damping: 0.008, mass: 0.01);
+            _ppa = new PendulumPhysicsAgent();
 
             _log = GameObject.Find("LogText").GetComponent<Text>();
         }
